@@ -21,8 +21,8 @@ public class AuthHandler {
     private final JwtResolver jwtResolver;
     private final GoogleAuthManager googleAuthManager;
 
-    public LoginResponse googleLogin(String authorizationCode) {
-        String email = googleAuthManager.getUserEmail(authorizationCode);
+    public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
+        String email = googleAuthManager.getUserEmail(authorizationCode, redirectionUri);
 
         UserEntity userEntity = findOrCreateUserBy(email);
 

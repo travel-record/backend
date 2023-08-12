@@ -26,7 +26,6 @@ jwt:
 google:
   client-id: "client id"
   client-secret: "client secret"
-  redirect-uri: "redirect uri"
 ---
 spring:
   config:

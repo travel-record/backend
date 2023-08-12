@@ -15,30 +15,27 @@ import world.trecord.web.feign.response.GoogleUserInfoResponse;
 @Slf4j
 @Component
 public class GoogleAuthManager {
-    
+
     @Value("${google.client-id}")
     private String googleClientId;
 
     @Value("${google.client-secret}")
     private String googleClientSecret;
-
-    @Value("${google.redirect-uri}")
-    private String googleRedirectUri;
-
+    
     private final GoogleTokenFeignClient googleTokenFeignClient;
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
-    public String getUserEmail(String authorizationCode) {
-        String accessToken = requestAccessTokenWith(authorizationCode);
+    public String getUserEmail(String authorizationCode, String redirectionUri) {
+        String accessToken = requestAccessTokenWith(authorizationCode, redirectionUri);
         return requestUserEmailWith(accessToken);
     }
 
-    private String requestAccessTokenWith(String authorizationCode) {
+    private String requestAccessTokenWith(String authorizationCode, String redirectionUri) {
         GoogleTokenRequest request = GoogleTokenRequest.builder()
                 .client_id(googleClientId)
                 .client_secret(googleClientSecret)
                 .code(authorizationCode)
-                .redirect_uri(googleRedirectUri)
+                .redirect_uri(redirectionUri)
                 .grant_type("authorization_code")
                 .build();
 

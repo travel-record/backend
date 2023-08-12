@@ -26,13 +26,14 @@ class AuthControllerMockTest {
     @DisplayName("유효한 구글 인가 코드로 사용자 정보와 토큰을 반환한다")
     void googleLoginWithValidAccessTokenTest() throws Exception {
         //given
+        String redirectionUri = "redirection uri";
         String validAuthorizationCode = "test authorization code";
         String token = "test token";
         String refreshToken = "test refresh token";
         String nickname = "nickname";
         long userId = 1L;
 
-        GoogleLoginRequest request = GoogleLoginRequest.builder().authorizationCode(validAuthorizationCode).build();
+        GoogleLoginRequest request = GoogleLoginRequest.builder().authorizationCode(validAuthorizationCode).redirectionUri(redirectionUri).build();
 
         LoginResponse loginResponse = LoginResponse.builder()
                 .userId(userId)
@@ -41,7 +42,7 @@ class AuthControllerMockTest {
                 .refreshToken(refreshToken)
                 .build();
 
-        BDDMockito.when(authHandler.googleLogin(validAuthorizationCode))
+        BDDMockito.when(authHandler.googleLogin(validAuthorizationCode, redirectionUri))
                 .thenReturn(loginResponse);
 
         //when

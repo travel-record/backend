@@ -45,12 +45,13 @@ class AuthHandlerTest {
     @DisplayName("유효한 구글 인가 코드로 사용자 정보와 토큰을 반환한다")
     void googleLoginWithValidAccessTokenTest() throws Exception {
         //given
+        String redirectionUri = "redirection uri";
         String accessToken = "dummy access token";
         String nickname = "nickname";
         String token = "testToken";
         String refreshToken = "testRefreshToken";
 
-        BDDMockito.given(googleAuthManager.getUserEmail(anyString()))
+        BDDMockito.given(googleAuthManager.getUserEmail(anyString(), anyString()))
                 .willReturn("test@email.com");
 
         BDDMockito.given(userRepository.findByEmail(anyString()))
@@ -65,7 +66,7 @@ class AuthHandlerTest {
                 .willReturn(refreshToken);
 
         //when
-        LoginResponse loginResponse = authHandler.googleLogin(accessToken);
+        LoginResponse loginResponse = authHandler.googleLogin(accessToken, redirectionUri);
 
         //then
         Assertions.assertThat(loginResponse.getUser().getNickname()).isEqualTo(nickname);
@@ -77,12 +78,13 @@ class AuthHandlerTest {
     @DisplayName("유효하지 않는 구글 인가 코드는 예외가 발생한다")
     void googleLoginWithInvalidAccessTokenTest() throws Exception {
         //given
-        String accessToken = "dummy access token";
-        BDDMockito.given(googleAuthManager.getUserEmail(anyString()))
+        String authorizationCode = "dummy access token";
+        String redirectionUri = "dummy redirection uri";
+        BDDMockito.given(googleAuthManager.getUserEmail(anyString(), anyString()))
                 .willThrow(new CustomException(CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE));
 
         //when // then
-        Assertions.assertThatThrownBy(() -> authHandler.googleLogin(accessToken))
+        Assertions.assertThatThrownBy(() -> authHandler.googleLogin(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE);

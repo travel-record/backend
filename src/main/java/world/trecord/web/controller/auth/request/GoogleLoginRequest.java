@@ -14,8 +14,12 @@ public class GoogleLoginRequest {
     @NotEmpty
     private String authorizationCode;
 
+    @NotEmpty
+    private String redirectionUri;
+
     @Builder
-    private GoogleLoginRequest(String authorizationCode) {
+    private GoogleLoginRequest(String authorizationCode, String redirectionUri) {
         this.authorizationCode = authorizationCode;
+        this.redirectionUri = redirectionUri;
     }
 }

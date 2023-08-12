@@ -22,7 +22,7 @@ public class AuthController {
 
     @PostMapping("/google-login")
     public ApiResponse<LoginResponse> googleLogin(@RequestBody @Valid GoogleLoginRequest request) {
-        return ApiResponse.ok(authHandler.googleLogin(request.getAuthorizationCode()));
+        return ApiResponse.ok(authHandler.googleLogin(request.getAuthorizationCode(), request.getRedirectionUri()));
     }
 
     @PostMapping("/token")

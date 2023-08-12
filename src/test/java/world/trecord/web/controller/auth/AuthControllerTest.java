@@ -39,6 +39,7 @@ public class AuthControllerTest {
         //given
         GoogleLoginRequest request = GoogleLoginRequest.builder()
                 .authorizationCode("dummy")
+                .redirectionUri("dummy")
                 .build();
 
         String content = objectMapper.writeValueAsString(request);
