@@ -32,7 +32,7 @@
 
 ### ERD
 
-![](./docs/erd diagram.png)
+![](./docs/erd%20diagram.png)
 
 ### AWS Architecture
 
