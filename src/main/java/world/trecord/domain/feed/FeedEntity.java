@@ -1,0 +1,106 @@
+package world.trecord.domain.feed;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import world.trecord.domain.BaseEntity;
+import world.trecord.domain.record.RecordEntity;
+import world.trecord.domain.users.UserEntity;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Table(name = "feed")
+@Entity
+public class FeedEntity extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_feed", nullable = false)
+    private Long id;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "image_url", nullable = true)
+    private String imageUrl;
+
+    @Column(name = "description", nullable = true)
+    private String description;
+
+    @Column(name = "start_at", nullable = true)
+    private LocalDateTime startAt;
+
+    @Column(name = "end_at", nullable = true)
+    private LocalDateTime endAt;
+
+    @Column(name = "companion", nullable = true)
+    private String companion;
+
+    @Column(name = "place", nullable = true)
+    private String place;
+
+    @Column(name = "satisfaction", nullable = true)
+    private String satisfaction;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
+    private UserEntity userEntity;
+
+    @OneToMany(mappedBy = "feedEntity", cascade = CascadeType.ALL)
+    private List<RecordEntity> recordEntities;
+
+    @Builder
+    private FeedEntity(UserEntity userEntity, String name, String description, String imageUrl, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
+        this.userEntity = userEntity;
+        this.recordEntities = new ArrayList<>();
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.description = description;
+        this.startAt = startAt;
+        this.endAt = endAt;
+        this.companion = companion;
+        this.place = place;
+        this.satisfaction = satisfaction;
+    }
+
+    public void addRecordEntity(RecordEntity recordEntity) {
+        if (this.recordEntities == null) {
+            recordEntities = new ArrayList<>();
+        }
+        recordEntities.add(recordEntity);
+    }
+
+    public void update(String name, String imageUrl, String description, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.description = description;
+        this.startAt = startAt;
+        this.endAt = endAt;
+        this.companion = companion;
+        this.place = place;
+        this.satisfaction = satisfaction;
+    }
+
+    public Stream<RecordEntity> sortRecordEntitiesByDateAndCreatedTimeAsc() {
+        return this.recordEntities.stream()
+                .sorted(Comparator.comparing(RecordEntity::getDate)
+                        .thenComparing(RecordEntity::getCreatedDateTime));
+    }
+
+    public LocalDate convertStartAtToLocalDate() {
+        return this.startAt != null ? this.startAt.toLocalDate() : null;
+    }
+
+    public LocalDate convertEndAtToLocalDate() {
+        return this.endAt != null ? this.endAt.toLocalDate() : null;
+    }
+}

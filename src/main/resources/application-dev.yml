@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${aws.rds.hostname}
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${aws.rds.username}
+    password: ${aws.rds.password}
+
+jwt:
+  secret-key: ${jwt.secret.key}
+
+google:
+  client-id: ${google.client.id}
+  client-secret: ${google.client.secret}
+  redirect-uri: ${google.redirect.uri}

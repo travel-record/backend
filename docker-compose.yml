@@ -1,0 +1,15 @@
+version: "3"
+services:
+  backend:
+    image: $AWS_ECR_IMAGE
+    container_name: backend
+    ports:
+      - "80:8080"
+    environment:
+      AWS_RDS_HOSTNAME: $AWS_RDS_HOSTNAME
+      AWS_RDS_USERNAME: $AWS_RDS_USERNAME
+      AWS_RDS_PASSWORD: $AWS_RDS_PASSWORD
+      JWT_SECRET_KEY: $JWT_SECRET_KEY
+      GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
+      GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
+      GOOGLE_REDIRECT_URI: $GOOGLE_REDIRECT_URI
