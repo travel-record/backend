@@ -3,7 +3,7 @@ create table users
     id_users           int auto_increment comment '사용자 PK'
         primary key,
     nickname           varchar(20)  null comment '닉네임',
-    image_url          varchar(255) null comment '프로필 이미지 URL',
+    image_url          text         null comment '프로필 이미지 URL',
     introduction       varchar(255) null comment '한 줄 소개글',
     email              varchar(255) not null comment '이메일',
     created_date_time  datetime     null comment '기록 생성 시간',
@@ -20,7 +20,7 @@ create table feed
     id_feed            int auto_increment comment '피드 PK'
         primary key,
     id_users           int          not null comment '사용자 FK',
-    image_url          varchar(255) null comment '썸네일 이미지 URL',
+    image_url          text         null comment '썸네일 이미지 URL',
     description        varchar(255) null comment '설명',
     name               varchar(255) not null comment '페이지 이름',
     start_at           timestamp    null comment '시작 시간',

@@ -18,16 +18,16 @@ public class UserEntity extends BaseEntity {
     @Column(name = "id_users")
     private Long id;
 
-    @Column(name = "email", nullable = false, unique = true, updatable = false)
+    @Column(name = "email", nullable = false, length = 255, unique = true, updatable = false)
     private String email;
 
-    @Column(name = "nickname", nullable = true, unique = true)
+    @Column(name = "nickname", nullable = true, length = 20, unique = true)
     private String nickname;
 
-    @Column(name = "image_url", nullable = true)
+    @Column(name = "image_url", nullable = true, columnDefinition = "TEXT")
     private String imageUrl;
 
-    @Column(name = "introduction", nullable = true)
+    @Column(name = "introduction", nullable = true, length = 255)
     private String introduction;
 
     @Builder

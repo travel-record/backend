@@ -30,7 +30,7 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "image_url", nullable = true)
+    @Column(name = "image_url", nullable = true, columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(name = "description", nullable = true)
