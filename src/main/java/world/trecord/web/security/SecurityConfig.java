@@ -60,10 +60,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "https://www.trecord.com"));
         configuration.setAllowedMethods(List.of("HEAD", "POST", "GET", "DELETE", "PATCH", "PUT", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        //configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "https://www.trecord.com"));
 //        configuration.setAllowCredentials(true);
 //        configuration.setMaxAge(Duration.ofHours(1));
 
