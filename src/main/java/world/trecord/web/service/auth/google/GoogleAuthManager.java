@@ -21,7 +21,7 @@ public class GoogleAuthManager {
 
     @Value("${google.client-secret}")
     private String googleClientSecret;
-    
+
     private final GoogleTokenFeignClient googleTokenFeignClient;
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
@@ -31,6 +31,7 @@ public class GoogleAuthManager {
     }
 
     private String requestAccessTokenWith(String authorizationCode, String redirectionUri) {
+        log.info("[Access Token Request ] ----> [{}], [{}]", authorizationCode, redirectionUri);
         GoogleTokenRequest request = GoogleTokenRequest.builder()
                 .client_id(googleClientId)
                 .client_secret(googleClientSecret)
@@ -40,11 +41,14 @@ public class GoogleAuthManager {
                 .build();
 
         ResponseEntity<GoogleTokenResponse> response = googleTokenFeignClient.call(request);
+        log.info("[Access Token Response ] ----> [{}]", response.getBody().getAccess_token());
         return response.getBody().getAccess_token();
     }
 
     private String requestUserEmailWith(String accessToken) {
+        log.info("[User Info Request ] ----> [{}]", accessToken);
         ResponseEntity<GoogleUserInfoResponse> response = googleUserInfoFeignClient.call("Bearer " + accessToken);
+        log.info("[Access Token Response ] ----> [{}]", response.getBody().getEmail());
         return response.getBody().getEmail();
     }
 }

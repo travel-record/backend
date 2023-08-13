@@ -18,7 +18,8 @@ feign:
       default:
         connectTimeout: 1000
         readTimeout: 3000
-        loggerLevel: NONE
+        loggerLevel: HEADERS
+
 
 jwt:
   secret-key: "adZw12pxc55CmnIKsNP42KIa+M+bTlezcJKs3sW2RctO"
@@ -26,6 +27,13 @@ jwt:
 google:
   client-id: "client id"
   client-secret: "client secret"
+
+logging:
+  level:
+    root: info
+    world.trecord.web.feign: debug
+    world.trecord.web.service.auth.google.GoogleAuthManager: debug
+
 ---
 spring:
   config:
