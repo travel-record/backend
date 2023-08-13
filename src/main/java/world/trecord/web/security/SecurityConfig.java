@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
-    
+
     private final JwtResolver jwtResolver;
     private final UserService userService;
 
@@ -62,7 +62,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedMethods(List.of("HEAD", "POST", "GET", "DELETE", "PATCH", "PUT", "OPTION"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(Duration.ofHours(1));
