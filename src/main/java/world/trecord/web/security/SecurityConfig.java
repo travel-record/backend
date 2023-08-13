@@ -63,7 +63,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "https://www.trecord.com"));
         configuration.setAllowedMethods(List.of("HEAD", "POST", "GET", "DELETE", "PATCH", "PUT", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-//        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true);
 //        configuration.setMaxAge(Duration.ofHours(1));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
