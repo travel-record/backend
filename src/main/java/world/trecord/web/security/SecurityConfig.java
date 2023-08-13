@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import world.trecord.web.service.users.UserService;
 
+import java.time.Duration;
 import java.util.List;
 
 @EnableWebSecurity
@@ -64,7 +65,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("HEAD", "POST", "GET", "DELETE", "PATCH", "PUT", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-//        configuration.setMaxAge(Duration.ofHours(1));
+        configuration.setMaxAge(Duration.ofHours(1));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
