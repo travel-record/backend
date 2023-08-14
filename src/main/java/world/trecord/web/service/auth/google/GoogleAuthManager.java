@@ -41,14 +41,14 @@ public class GoogleAuthManager {
                 .build();
 
         ResponseEntity<GoogleTokenResponse> response = googleTokenFeignClient.call(request);
-        log.info("[Access Token Response ] ----> [{}]", response.getBody().getAccess_token());
+        log.info("[Access Token Response ] <---- [{}]", response.getBody().getAccess_token());
         return response.getBody().getAccess_token();
     }
 
     private String requestUserEmailWith(String accessToken) {
         log.info("[User Info Request ] ----> [{}]", accessToken);
         ResponseEntity<GoogleUserInfoResponse> response = googleUserInfoFeignClient.call("Bearer " + accessToken);
-        log.info("[Access Token Response ] ----> [{}]", response.getBody().getEmail());
+        log.info("[Access Token Response ] <---- [{}]", response.getBody().getEmail());
         return response.getBody().getEmail();
     }
 }
