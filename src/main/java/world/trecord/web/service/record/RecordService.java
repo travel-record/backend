@@ -47,7 +47,7 @@ public class RecordService {
         RecordEntity recordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity));
 
         return RecordCreateResponse.builder()
-                .writerId(userId)
+                .writerEntity(userEntity)
                 .recordEntity(recordEntity)
                 .build();
     }
@@ -85,7 +85,7 @@ public class RecordService {
         recordRepository.delete(recordEntity);
 
         return RecordDeleteResponse.builder()
-                .recordId(recordEntity.getId())
+                .recordEntity(recordEntity)
                 .build();
     }
 

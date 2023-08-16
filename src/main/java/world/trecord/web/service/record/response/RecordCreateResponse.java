@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.record.RecordEntity;
+import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
 
@@ -26,8 +27,8 @@ public class RecordCreateResponse {
     private String companion;
 
     @Builder
-    private RecordCreateResponse(Long writerId, RecordEntity recordEntity) {
-        this.writerId = writerId;
+    private RecordCreateResponse(UserEntity writerEntity, RecordEntity recordEntity) {
+        this.writerId = writerEntity.getId();
         this.feedId = recordEntity.getFeedEntity().getId();
         this.recordId = recordEntity.getId();
         this.title = recordEntity.getTitle();
