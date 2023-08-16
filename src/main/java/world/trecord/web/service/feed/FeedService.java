@@ -5,15 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feed.projection.FeedWithRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.FeedCreateResponse;
-import world.trecord.web.service.feed.response.FeedDeleteResponse;
-import world.trecord.web.service.feed.response.FeedListResponse;
-import world.trecord.web.service.feed.response.FeedOneResponse;
+import world.trecord.web.service.feed.response.*;
 
 import java.util.List;
 
@@ -39,13 +37,17 @@ public class FeedService {
                 .build();
     }
 
-    public FeedOneResponse getFeedBy(Long feedId) {
-        // TODO read without record content
-        FeedEntity feedEntity = findFeedEntityWithRecordEntitiesBy(feedId);
+    public FeedInfoResponse getFeedBy(Long feedId, Long viewerId) {
+        List<FeedWithRecordProjection> projectionList = feedRepository.findWithUserEntityAndRecordEntitiesBy(feedId);
 
-        return FeedOneResponse
+        if (projectionList.isEmpty()) {
+            throw new CustomException(NOT_EXISTING_FEED);
+        }
+
+        return FeedInfoResponse
                 .builder()
-                .feedEntity(feedEntity)
+                .projectionList(projectionList)
+                .viewerId(viewerId)
                 .build();
     }
 
@@ -61,7 +63,7 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedOneResponse updateFeed(Long userId, FeedUpdateRequest request) {
+    public FeedUpdateResponse updateFeed(Long userId, FeedUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         FeedEntity feedEntity = findFeedEntityBy(request.getId());
@@ -70,7 +72,7 @@ public class FeedService {
 
         updateFeedEntity(request, feedEntity);
 
-        return FeedOneResponse
+        return FeedUpdateResponse
                 .builder()
                 .feedEntity(feedEntity)
                 .build();
@@ -98,10 +100,6 @@ public class FeedService {
 
     private FeedEntity findFeedEntityBy(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
-    }
-
-    private FeedEntity findFeedEntityWithRecordEntitiesBy(Long feedId) {
-        return feedRepository.findFeedEntityWithRecordEntitiesById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 
     private UserEntity findUserEntityBy(Long userId) {

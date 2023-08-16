@@ -281,7 +281,7 @@ class FeedServiceTest {
                 .build();
 
         //when
-        FeedOneResponse response = feedService.updateFeed(savedUserEntity.getId(), request);
+        FeedUpdateResponse response = feedService.updateFeed(savedUserEntity.getId(), request);
 
         //then
         Assertions.assertThat(response.getWriterId()).isEqualTo(savedUserEntity.getId());
@@ -290,7 +290,7 @@ class FeedServiceTest {
         Assertions.assertThat(response.getDescription()).isEqualTo(updatedFeedDescription);
         Assertions.assertThat(response.getStartAt()).isEqualTo(updatedStartAt.toLocalDate());
         Assertions.assertThat(response.getEndAt()).isEqualTo(updatedEndAt.toLocalDate());
-        Assertions.assertThat(response.getRecords().stream().map(FeedOneResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
+        Assertions.assertThat(response.getRecords().stream().map(FeedUpdateResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
     }
 
     @Test
