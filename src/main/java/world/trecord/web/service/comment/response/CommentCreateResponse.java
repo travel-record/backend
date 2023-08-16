@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.comment.CommentEntity;
+import world.trecord.domain.record.RecordEntity;
 
 @NoArgsConstructor
 @Getter
@@ -15,9 +17,9 @@ public class CommentCreateResponse {
     private String content;
 
     @Builder
-    private CommentCreateResponse(Long recordId, Long commentId, String content) {
-        this.recordId = recordId;
-        this.commentId = commentId;
-        this.content = content;
+    private CommentCreateResponse(RecordEntity recordEntity, CommentEntity commentEntity) {
+        this.recordId = recordEntity.getId();
+        this.commentId = commentEntity.getId();
+        this.content = commentEntity.getContent();
     }
 }

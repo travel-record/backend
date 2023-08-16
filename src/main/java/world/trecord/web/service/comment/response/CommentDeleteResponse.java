@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.comment.CommentEntity;
 
 @NoArgsConstructor
 @Getter
@@ -12,7 +13,7 @@ public class CommentDeleteResponse {
     private Long commentId;
 
     @Builder
-    private CommentDeleteResponse(Long commentId) {
-        this.commentId = commentId;
+    private CommentDeleteResponse(CommentEntity commentEntity) {
+        this.commentId = commentEntity.getId();
     }
 }

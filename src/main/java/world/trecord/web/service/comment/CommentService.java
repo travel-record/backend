@@ -42,9 +42,8 @@ public class CommentService {
         notificationService.createCommentNotification(commentEntity);
 
         return CommentCreateResponse.builder()
-                .recordId(recordEntity.getId())
-                .commentId(commentEntity.getId())
-                .content(commentEntity.getContent())
+                .recordEntity(recordEntity)
+                .commentEntity(commentEntity)
                 .build();
     }
 
@@ -60,9 +59,7 @@ public class CommentService {
         commentEntity.update(request.getContent());
 
         return CommentUpdateResponse.builder()
-                .recordId(commentEntity.getRecordEntity().getId())
-                .commentId(commentEntity.getId())
-                .content(commentEntity.getContent())
+                .commentEntity(commentEntity)
                 .build();
     }
 
@@ -78,7 +75,7 @@ public class CommentService {
         commentRepository.delete(commentEntity);
 
         return CommentDeleteResponse.builder()
-                .commentId(commentEntity.getId())
+                .commentEntity(commentEntity)
                 .build();
     }
 
