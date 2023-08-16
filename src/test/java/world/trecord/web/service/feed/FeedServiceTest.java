@@ -104,10 +104,10 @@ class FeedServiceTest {
         FeedInfoResponse response = feedService.getFeedBy(savedFeedEntity.getId(), userEntity.getId());
 
         //then
-        Assertions.assertThat(response.getWriterId()).isEqualTo(savedUserEntity.getId());
-        Assertions.assertThat(response.getFeedId()).isEqualTo(savedFeedEntity.getId());
-        Assertions.assertThat(response.getStartAt()).isEqualTo(savedFeedEntity.getStartAt().toLocalDate());
-        Assertions.assertThat(response.getEndAt()).isEqualTo(savedFeedEntity.getEndAt().toLocalDate());
+        Assertions.assertThat(response)
+                .extracting("writerId", "feedId", "startAt", "endAt")
+                .containsExactly(savedUserEntity.getId(), savedFeedEntity.getId(),
+                        savedFeedEntity.convertStartAtToLocalDate(), savedFeedEntity.convertEndAtToLocalDate());
         Assertions.assertThat(response.getRecords().stream().map(FeedInfoResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
     }
 
@@ -284,12 +284,11 @@ class FeedServiceTest {
         FeedUpdateResponse response = feedService.updateFeed(savedUserEntity.getId(), request);
 
         //then
-        Assertions.assertThat(response.getWriterId()).isEqualTo(savedUserEntity.getId());
-        Assertions.assertThat(response.getFeedId()).isEqualTo(savedFeedEntity.getId());
-        Assertions.assertThat(response.getName()).isEqualTo(updateFeedName);
-        Assertions.assertThat(response.getDescription()).isEqualTo(updatedFeedDescription);
-        Assertions.assertThat(response.getStartAt()).isEqualTo(updatedStartAt.toLocalDate());
-        Assertions.assertThat(response.getEndAt()).isEqualTo(updatedEndAt.toLocalDate());
+        Assertions.assertThat(response)
+                .extracting("writerId", "feedId", "name", "description", "startAt", "endAt")
+                .containsExactly(savedUserEntity.getId(), savedFeedEntity.getId(), updateFeedName, updatedFeedDescription,
+                        savedFeedEntity.convertStartAtToLocalDate(), savedFeedEntity.convertEndAtToLocalDate());
+
         Assertions.assertThat(response.getRecords().stream().map(FeedUpdateResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
     }
 
