@@ -40,6 +40,7 @@ public class FeedService {
     }
 
     public FeedOneResponse getFeedBy(Long feedId) {
+        // TODO read without record content
         FeedEntity feedEntity = findFeedEntityWithRecordEntitiesBy(feedId);
 
         return FeedOneResponse

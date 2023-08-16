@@ -40,7 +40,7 @@ public class RecordService {
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest recordCreateRequest) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityWithRecordEntitiesBy(recordCreateRequest.getFeedId());
+        FeedEntity feedEntity = findFeedEntityBy(recordCreateRequest.getFeedId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
@@ -56,11 +56,11 @@ public class RecordService {
     public RecordInfoResponse updateRecord(Long userId, RecordUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityWithRecordEntitiesBy(request.getFeedId());
+        FeedEntity feedEntity = findFeedEntityBy(request.getFeedId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
-        RecordEntity recordEntity = recordRepository.findById(request.getRecordId()).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
 
         recordEntity.update(request.getTitle(), request.getDate(), request.getPlace(), request.getFeeling(), request.getWeather(), request.getTransportation(), request.getContent(), request.getCompanion());
 
@@ -74,11 +74,11 @@ public class RecordService {
     public RecordDeleteResponse deleteRecord(Long userId, RecordDeleteRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityWithRecordEntitiesBy(request.getFeedId());
+        FeedEntity feedEntity = findFeedEntityBy(request.getFeedId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
-        RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
+        RecordEntity recordEntity = findRecordEntityWithCommentEntitiesBy(request.getRecordId());
 
         recordEntity.getCommentEntities().clear();
 
@@ -97,8 +97,12 @@ public class RecordService {
         return recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
-    private FeedEntity findFeedEntityWithRecordEntitiesBy(Long feedId) {
-        return feedRepository.findFeedEntityWithRecordEntitiesById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+    private RecordEntity findRecordEntityWithCommentEntitiesBy(Long recordId) {
+        return recordRepository.findRecordEntityWithCommentEntitiesById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+    }
+
+    private FeedEntity findFeedEntityBy(Long feedId) {
+        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 
     private UserEntity findUserEntityBy(Long userId) {
