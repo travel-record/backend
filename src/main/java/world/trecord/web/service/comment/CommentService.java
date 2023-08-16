@@ -80,7 +80,7 @@ public class CommentService {
     }
 
     private CommentEntity findCommentEntityWithUserEntityBy(Long commentId) {
-        return commentRepository.findByIdWithUserEntity(commentId).orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
+        return commentRepository.findCommentEntityWithUserEntityById(commentId).orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
     }
 
     private UserEntity findUserEntityBy(Long userId) {
