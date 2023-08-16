@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.projection.FeedWithRecordProjection;
+import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
@@ -24,6 +25,7 @@ public class FeedService {
 
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
+    private final RecordRepository recordRepository;
 
     public FeedListResponse getFeedListBy(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
@@ -38,16 +40,14 @@ public class FeedService {
     }
 
     public FeedInfoResponse getFeedBy(Long feedId, Long viewerId) {
-        List<FeedWithRecordProjection> projectionList = feedRepository.findWithUserEntityAndRecordEntitiesBy(feedId);
+        FeedEntity feedEntity = feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
 
-        if (projectionList.isEmpty()) {
-            throw new CustomException(NOT_EXISTING_FEED);
-        }
+        List<RecordWithFeedProjection> records = recordRepository.findRecordEntityByFeedId(feedId);
 
-        return FeedInfoResponse
-                .builder()
-                .projectionList(projectionList)
+        return FeedInfoResponse.builder()
+                .feedEntity(feedEntity)
                 .viewerId(viewerId)
+                .records(records)
                 .build();
     }
 

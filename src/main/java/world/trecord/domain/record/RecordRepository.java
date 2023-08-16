@@ -4,7 +4,9 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
@@ -20,4 +22,10 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
 
     @EntityGraph(attributePaths = {"commentEntities"})
     Optional<RecordEntity> findRecordEntityWithCommentEntitiesById(@Param("id") Long recordId);
+
+    @Query("SELECT r.id as id, r.title as title, r.place as place, r.date as date " +
+            "FROM RecordEntity r " +
+            "WHERE r.feedEntity.id = :feedId " +
+            "ORDER BY r.date ASC, r.createdDateTime ASC")
+    List<RecordWithFeedProjection> findRecordEntityByFeedId(@Param("feedId") Long feedId);
 }

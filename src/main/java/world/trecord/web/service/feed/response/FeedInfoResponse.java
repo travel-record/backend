@@ -4,10 +4,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import world.trecord.domain.feed.projection.FeedWithRecordProjection;
+import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -28,22 +29,21 @@ public class FeedInfoResponse {
     private List<Record> records;
 
     @Builder
-    private FeedInfoResponse(List<FeedWithRecordProjection> projectionList, Long viewerId) {
-        FeedWithRecordProjection feedEntity = projectionList.get(0);
-
-        this.writerId = feedEntity.getWriterId();
-        this.feedId = feedEntity.getFeedId();
-        this.name = feedEntity.getFeedName();
+    private FeedInfoResponse(FeedEntity feedEntity, Long viewerId, List<RecordWithFeedProjection> records) {
+        this.writerId = feedEntity.getUserEntity().getId();
+        this.feedId = feedEntity.getId();
         this.isUpdatable = writerId.equals(viewerId);
-        this.imageUrl = feedEntity.getFeedImageUrl();
-        this.description = feedEntity.getFeedDescription();
-        this.satisfaction = feedEntity.getFeedSatisfaction();
-        this.place = feedEntity.getFeedPlace();
-        this.companion = feedEntity.getFeedCompanion();
-        this.startAt = feedEntity.getFeedStartAt();
-        this.endAt = feedEntity.getFeedEndAt();
-        this.records = feedEntity.getRecordId() != null ?
-                projectionList.stream().map(Record::new).toList() : new ArrayList<>();
+        this.name = feedEntity.getName();
+        this.imageUrl = feedEntity.getImageUrl();
+        this.description = feedEntity.getDescription();
+        this.satisfaction = feedEntity.getSatisfaction();
+        this.place = feedEntity.getPlace();
+        this.companion = feedEntity.getCompanion();
+        this.startAt = feedEntity.convertStartAtToLocalDate();
+        this.endAt = feedEntity.convertEndAtToLocalDate();
+        this.records = records.stream()
+                .map(Record::new)
+                .toList();
     }
 
     @NoArgsConstructor
@@ -55,11 +55,15 @@ public class FeedInfoResponse {
         private String place;
         private LocalDate date;
 
-        public Record(FeedWithRecordProjection projection) {
-            this.id = projection.getRecordId();
-            this.title = projection.getRecordTitle();
-            this.place = projection.getRecordPlace();
-            this.date = projection.getRecordDate();
+        public Record(RecordWithFeedProjection projection) {
+            this.id = projection.getId();
+            this.title = projection.getTitle();
+            this.place = projection.getPlace();
+            this.date = covertLocalDate(projection.getDate());
+        }
+
+        private LocalDate covertLocalDate(LocalDateTime localDateTime) {
+            return localDateTime != null ? localDateTime.toLocalDate() : null;
         }
     }
 }
