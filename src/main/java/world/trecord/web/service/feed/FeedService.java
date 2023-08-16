@@ -86,7 +86,7 @@ public class FeedService {
         feedRepository.delete(feedEntity);
 
         return FeedDeleteResponse.builder()
-                .id(feedId)
+                .feedEntity(feedEntity)
                 .build();
     }
 

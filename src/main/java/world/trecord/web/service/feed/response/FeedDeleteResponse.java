@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.feed.FeedEntity;
 
 @NoArgsConstructor
 @Getter
@@ -12,7 +13,7 @@ public class FeedDeleteResponse {
     private Long id;
 
     @Builder
-    private FeedDeleteResponse(Long id) {
-        this.id = id;
+    private FeedDeleteResponse(FeedEntity feedEntity) {
+        this.id = feedEntity.getId();
     }
 }
