@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.users.UserEntity;
 
 @NoArgsConstructor
 @Getter
@@ -14,9 +15,9 @@ public class UserInfoResponse {
     private String introduction;
 
     @Builder
-    private UserInfoResponse(String nickname, String imageUrl, String introduction) {
-        this.nickname = nickname;
-        this.imageUrl = imageUrl;
-        this.introduction = introduction;
+    private UserInfoResponse(UserEntity userEntity) {
+        this.nickname = userEntity.getNickname();
+        this.imageUrl = userEntity.getImageUrl();
+        this.introduction = userEntity.getIntroduction();
     }
 }

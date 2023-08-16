@@ -40,9 +40,7 @@ public class UserService implements UserDetailsService {
         UserEntity userEntity = findUserEntityBy(userId);
 
         return UserInfoResponse.builder()
-                .nickname(userEntity.getNickname())
-                .imageUrl(userEntity.getImageUrl())
-                .introduction(userEntity.getIntroduction())
+                .userEntity(userEntity)
                 .build();
     }
 
@@ -57,9 +55,7 @@ public class UserService implements UserDetailsService {
         userEntity.update(updateRequest.getNickname(), updateRequest.getImageUrl(), updateRequest.getIntroduction());
 
         return UserInfoResponse.builder()
-                .nickname(userEntity.getNickname())
-                .imageUrl(userEntity.getImageUrl())
-                .introduction(userEntity.getIntroduction())
+                .userEntity(userEntity)
                 .build();
     }
 
