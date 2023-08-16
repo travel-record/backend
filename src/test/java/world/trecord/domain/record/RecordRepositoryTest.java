@@ -51,7 +51,7 @@ class RecordRepositoryTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordEntity recordEntity = recordRepository.findWithFeedEntityAndCommentEntitiesBy(savedRecordEntity.getId()).get();
+        RecordEntity recordEntity = recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesBy(savedRecordEntity.getId()).get();
 
         //then
         Assertions.assertThat(recordEntity).isEqualTo(savedRecordEntity);

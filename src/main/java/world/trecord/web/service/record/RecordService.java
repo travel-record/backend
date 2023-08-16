@@ -94,7 +94,7 @@ public class RecordService {
     }
 
     private RecordEntity findRecordEntityWithFeedEntityAndCommentEntitiesBy(Long recordId) {
-        return recordRepository.findWithFeedEntityAndCommentEntitiesBy(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        return recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
     private FeedEntity findFeedEntityWithRecordEntitiesBy(Long feedId) {

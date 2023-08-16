@@ -11,9 +11,9 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
     @Query("SELECT r " +
             "FROM RecordEntity r " +
             "LEFT JOIN FETCH r.commentEntities c " +
-            "LEFT JOIN FETCH c.userEntity " + // 댓글과 연관된 사용자 엔터티 조인
+            "LEFT JOIN FETCH c.userEntity " +
             "JOIN FETCH r.feedEntity " +
             "WHERE r.id = :id " +
             "ORDER BY c.createdDateTime ASC")
-    Optional<RecordEntity> findWithFeedEntityAndCommentEntitiesBy(@Param("id") Long recordId);
+    Optional<RecordEntity> findRecordEntityWithFeedEntityAndCommentEntitiesBy(@Param("id") Long recordId);
 }
