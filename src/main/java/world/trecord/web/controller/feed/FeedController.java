@@ -9,10 +9,7 @@ import world.trecord.web.service.feed.FeedService;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedDeleteRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.FeedCreateResponse;
-import world.trecord.web.service.feed.response.FeedDeleteResponse;
-import world.trecord.web.service.feed.response.FeedListResponse;
-import world.trecord.web.service.feed.response.FeedOneResponse;
+import world.trecord.web.service.feed.response.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -28,8 +25,8 @@ public class FeedController {
     }
 
     @GetMapping("/{feedId}")
-    public ApiResponse<FeedOneResponse> getFeed(@PathVariable("feedId") Long feedId) {
-        return ApiResponse.ok(feedService.getFeedBy(feedId));
+    public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @LoginUserId String viewerId) {
+        return ApiResponse.ok(feedService.getFeedBy(feedId, Long.parseLong(viewerId)));
     }
 
     @PostMapping

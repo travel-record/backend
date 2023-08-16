@@ -33,6 +33,7 @@ public class RecordInfoResponse {
         this.writerId = recordEntity.getFeedEntity().getUserEntity().getId();
         this.feedId = recordEntity.getFeedEntity().getId();
         this.recordId = recordEntity.getId();
+        this.isUpdatable = writerId.equals(viewerId);
         this.title = recordEntity.getTitle();
         this.date = recordEntity.convertDateToLocalDate();
         this.place = recordEntity.getPlace();
@@ -49,7 +50,6 @@ public class RecordInfoResponse {
                         .viewerId(viewerId)
                         .build())
                 .toList();
-        this.isUpdatable = writerId.equals(viewerId);
     }
 
     @NoArgsConstructor

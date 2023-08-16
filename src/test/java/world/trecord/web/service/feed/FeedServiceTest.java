@@ -15,10 +15,7 @@ import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.FeedCreateResponse;
-import world.trecord.web.service.feed.response.FeedDeleteResponse;
-import world.trecord.web.service.feed.response.FeedListResponse;
-import world.trecord.web.service.feed.response.FeedOneResponse;
+import world.trecord.web.service.feed.response.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -104,14 +101,14 @@ class FeedServiceTest {
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedOneResponse response = feedService.getFeedBy(savedFeedEntity.getId());
+        FeedInfoResponse response = feedService.getFeedBy(savedFeedEntity.getId(), userEntity.getId());
 
         //then
         Assertions.assertThat(response.getWriterId()).isEqualTo(savedUserEntity.getId());
         Assertions.assertThat(response.getFeedId()).isEqualTo(savedFeedEntity.getId());
         Assertions.assertThat(response.getStartAt()).isEqualTo(savedFeedEntity.getStartAt().toLocalDate());
         Assertions.assertThat(response.getEndAt()).isEqualTo(savedFeedEntity.getEndAt().toLocalDate());
-        Assertions.assertThat(response.getRecords().stream().map(FeedOneResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
+        Assertions.assertThat(response.getRecords().stream().map(FeedInfoResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
     }
 
     @Test
@@ -119,9 +116,10 @@ class FeedServiceTest {
     void getFeedByNotExistingFeedIdTest() throws Exception {
         //given
         Long notExistingFeedId = 0L;
+        Long notExistingUserId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.getFeedBy(notExistingFeedId))
+        Assertions.assertThatThrownBy(() -> feedService.getFeedBy(notExistingFeedId, notExistingUserId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
