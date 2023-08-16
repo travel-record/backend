@@ -201,6 +201,7 @@ class FeedServiceTest {
         UserEntity savedUserEntity = userRepository.save(userEntity);
 
         FeedUpdateRequest request = FeedUpdateRequest.builder()
+                .id(0L)
                 .name("updateFeedName")
                 .imageUrl("updatedFeedImage")
                 .description("updatedFeedDescription")

@@ -40,7 +40,7 @@ public class FeedService {
     }
 
     public FeedOneResponse getFeedBy(Long feedId) {
-        FeedEntity feedEntity = findFeedWithRecordsBy(feedId);
+        FeedEntity feedEntity = findFeedEntityWithRecordEntitiesBy(feedId);
 
         return FeedOneResponse
                 .builder()
@@ -63,7 +63,7 @@ public class FeedService {
     public FeedOneResponse updateFeed(Long userId, FeedUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedWithRecordsBy(request.getId());
+        FeedEntity feedEntity = findFeedEntityBy(request.getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
@@ -79,7 +79,7 @@ public class FeedService {
     public FeedDeleteResponse deleteFeed(Long userId, Long feedId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedWithRecordsBy(feedId);
+        FeedEntity feedEntity = findFeedEntityBy(feedId);
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
@@ -95,7 +95,11 @@ public class FeedService {
             throw new CustomException(FORBIDDEN);
     }
 
-    private FeedEntity findFeedWithRecordsBy(Long feedId) {
+    private FeedEntity findFeedEntityBy(Long feedId) {
+        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+    }
+
+    private FeedEntity findFeedEntityWithRecordEntitiesBy(Long feedId) {
         return feedRepository.findFeedEntityWithRecordEntitiesById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 
