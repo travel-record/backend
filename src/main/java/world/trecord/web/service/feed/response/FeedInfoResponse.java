@@ -7,6 +7,7 @@ import lombok.Setter;
 import world.trecord.domain.feed.projection.FeedWithRecordProjection;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -41,9 +42,8 @@ public class FeedInfoResponse {
         this.companion = feedEntity.getFeedCompanion();
         this.startAt = feedEntity.getFeedStartAt();
         this.endAt = feedEntity.getFeedEndAt();
-        this.records = projectionList.stream()
-                .map(Record::new)
-                .toList();
+        this.records = feedEntity.getRecordId() != null ?
+                projectionList.stream().map(Record::new).toList() : new ArrayList<>();
     }
 
     @NoArgsConstructor
