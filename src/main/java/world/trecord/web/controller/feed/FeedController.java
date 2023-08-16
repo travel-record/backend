@@ -36,7 +36,7 @@ public class FeedController {
     }
 
     @PutMapping
-    public ApiResponse<FeedOneResponse> updateFeed(@RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @LoginUserId String userId) {
+    public ApiResponse<FeedUpdateResponse> updateFeed(@RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @LoginUserId String userId) {
         feedValidator.validateFeedUpdateRequest(feedUpdateRequest);
         return ApiResponse.ok(feedService.updateFeed(Long.valueOf(userId), feedUpdateRequest));
     }

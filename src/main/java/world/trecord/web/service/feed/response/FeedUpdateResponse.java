@@ -13,10 +13,11 @@ import java.util.List;
 @NoArgsConstructor
 @Setter
 @Getter
-public class FeedOneResponse {
+public class FeedUpdateResponse {
 
     private Long writerId;
     private Long feedId;
+    private Boolean isUpdatable;
     private String name;
     private String imageUrl;
     private String description;
@@ -28,9 +29,10 @@ public class FeedOneResponse {
     private List<Record> records;
 
     @Builder
-    private FeedOneResponse(FeedEntity feedEntity) {
+    private FeedUpdateResponse(FeedEntity feedEntity) {
         this.writerId = feedEntity.getUserEntity().getId();
         this.feedId = feedEntity.getId();
+        this.isUpdatable = true;
         this.name = feedEntity.getName();
         this.imageUrl = feedEntity.getImageUrl();
         this.description = feedEntity.getDescription();
