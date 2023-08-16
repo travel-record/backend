@@ -68,7 +68,7 @@ class FeedRepositoryTest {
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedEntity foundFeedEntity = feedRepository.findWithRecordEntitiesBy(savedFeedEntity.getId()).get();
+        FeedEntity foundFeedEntity = feedRepository.findFeedEntityWithRecordEntitiesById(savedFeedEntity.getId()).get();
 
         //then
         Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);
@@ -89,7 +89,7 @@ class FeedRepositoryTest {
         FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
 
         //when
-        FeedEntity foundFeedEntity = feedRepository.findWithRecordEntitiesBy(savedFeedEntity.getId()).get();
+        FeedEntity foundFeedEntity = feedRepository.findFeedEntityWithRecordEntitiesById(savedFeedEntity.getId()).get();
 
         //then
         Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);

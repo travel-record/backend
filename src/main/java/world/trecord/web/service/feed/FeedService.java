@@ -96,7 +96,7 @@ public class FeedService {
     }
 
     private FeedEntity findFeedWithRecordsBy(Long feedId) {
-        return feedRepository.findWithRecordEntitiesBy(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+        return feedRepository.findFeedEntityWithRecordEntitiesById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 
     private UserEntity findUserEntityBy(Long userId) {
