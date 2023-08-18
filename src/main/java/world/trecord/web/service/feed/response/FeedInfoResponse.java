@@ -53,12 +53,14 @@ public class FeedInfoResponse {
         private Long id;
         private String title;
         private String place;
+        private String imageUrl;
         private LocalDate date;
 
         public Record(RecordWithFeedProjection projection) {
             this.id = projection.getId();
             this.title = projection.getTitle();
             this.place = projection.getPlace();
+            this.imageUrl = projection.getImageUrl();
             this.date = covertLocalDate(projection.getDate());
         }
 
