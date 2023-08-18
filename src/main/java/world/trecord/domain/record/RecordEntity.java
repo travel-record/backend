@@ -52,6 +52,9 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "companion", nullable = true)
     private String companion;
 
+    @Column(name = "image_url", nullable = true, columnDefinition = "TEXT")
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_record_feed"))
     private FeedEntity feedEntity;
@@ -60,7 +63,7 @@ public class RecordEntity extends BaseEntity {
     private List<CommentEntity> commentEntities;
 
     @Builder
-    private RecordEntity(FeedEntity feedEntity, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion) {
+    private RecordEntity(FeedEntity feedEntity, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl) {
         if (feedEntity != null) {
             this.feedEntity = feedEntity;
             feedEntity.addRecordEntity(this);
@@ -73,6 +76,7 @@ public class RecordEntity extends BaseEntity {
         this.transportation = transportation;
         this.content = content;
         this.companion = companion;
+        this.imageUrl = imageUrl;
         this.commentEntities = new ArrayList<>();
     }
 
