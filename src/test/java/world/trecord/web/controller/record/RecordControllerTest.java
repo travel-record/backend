@@ -248,17 +248,20 @@ class RecordControllerTest {
         String satisfaction = "best";
         String content = "content";
         String companion = "companion";
+        String imageUrl = "https://www.image.com";
+        LocalDateTime localDateTime = LocalDateTime.of(2021, 10, 1, 0, 0);
 
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .feedId(feedEntity.getId())
                 .title(title)
-                .date(LocalDateTime.of(2021, 10, 1, 0, 0))
+                .date(localDateTime)
                 .place(place)
                 .feeling(feeling)
                 .weather(weather)
                 .transportation(satisfaction)
                 .content(content)
                 .companion(companion)
+                .imageUrl(imageUrl)
                 .build();
 
         String token = jwtProvider.createTokenWith(writer.getId());
@@ -278,7 +281,8 @@ class RecordControllerTest {
                 .andExpect(jsonPath("$.data.recordId").exists())
                 .andExpect(jsonPath("$.data.title").value(title))
                 .andExpect(jsonPath("$.data.content").value(content))
-                .andExpect(jsonPath("$.data.date").value("2021-10-01"));
+                .andExpect(jsonPath("$.data.date").value(localDateTime.toLocalDate().toString()))
+                .andExpect(jsonPath("$.data.imageUrl").value(imageUrl));
     }
 
     @Test
@@ -303,6 +307,7 @@ class RecordControllerTest {
         String changedWeather = "changed weather";
         String changedCompanion = "changed changedCompanion";
         String changedSatisfaction = "changed satisfaction";
+        String changedImageUrl = "changed image url";
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .feedId(feedEntity.getId())
@@ -315,6 +320,7 @@ class RecordControllerTest {
                 .weather(changedWeather)
                 .companion(changedCompanion)
                 .transportation(changedSatisfaction)
+                .imageUrl(changedImageUrl)
                 .build();
 
         String body = objectMapper.writeValueAsString(request);

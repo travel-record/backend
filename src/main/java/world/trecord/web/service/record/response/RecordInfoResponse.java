@@ -26,6 +26,7 @@ public class RecordInfoResponse {
     private String transportation;
     private String content;
     private String companion;
+    private String imageUrl;
     private List<Comment> comments;
 
     @Builder
@@ -42,6 +43,7 @@ public class RecordInfoResponse {
         this.transportation = recordEntity.getTransportation();
         this.content = recordEntity.getContent();
         this.companion = recordEntity.getCompanion();
+        this.imageUrl = recordEntity.getImageUrl();
         this.comments = recordEntity.sortCommentEntityByCreatedDateTimeAsc()
                 .map(c -> Comment.builder()
                         .commenterId(c.getUserEntity().getId())

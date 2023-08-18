@@ -25,6 +25,7 @@ public class RecordCreateResponse {
     private String transportation;
     private String content;
     private String companion;
+    private String imageUrl;
 
     @Builder
     private RecordCreateResponse(UserEntity writerEntity, RecordEntity recordEntity) {
@@ -39,5 +40,6 @@ public class RecordCreateResponse {
         this.transportation = recordEntity.getTransportation();
         this.content = recordEntity.getContent();
         this.companion = recordEntity.getCompanion();
+        this.imageUrl = recordEntity.getImageUrl();
     }
 }

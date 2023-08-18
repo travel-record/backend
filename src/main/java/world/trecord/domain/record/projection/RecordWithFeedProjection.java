@@ -5,11 +5,13 @@ import java.time.LocalDateTime;
 
 public interface RecordWithFeedProjection {
 
-    public Long getId();
+    Long getId();
 
-    public String getTitle();
+    String getTitle();
 
-    public String getPlace();
+    String getPlace();
 
-    public LocalDateTime getDate();
+    String getImageUrl();
+
+    LocalDateTime getDate();
 }
