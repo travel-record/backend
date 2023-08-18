@@ -307,6 +307,7 @@ class RecordControllerTest {
         String changedWeather = "changed weather";
         String changedCompanion = "changed changedCompanion";
         String changedSatisfaction = "changed satisfaction";
+        String changedImageUrl = "changed image url";
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .feedId(feedEntity.getId())
@@ -319,6 +320,7 @@ class RecordControllerTest {
                 .weather(changedWeather)
                 .companion(changedCompanion)
                 .transportation(changedSatisfaction)
+                .imageUrl(changedImageUrl)
                 .build();
 
         String body = objectMapper.writeValueAsString(request);

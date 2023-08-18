@@ -41,10 +41,13 @@ public class RecordUpdateRequest {
     @NotEmpty
     private String content;
 
+    @NotEmpty
+    private String imageUrl;
+
     private String companion;
 
     @Builder
-    private RecordUpdateRequest(Long feedId, Long recordId, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion) {
+    private RecordUpdateRequest(Long feedId, Long recordId, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl) {
         this.feedId = feedId;
         this.recordId = recordId;
         this.title = title;
@@ -55,5 +58,6 @@ public class RecordUpdateRequest {
         this.transportation = transportation;
         this.content = content;
         this.companion = companion;
+        this.imageUrl = imageUrl;
     }
 }
