@@ -9,6 +9,7 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 
@@ -60,6 +61,32 @@ class RecordRepositoryTest {
         Assertions.assertThat(recordEntity.getCommentEntities().stream().map(CommentEntity::getUserEntity).collect(Collectors.toList()))
                 .contains(savedUserEntity1, savedUserEntity2);
 
+    }
+
+
+    @Test
+    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜,기록 등록 날짜 오름차순으로 projection으로 조회한다")
+    void findRecordEntityByFeedIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name"));
+        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling");
+        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling");
+        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling");
+
+        recordRepository.saveAll(List.of(record1, record2, record3));
+
+        //when
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedEntity.getId());
+
+        //then
+        Assertions.assertThat(projectionList)
+                .hasSize(3)
+                .extracting("title")
+                .containsExactly(record1.getTitle(), record3.getTitle(), record2.getTitle());
     }
 
     private CommentEntity createCommentEntity(UserEntity savedUserEntity, RecordEntity savedRecordEntity) {
