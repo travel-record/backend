@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 import world.trecord.exception.CustomException;
 import world.trecord.web.feign.client.GoogleTokenFeignClient;
 import world.trecord.web.feign.client.GoogleUserInfoFeignClient;
-import world.trecord.web.feign.request.GoogleTokenRequest;
-import world.trecord.web.feign.response.GoogleTokenResponse;
-import world.trecord.web.feign.response.GoogleUserInfoResponse;
+import world.trecord.web.feign.client.request.GoogleTokenRequest;
+import world.trecord.web.feign.client.response.GoogleTokenResponse;
+import world.trecord.web.feign.client.response.GoogleUserInfoResponse;
 
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
