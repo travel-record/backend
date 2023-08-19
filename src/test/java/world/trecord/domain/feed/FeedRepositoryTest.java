@@ -51,6 +51,22 @@ class FeedRepositoryTest {
     }
 
     @Test
+    @DisplayName("사용자가 등록한 피드가 없으면 빈 리스트가 반환된다")
+    void findByUserEntityOrderByStartAtDescWithEmptyFeedListTest() throws Exception {
+        //given
+        UserEntity userEntity = UserEntity.builder()
+                .email("test@email.com")
+                .build();
+        UserEntity saveUserEntity = userRepository.save(userEntity);
+
+        //when
+        List<FeedEntity> feedEntities = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity);
+
+        //then
+        Assertions.assertThat(feedEntities).isEmpty();
+    }
+
+    @Test
     @DisplayName("피드를 삭제하면 피드에 등록된 기록들과 함께 삭제된다")
     void deleteFeedTest() throws Exception {
         //given
@@ -74,7 +90,7 @@ class FeedRepositoryTest {
         Assertions.assertThat(feedRepository.findById(savedFeedEntity.getId())).isEmpty();
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
-    
+
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String record, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
