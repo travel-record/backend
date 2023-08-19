@@ -33,7 +33,7 @@ class RecordRepositoryTest {
     CommentRepository commentRepository;
 
     @Test
-    @DisplayName("기록 상세 정보를 정렬된 댓글 리스트와 사용자 정보를 함께 조회한다")
+    @DisplayName("기록 상세 정보를 등록 시간 오름차순으로 정렬된 댓글 리스트와 사용자 정보를 함께 조회한다")
     void findWithFeedEntityAndCommentEntitiesByTest() throws Exception {
         //given
         UserEntity savedUserEntity1 = userRepository.save(UserEntity.builder()
@@ -60,9 +60,7 @@ class RecordRepositoryTest {
         Assertions.assertThat(recordEntity.getFeedEntity()).isEqualTo(savedFeedEntity);
         Assertions.assertThat(recordEntity.getCommentEntities().stream().map(CommentEntity::getUserEntity).collect(Collectors.toList()))
                 .contains(savedUserEntity1, savedUserEntity2);
-
     }
-
 
     @Test
     @DisplayName("피드 아이디로 기록 리스트를 기록 날짜,기록 등록 날짜 오름차순으로 projection으로 조회한다")
@@ -87,6 +85,31 @@ class RecordRepositoryTest {
                 .hasSize(3)
                 .extracting("title")
                 .containsExactly(record1.getTitle(), record3.getTitle(), record2.getTitle());
+    }
+
+    @Test
+    @DisplayName("기록과 기록 하위 댓글들을 함께 조회한다")
+    void findRecordEntityWithCommentEntitiesByIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling"));
+
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity);
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity);
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
+
+        //when
+        RecordEntity foundRecordEntity = recordRepository.findRecordEntityWithCommentEntitiesById(recordEntity.getId()).get();
+
+        //then
+        Assertions.assertThat(foundRecordEntity.getCommentEntities())
+                .hasSize(2)
+                .containsOnly(commentEntity1, commentEntity2);
     }
 
     private CommentEntity createCommentEntity(UserEntity savedUserEntity, RecordEntity savedRecordEntity) {
