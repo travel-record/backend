@@ -51,7 +51,7 @@ class FeedRepositoryTest {
     }
 
     @Test
-    @DisplayName("피드와 피드에 등록된 기록과 함께 조회한다")
+    @DisplayName("피드와 피드에 등록된 기록들을 함께 조회한다")
     void findFeedEntityWithRecordEntitiesByFeedIdTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -74,6 +74,26 @@ class FeedRepositoryTest {
         Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);
         Assertions.assertThat(foundFeedEntity.getRecordEntities())
                 .contains(recordEntity1, recordEntity2, recordEntity3);
+    }
+
+    @Test
+    @DisplayName("피드 작성자 정보와 함께 피드를 조회한다")
+    void findFeedEntityWithUserEntityByIdTest() throws Exception {
+        //given
+        UserEntity userEntity = UserEntity.builder()
+                .email("test@email.com")
+                .build();
+        UserEntity saveUserEntity = userRepository.save(userEntity);
+
+        FeedEntity feedEntity = createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
+        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+
+        //when
+        FeedEntity foundFeedEntity = feedRepository.findFeedEntityWithUserEntityById(savedFeedEntity.getId()).get();
+
+        //then
+        Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);
+        Assertions.assertThat(foundFeedEntity.getUserEntity()).isEqualTo(saveUserEntity);
     }
 
     @Test
