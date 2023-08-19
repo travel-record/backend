@@ -49,9 +49,9 @@ class FeedRepositoryTest {
                         "feed name3", "feed name2", "feed name1"
                 );
     }
-    
+
     @Test
-    @DisplayName("피드를 삭제한다")
+    @DisplayName("피드를 삭제하면 피드에 등록된 기록들과 함께 삭제된다")
     void deleteFeedTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -62,14 +62,19 @@ class FeedRepositoryTest {
         FeedEntity feedEntity = createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
 
+        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
+
         //when
         feedRepository.delete(savedFeedEntity);
 
         //then
         Assertions.assertThat(feedRepository.findById(savedFeedEntity.getId())).isEmpty();
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
-
-
+    
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String record, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
