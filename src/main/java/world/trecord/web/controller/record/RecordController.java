@@ -35,7 +35,7 @@ public class RecordController {
     }
 
     @DeleteMapping
-    public ApiResponse<RecordDeleteResponse> updateRecord(@RequestBody @Valid RecordDeleteRequest recordDeleteRequest, @LoginUserId String userId) {
+    public ApiResponse<RecordDeleteResponse> deleteRecord(@RequestBody @Valid RecordDeleteRequest recordDeleteRequest, @LoginUserId String userId) {
         return ApiResponse.ok(recordService.deleteRecord(Long.valueOf(userId), recordDeleteRequest));
     }
 }
