@@ -24,6 +24,7 @@ public class GoogleAuthManager {
     private String googleClientSecret;
 
     private static final String BEARER = "Bearer ";
+    private static final String GRANT_TYPE = "authorization_code";
 
     private final GoogleTokenFeignClient googleTokenFeignClient;
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
@@ -39,7 +40,7 @@ public class GoogleAuthManager {
                 .client_secret(googleClientSecret)
                 .code(authorizationCode)
                 .redirect_uri(redirectionUri)
-                .grant_type("authorization_code")
+                .grant_type(GRANT_TYPE)
                 .build();
 
         ResponseEntity<GoogleTokenResponse> response = googleTokenFeignClient.call(request);
