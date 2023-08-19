@@ -26,7 +26,7 @@ class FeedRepositoryTest {
     RecordRepository recordRepository;
 
     @Test
-    @DisplayName("사용자가 등록한 피드 리스트를 여행 시작 시간 내림차순으로 조회한다")
+    @DisplayName("유저 엔티티로 피드 리스트를 조회할 때 사용자가 등록한 피드 리스트를 여행 시작 시간 내림차순으로 조회한다")
     void findByUserEntityOrderByStartAtDescTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -51,7 +51,7 @@ class FeedRepositoryTest {
     }
 
     @Test
-    @DisplayName("사용자가 등록한 피드가 없으면 빈 리스트가 반환된다")
+    @DisplayName("유저 엔티티로 피드 리스트를 조회할 때 사용자가 등록한 피드가 없으면 빈 리스트가 반환된다")
     void findByUserEntityOrderByStartAtDescWithEmptyFeedListTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -65,6 +65,27 @@ class FeedRepositoryTest {
         //then
         Assertions.assertThat(feedEntities).isEmpty();
     }
+
+    @Test
+    @DisplayName("피드 아이디로 피드 작성자 정보와 함께 피드를 조회한다")
+    void findFeedEntityWithUserEntityByIdTest() throws Exception {
+        //given
+        UserEntity userEntity = UserEntity.builder()
+                .email("test@email.com")
+                .build();
+        UserEntity saveUserEntity = userRepository.save(userEntity);
+
+        FeedEntity feedEntity = createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
+        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+
+        //when
+        FeedEntity foundFeedEntity = feedRepository.findFeedEntityWithUserEntityById(savedFeedEntity.getId()).get();
+
+        //then
+        Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);
+        Assertions.assertThat(foundFeedEntity.getUserEntity()).isEqualTo(saveUserEntity);
+    }
+
 
     @Test
     @DisplayName("피드를 삭제하면 피드에 등록된 기록들과 함께 삭제된다")
