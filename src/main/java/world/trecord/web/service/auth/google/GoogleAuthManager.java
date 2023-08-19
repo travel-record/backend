@@ -23,6 +23,8 @@ public class GoogleAuthManager {
     @Value("${google.client-secret}")
     private String googleClientSecret;
 
+    private static final String BEARER = "Bearer ";
+
     private final GoogleTokenFeignClient googleTokenFeignClient;
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
@@ -52,7 +54,7 @@ public class GoogleAuthManager {
     }
 
     private String requestUserEmailWith(String accessToken) {
-        ResponseEntity<GoogleUserInfoResponse> response = googleUserInfoFeignClient.call("Bearer " + accessToken);
+        ResponseEntity<GoogleUserInfoResponse> response = googleUserInfoFeignClient.call(BEARER + accessToken);
 
         GoogleUserInfoResponse body = response.getBody();
 
