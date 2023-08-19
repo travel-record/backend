@@ -1,17 +1,18 @@
 package world.trecord.web.service.auth.google;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import world.trecord.exception.CustomException;
 import world.trecord.web.feign.client.GoogleTokenFeignClient;
 import world.trecord.web.feign.client.GoogleUserInfoFeignClient;
 import world.trecord.web.feign.request.GoogleTokenRequest;
 import world.trecord.web.feign.response.GoogleTokenResponse;
 import world.trecord.web.feign.response.GoogleUserInfoResponse;
 
-@Slf4j
+import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
+
 @RequiredArgsConstructor
 @Component
 public class GoogleAuthManager {
@@ -30,7 +31,7 @@ public class GoogleAuthManager {
         return requestUserEmailWith(accessToken);
     }
 
-    private String requestAccessTokenWith(String authorizationCode, String redirectionUri) {
+    private String requestAccessTokenWith(String authorizationCode, String redirectionUri) throws CustomException {
         GoogleTokenRequest request = GoogleTokenRequest.builder()
                 .client_id(googleClientId)
                 .client_secret(googleClientSecret)
@@ -40,11 +41,25 @@ public class GoogleAuthManager {
                 .build();
 
         ResponseEntity<GoogleTokenResponse> response = googleTokenFeignClient.call(request);
-        return response.getBody().getAccess_token();
+
+        GoogleTokenResponse body = response.getBody();
+
+        if (body == null) {
+            throw new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE);
+        }
+
+        return body.getAccess_token();
     }
 
     private String requestUserEmailWith(String accessToken) {
         ResponseEntity<GoogleUserInfoResponse> response = googleUserInfoFeignClient.call("Bearer " + accessToken);
-        return response.getBody().getEmail();
+
+        GoogleUserInfoResponse body = response.getBody();
+
+        if (body == null) {
+            throw new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE);
+        }
+
+        return body.getEmail();
     }
 }
