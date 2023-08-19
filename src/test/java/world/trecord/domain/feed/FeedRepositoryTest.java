@@ -49,73 +49,7 @@ class FeedRepositoryTest {
                         "feed name3", "feed name2", "feed name1"
                 );
     }
-
-    @Test
-    @DisplayName("피드와 피드에 등록된 기록들을 함께 조회한다")
-    void findFeedEntityWithRecordEntitiesByFeedIdTest() throws Exception {
-        //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity saveUserEntity = userRepository.save(userEntity);
-
-        FeedEntity feedEntity = createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
-
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
-
-        //when
-        FeedEntity foundFeedEntity = feedRepository.findFeedEntityWithRecordEntitiesById(savedFeedEntity.getId()).get();
-
-        //then
-        Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);
-        Assertions.assertThat(foundFeedEntity.getRecordEntities())
-                .contains(recordEntity1, recordEntity2, recordEntity3);
-    }
-
-    @Test
-    @DisplayName("피드 작성자 정보와 함께 피드를 조회한다")
-    void findFeedEntityWithUserEntityByIdTest() throws Exception {
-        //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity saveUserEntity = userRepository.save(userEntity);
-
-        FeedEntity feedEntity = createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
-
-        //when
-        FeedEntity foundFeedEntity = feedRepository.findFeedEntityWithUserEntityById(savedFeedEntity.getId()).get();
-
-        //then
-        Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);
-        Assertions.assertThat(foundFeedEntity.getUserEntity()).isEqualTo(saveUserEntity);
-    }
-
-    @Test
-    @DisplayName("등록된 기록이 없는 피드를 조회하면 기록은 빈 리스트로 반환된다")
-    void findFeedEntityWithEmptyRecordEntitiesByFeedIdTest() throws Exception {
-        //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity saveUserEntity = userRepository.save(userEntity);
-
-        FeedEntity feedEntity = createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
-
-        //when
-        FeedEntity foundFeedEntity = feedRepository.findFeedEntityWithRecordEntitiesById(savedFeedEntity.getId()).get();
-
-        //then
-        Assertions.assertThat(foundFeedEntity).isEqualTo(savedFeedEntity);
-        Assertions.assertThat(foundFeedEntity.getRecordEntities()).isNotNull().isEmpty();
-    }
-
+    
     @Test
     @DisplayName("피드를 삭제한다")
     void deleteFeedTest() throws Exception {
