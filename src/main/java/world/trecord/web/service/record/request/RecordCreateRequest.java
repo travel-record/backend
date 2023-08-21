@@ -40,7 +40,6 @@ public class RecordCreateRequest {
     @NotEmpty
     private String content;
 
-    @NotEmpty
     private String imageUrl;
 
     private String companion;

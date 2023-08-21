@@ -41,7 +41,6 @@ public class RecordUpdateRequest {
     @NotEmpty
     private String content;
 
-    @NotEmpty
     private String imageUrl;
 
     private String companion;
