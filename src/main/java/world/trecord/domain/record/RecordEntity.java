@@ -46,7 +46,7 @@ public class RecordEntity extends BaseEntity {
     private String transportation;
 
     @Basic(fetch = FetchType.LAZY)
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
     @Column(name = "companion", nullable = true)
