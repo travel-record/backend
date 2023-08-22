@@ -25,7 +25,7 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
 @MockMvcTestSupport
 class FeedControllerTest {

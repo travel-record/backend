@@ -16,7 +16,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.exception.CustomExceptionError;
+import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.security.JwtProvider;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
@@ -29,7 +29,7 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
 @MockMvcTestSupport
 class RecordControllerTest {

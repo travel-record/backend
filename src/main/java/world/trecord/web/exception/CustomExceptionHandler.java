@@ -1,4 +1,4 @@
-package world.trecord.exception;
+package world.trecord.web.exception;
 
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import world.trecord.web.controller.ApiResponse;
 
-import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
-
 @Slf4j
 @RestControllerAdvice
 public class CustomExceptionHandler {
@@ -26,13 +24,13 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ApiResponse> bindException(BindException exception) {
-        ApiResponse apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
+        ApiResponse apiResponse = ApiResponse.of(CustomExceptionError.INVALID_ARGUMENT.getErrorCode(), CustomExceptionError.INVALID_ARGUMENT.getErrorMsg(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse> httpMessageNotReadableException(HttpMessageNotReadableException exception) {
-        ApiResponse apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
+        ApiResponse apiResponse = ApiResponse.of(CustomExceptionError.INVALID_ARGUMENT.getErrorCode(), CustomExceptionError.INVALID_ARGUMENT.getErrorMsg(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
     }
 

@@ -1,4 +1,4 @@
-package world.trecord.exception;
+package world.trecord.web.exception;
 
 import lombok.Getter;
 

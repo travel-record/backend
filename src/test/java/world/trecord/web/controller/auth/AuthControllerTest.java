@@ -16,7 +16,7 @@ import world.trecord.web.security.JwtProvider;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.exception.CustomExceptionError.*;
+import static world.trecord.web.exception.CustomExceptionError.*;
 
 @MockMvcTestSupport
 public class AuthControllerTest {

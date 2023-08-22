@@ -1,8 +1,8 @@
 package world.trecord.web.controller.feed;
 
 import org.springframework.stereotype.Component;
-import world.trecord.exception.CustomException;
-import world.trecord.exception.CustomExceptionError;
+import world.trecord.web.exception.CustomException;
+import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
 

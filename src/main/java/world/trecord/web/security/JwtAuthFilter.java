@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {

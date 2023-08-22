@@ -11,14 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.exception.CustomException;
+import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserInfoResponse;
 
 import java.util.List;
 
-import static world.trecord.exception.CustomExceptionError.EXISTING_NICKNAME;
-import static world.trecord.exception.CustomExceptionError.NOT_EXISTING_USER;
+import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
+import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor

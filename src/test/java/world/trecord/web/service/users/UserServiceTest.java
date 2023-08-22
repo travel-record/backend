@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.exception.CustomException;
-import world.trecord.exception.CustomExceptionError;
+import world.trecord.web.exception.CustomException;
+import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.users.response.UserInfoResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;

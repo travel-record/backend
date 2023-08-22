@@ -2,9 +2,9 @@ package world.trecord.web.feign.decoder;
 
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import world.trecord.exception.CustomException;
+import world.trecord.web.exception.CustomException;
 
-import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 public class GoogleFeignErrorDecoder implements ErrorDecoder {
     @Override

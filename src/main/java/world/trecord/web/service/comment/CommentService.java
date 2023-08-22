@@ -9,7 +9,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.exception.CustomException;
+import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentDeleteRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
@@ -18,7 +18,7 @@ import world.trecord.web.service.comment.response.CommentDeleteResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 import world.trecord.web.service.notification.NotificationService;
 
-import static world.trecord.exception.CustomExceptionError.*;
+import static world.trecord.web.exception.CustomExceptionError.*;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor

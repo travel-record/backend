@@ -9,7 +9,7 @@ import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.exception.CustomException;
+import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 
@@ -17,7 +17,7 @@ import java.util.List;
 
 import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
-import static world.trecord.exception.CustomExceptionError.NOT_EXISTING_USER;
+import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor

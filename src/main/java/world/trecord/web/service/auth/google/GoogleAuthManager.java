@@ -4,14 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import world.trecord.exception.CustomException;
+import world.trecord.web.exception.CustomException;
 import world.trecord.web.feign.client.GoogleTokenFeignClient;
 import world.trecord.web.feign.client.GoogleUserInfoFeignClient;
 import world.trecord.web.feign.client.request.GoogleTokenRequest;
 import world.trecord.web.feign.client.response.GoogleTokenResponse;
 import world.trecord.web.feign.client.response.GoogleUserInfoResponse;
 
-import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @RequiredArgsConstructor
 @Component
