@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.comment.CommentEntity;
 
 @NoArgsConstructor
 @Getter
@@ -22,5 +23,11 @@ public class CommentUpdateRequest {
     private CommentUpdateRequest(Long commentId, String content) {
         this.commentId = commentId;
         this.content = content;
+    }
+
+    public CommentEntity toUpdateEntity() {
+        return CommentEntity.builder()
+                .content(this.content)
+                .build();
     }
 }

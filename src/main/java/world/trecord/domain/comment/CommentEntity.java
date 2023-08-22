@@ -40,8 +40,8 @@ public class CommentEntity extends BaseEntity {
             recordEntity.addCommentEntity(this);
         }
     }
-
-    public void update(String content) {
-        this.content = content;
+    
+    public void update(CommentEntity updateEntity) {
+        this.content = updateEntity.getContent();
     }
 }

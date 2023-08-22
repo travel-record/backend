@@ -39,6 +39,7 @@ public class CommentService {
 
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, request.getContent()));
 
+        // TODO async 처리
         notificationService.createCommentNotification(commentEntity);
 
         return CommentCreateResponse.builder()
@@ -55,8 +56,8 @@ public class CommentService {
         CommentEntity commentEntity = findCommentEntityWithUserEntityBy(request.getCommentId());
 
         checkPermissionOverComment(userEntity, commentEntity);
-
-        commentEntity.update(request.getContent());
+        
+        commentEntity.update(request.toUpdateEntity());
 
         return CommentUpdateResponse.builder()
                 .commentEntity(commentEntity)

@@ -63,13 +63,6 @@ class FeedEntityTest {
         Assertions.assertThat(convertedLocalDate).isEqualTo(endDate.toLocalDate());
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, LocalDateTime date) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .date(date)
-                .build();
-    }
-    
     @Test
     @DisplayName("피드의 필드값을 수정하면 수정된 값을 가진다")
     void updateTest() throws Exception {
@@ -87,6 +80,13 @@ class FeedEntityTest {
 
         //then
         Assertions.assertThat(feedEntity.getDescription()).isEqualTo(updateDescription);
+    }
+
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, LocalDateTime date) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .date(date)
+                .build();
     }
 
 }
