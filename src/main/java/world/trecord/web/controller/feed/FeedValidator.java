@@ -2,9 +2,10 @@ package world.trecord.web.controller.feed;
 
 import org.springframework.stereotype.Component;
 import world.trecord.web.exception.CustomException;
-import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
+
+import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
 
 @Component
 public class FeedValidator {
@@ -15,7 +16,7 @@ public class FeedValidator {
         }
 
         if (request.getStartAt().isAfter(request.getEndAt())) {
-            throw new CustomException(CustomExceptionError.INVALID_ARGUMENT);
+            throw new CustomException(INVALID_ARGUMENT);
         }
     }
 
@@ -25,7 +26,7 @@ public class FeedValidator {
         }
 
         if (request.getStartAt().isAfter(request.getEndAt())) {
-            throw new CustomException(CustomExceptionError.INVALID_ARGUMENT);
+            throw new CustomException(INVALID_ARGUMENT);
         }
     }
 }

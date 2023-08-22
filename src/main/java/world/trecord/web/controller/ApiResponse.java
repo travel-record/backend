@@ -2,7 +2,8 @@ package world.trecord.web.controller;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.HttpStatus;
+
+import static org.springframework.http.HttpStatus.OK;
 
 @Setter
 @Getter
@@ -23,6 +24,6 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> ok(T data) {
-        return of(HttpStatus.OK.value(), HttpStatus.OK.name(), data);
+        return of(OK.value(), OK.name(), data);
     }
 }

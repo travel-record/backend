@@ -24,6 +24,7 @@ import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
@@ -107,6 +108,7 @@ class CommentControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest())
+                .andDo(print())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
     }
 

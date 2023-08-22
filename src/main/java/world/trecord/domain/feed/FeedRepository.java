@@ -9,7 +9,9 @@ import java.util.Optional;
 
 public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     List<FeedEntity> findByUserEntityOrderByStartAtDesc(UserEntity userEntity);
-    
+
     @EntityGraph(attributePaths = {"userEntity"})
     Optional<FeedEntity> findFeedEntityWithUserEntityById(Long feedId);
+
+    // TODO feed with records 추가
 }
