@@ -51,7 +51,7 @@ public class GoogleAuthManager {
             throw new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE);
         }
 
-        return body.getAccess_token();
+        return body.getAccessToken();
     }
 
     private String requestUserEmailWith(String accessToken) {
