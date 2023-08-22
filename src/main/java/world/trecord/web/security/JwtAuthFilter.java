@@ -50,7 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            long userId = validateAndExtractUserIdWith(token);
+            long userId = verifyTokenAndExtractUserId(token);
             setAuthenticationWith(userId);
             filterChain.doFilter(request, response);
 
@@ -70,11 +70,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
-    private long validateAndExtractUserIdWith(String token) {
+    
+    private long verifyTokenAndExtractUserId(String token) {
         jwtResolver.validate(token);
-        long userId = Long.parseLong(jwtResolver.extractUserIdFrom(token));
-        return userId;
+        return Long.parseLong(jwtResolver.extractUserIdFrom(token));
     }
-
 }
