@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
-import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
@@ -17,6 +16,7 @@ import java.util.List;
 
 import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
+import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
 
 @Transactional(readOnly = true)
@@ -38,14 +38,7 @@ public class NotificationService {
             return null;
         }
 
-        NotificationEntity notificationEntity = NotificationEntity.builder()
-                .recordEntity(commentEntity.getRecordEntity())
-                .commentEntity(commentEntity)
-                .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
-                .type(NotificationType.COMMENT)
-                .status(UNREAD)
-                .build();
+        NotificationEntity notificationEntity = createCommentNotification(commentEntity, userToEntity, userFromEntity);
 
         return notificationRepository.save(notificationEntity);
     }
@@ -81,5 +74,16 @@ public class NotificationService {
 
     private boolean isUserCommentingOnSelf(UserEntity userToEntity, UserEntity userFromEntity) {
         return userToEntity.equals(userFromEntity);
+    }
+
+    private NotificationEntity createCommentNotification(CommentEntity commentEntity, UserEntity userToEntity, UserEntity userFromEntity) {
+        return NotificationEntity.builder()
+                .recordEntity(commentEntity.getRecordEntity())
+                .commentEntity(commentEntity)
+                .usersToEntity(userToEntity)
+                .usersFromEntity(userFromEntity)
+                .type(COMMENT)
+                .status(UNREAD)
+                .build();
     }
 }
