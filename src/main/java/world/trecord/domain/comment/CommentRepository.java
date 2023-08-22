@@ -14,7 +14,8 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     @EntityGraph(attributePaths = "userEntity")
     Optional<CommentEntity> findCommentEntityWithUserEntityById(@Param("id") Long commentId);
 
-    // TODO slice
+    // TODO change not fetching record content
+    // TODO query slice
     @EntityGraph(attributePaths = "recordEntity")
     List<CommentEntity> findByUserEntityOrderByCreatedDateTimeDesc(UserEntity userEntity);
 }

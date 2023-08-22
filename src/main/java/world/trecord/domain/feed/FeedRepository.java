@@ -12,6 +12,4 @@ public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
 
     @EntityGraph(attributePaths = {"userEntity"})
     Optional<FeedEntity> findFeedEntityWithUserEntityById(Long feedId);
-
-    // TODO feed with records 추가
 }
