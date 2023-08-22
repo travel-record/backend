@@ -108,8 +108,6 @@ public class FeedService {
     }
 
     private void updateFeedEntity(FeedUpdateRequest request, FeedEntity feedEntity) {
-        feedEntity.update(request.getName(), request.getImageUrl(), request.getDescription()
-                , request.getStartAt(), request.getEndAt(), request.getCompanion(), request.getPlace()
-                , request.getSatisfaction());
+        feedEntity.update(request.toUpdateEntity());
     }
 }

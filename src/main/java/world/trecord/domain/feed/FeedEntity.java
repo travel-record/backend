@@ -90,6 +90,17 @@ public class FeedEntity extends BaseEntity {
         this.satisfaction = satisfaction;
     }
 
+    public void update(FeedEntity updateEntity) {
+        this.name = updateEntity.getName();
+        this.imageUrl = updateEntity.getImageUrl();
+        this.description = updateEntity.getDescription();
+        this.startAt = updateEntity.getStartAt();
+        this.endAt = updateEntity.getEndAt();
+        this.companion = updateEntity.getCompanion();
+        this.place = updateEntity.getPlace();
+        this.satisfaction = updateEntity.getSatisfaction();
+    }
+
     public Stream<RecordEntity> sortRecordEntitiesByDateAndCreatedTimeAsc() {
         return this.recordEntities.stream()
                 .sorted(Comparator.comparing(RecordEntity::getDate)

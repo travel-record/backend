@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.feed.FeedEntity;
 
 import java.time.LocalDateTime;
 
@@ -45,5 +46,18 @@ public class FeedUpdateRequest {
         this.companion = companion;
         this.description = description;
         this.imageUrl = imageUrl;
+    }
+
+    public FeedEntity toUpdateEntity() {
+        return FeedEntity.builder()
+                .name(this.name)
+                .satisfaction(this.satisfaction)
+                .place(this.place)
+                .startAt(this.startAt)
+                .endAt(this.endAt)
+                .companion(this.companion)
+                .description(this.description)
+                .imageUrl(this.imageUrl)
+                .build();
     }
 }
