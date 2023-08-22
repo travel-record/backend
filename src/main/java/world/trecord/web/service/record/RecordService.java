@@ -110,7 +110,7 @@ public class RecordService {
     }
 
     private void checkPermissionOverFeed(UserEntity userEntity, FeedEntity feedEntity) {
-        if (!userEntity.equals(feedEntity.getUserEntity())) {
+        if (!userEntity.isManagerOf(feedEntity)) {
             throw new CustomException(FORBIDDEN);
         }
     }

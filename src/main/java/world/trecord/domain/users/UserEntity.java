@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import world.trecord.domain.BaseEntity;
+import world.trecord.domain.feed.FeedEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -42,5 +43,9 @@ public class UserEntity extends BaseEntity {
         this.nickname = nickname;
         this.imageUrl = imageUrl;
         this.introduction = introduction;
+    }
+
+    public boolean isManagerOf(FeedEntity feedEntity) {
+        return this.equals(feedEntity.getUserEntity());
     }
 }
