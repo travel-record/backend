@@ -1,4 +1,4 @@
-package world.trecord.web.feign.decoder;
+package world.trecord.web.client.feign.decoder;
 
 import feign.Response;
 import feign.codec.ErrorDecoder;

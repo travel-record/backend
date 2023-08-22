@@ -1,4 +1,4 @@
-package world.trecord.web.feign.client.request;
+package world.trecord.web.client.feign.client.request;
 
 import lombok.Builder;
 import lombok.Getter;

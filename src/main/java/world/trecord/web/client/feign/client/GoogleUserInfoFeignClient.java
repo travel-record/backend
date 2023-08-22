@@ -1,11 +1,11 @@
-package world.trecord.web.feign.client;
+package world.trecord.web.client.feign.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
-import world.trecord.web.feign.client.response.GoogleUserInfoResponse;
-import world.trecord.web.feign.config.GoogleFeignConfig;
+import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
+import world.trecord.web.client.feign.config.GoogleFeignConfig;
 
 @FeignClient(
         name = "google-user-info-client",

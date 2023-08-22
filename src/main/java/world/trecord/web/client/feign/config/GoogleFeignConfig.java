@@ -1,8 +1,8 @@
-package world.trecord.web.feign.config;
+package world.trecord.web.client.feign.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import world.trecord.web.feign.decoder.GoogleFeignErrorDecoder;
+import world.trecord.web.client.feign.decoder.GoogleFeignErrorDecoder;
 
 @Configuration
 public class GoogleFeignConfig {

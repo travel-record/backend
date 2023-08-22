@@ -1,4 +1,4 @@
-package world.trecord.web.feign.client.response;
+package world.trecord.web.client.feign.client.response;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package world.trecord.web.feign.logger;
+package world.trecord.web.client.feign.logger;
 
 import feign.Logger;
 import feign.Request;
