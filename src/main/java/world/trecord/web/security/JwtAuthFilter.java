@@ -27,6 +27,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION = "Authorization";
     private final JwtResolver jwtResolver;
     private final UserService userService;
+    // TODO change type to ant matcher
     private final List<String> whitelist;
 
     @Override

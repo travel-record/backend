@@ -7,17 +7,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
+import world.trecord.domain.comment.CommentEntity;
+import world.trecord.domain.comment.CommentRepository;
+import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.record.RecordEntity;
+import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.security.JwtProvider;
 import world.trecord.web.service.users.request.UserUpdateRequest;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.web.exception.CustomExceptionError.*;
 
 @MockMvcTestSupport
 class UserControllerTest {
@@ -33,6 +41,15 @@ class UserControllerTest {
 
     @Autowired
     JwtProvider jwtProvider;
+
+    @Autowired
+    CommentRepository commentRepository;
+
+    @Autowired
+    RecordRepository recordRepository;
+
+    @Autowired
+    FeedRepository feedRepository;
 
     @Test
     @DisplayName("사용자 아이디로 사용자 정보를 반환한다")
@@ -77,7 +94,7 @@ class UserControllerTest {
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(CustomExceptionError.INVALID_TOKEN.getErrorMsg()));
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
     }
 
     @Test
@@ -155,8 +172,8 @@ class UserControllerTest {
                                 .content(content)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(CustomExceptionError.EXISTING_NICKNAME.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(CustomExceptionError.EXISTING_NICKNAME.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(EXISTING_NICKNAME.getErrorCode()))
+                .andExpect(jsonPath("$.message").value(EXISTING_NICKNAME.getErrorMsg()));
     }
 
     @Test
@@ -188,7 +205,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자 아이디로 조회하면 701 에러 응답 코드를 반환한다")
+    @DisplayName("존재하지 않는 사용자 아이디로 사용자 프로필을 조회하면 701 에러 응답 코드를 반환한다")
     void getUserInfoByUserIdWithTest() throws Exception {
         //given
 
@@ -197,8 +214,89 @@ class UserControllerTest {
                         get("/api/v1/users/{userId}", 0L)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(CustomExceptionError.NOT_EXISTING_USER.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(CustomExceptionError.NOT_EXISTING_USER.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(NOT_EXISTING_USER.getErrorCode()))
+                .andExpect(jsonPath("$.message").value(NOT_EXISTING_USER.getErrorMsg()));
     }
 
+    @Test
+    @DisplayName("사용자 아이디로 사용자 댓글 리스트를 반환한다")
+    void getUserCommentsTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        String token = jwtProvider.createTokenWith(userEntity.getId());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        String content1 = "content1";
+        String content2 = "content2";
+        String content3 = "content3";
+        String content4 = "content4";
+
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, content1);
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, content2);
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, content3);
+        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, content4);
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/comments")
+                                .header("Authorization", token)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.comments.size()").value(4))
+                .andExpect(jsonPath("$.data.comments[0].commentId").value(commentEntity4.getId()));
+    }
+
+    @Test
+    @DisplayName("올바르지 않은 인증 토큰으로 사용자 댓글 리스트를 조회하면 601 에러 응답 코드를 반환한다")
+    void getUserCommentsWithNotExistingUserIdTest() throws Exception {
+        //given
+        String invalidToken = "-1";
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/comments")
+                                .header("Authorization", invalidToken)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+    }
+
+
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .title(title)
+                .place(place)
+                .date(date)
+                .content(content)
+                .weather(weather)
+                .transportation(satisfaction)
+                .feeling(feeling)
+                .build();
+    }
+
+    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
+        return CommentEntity.builder()
+                .userEntity(userEntity)
+                .recordEntity(recordEntity)
+                .content(content)
+                .build();
+    }
+
+    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
+        return FeedEntity.builder()
+                .userEntity(saveUserEntity)
+                .name(name)
+                .startAt(startAt)
+                .endAt(endAt)
+                .build();
+    }
 }

@@ -24,11 +24,11 @@ public class CommentEntity extends BaseEntity {
     private String content;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_record"))
+    @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_user"))
     private UserEntity userEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_record", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_user"))
+    @JoinColumn(name = "id_record", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_record"))
     private RecordEntity recordEntity;
 
     @Builder
@@ -40,7 +40,7 @@ public class CommentEntity extends BaseEntity {
             recordEntity.addCommentEntity(this);
         }
     }
-    
+
     public void update(CommentEntity updateEntity) {
         this.content = updateEntity.getContent();
     }

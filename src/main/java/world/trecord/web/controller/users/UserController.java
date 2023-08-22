@@ -7,6 +7,7 @@ import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.LoginUserId;
 import world.trecord.web.service.users.UserService;
 import world.trecord.web.service.users.request.UserUpdateRequest;
+import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
 
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class UserController {
 
     @GetMapping
     public ApiResponse<UserInfoResponse> getUserInfo(@LoginUserId String userId) {
-        return ApiResponse.ok(userService.findUserBy(Long.valueOf(userId)));
+        return ApiResponse.ok(userService.getUserInfoBy(Long.valueOf(userId)));
     }
 
     @PostMapping
@@ -28,7 +29,12 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ApiResponse<UserInfoResponse> getUserInfoByPath(@PathVariable("userId") String userId) {
-        return ApiResponse.ok(userService.findUserBy(Long.valueOf(userId)));
+        return ApiResponse.ok(userService.getUserInfoBy(Long.valueOf(userId)));
+    }
+
+    @GetMapping("/comments")
+    public ApiResponse<UserCommentsResponse> getUserComments(@LoginUserId String userId) {
+        return ApiResponse.ok(userService.getUserCommentsBy(Long.valueOf(userId)));
     }
 
 }
