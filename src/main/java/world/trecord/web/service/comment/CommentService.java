@@ -92,7 +92,7 @@ public class CommentService {
     }
 
     private void checkPermissionOverComment(UserEntity userEntity, CommentEntity commentEntity) {
-        if (!userEntity.equals(commentEntity.getUserEntity())) {
+        if (!userEntity.isCommenterOf(commentEntity)) {
             throw new CustomException(FORBIDDEN);
         }
     }

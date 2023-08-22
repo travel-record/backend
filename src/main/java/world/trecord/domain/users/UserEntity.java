@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import world.trecord.domain.BaseEntity;
+import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -47,5 +48,9 @@ public class UserEntity extends BaseEntity {
 
     public boolean isManagerOf(FeedEntity feedEntity) {
         return this.equals(feedEntity.getUserEntity());
+    }
+
+    public boolean isCommenterOf(CommentEntity commentEntity) {
+        return this.equals(commentEntity.getUserEntity());
     }
 }
