@@ -52,7 +52,7 @@ class UserRecordLikeRepositoryTest {
         Optional<UserRecordLikeEntity> likeEntity = userRecordLikeRepository.findUserRecordLikeEntityByUserEntityAndRecordEntity(userEntity, recordEntity);
 
         //then
-        Assertions.assertThat(likeEntity.isPresent()).isTrue();
+        Assertions.assertThat(likeEntity).isPresent();
     }
 
     @Test
@@ -69,7 +69,7 @@ class UserRecordLikeRepositoryTest {
         Optional<UserRecordLikeEntity> likeEntity = userRecordLikeRepository.findUserRecordLikeEntityByUserEntityAndRecordEntity(userEntity, recordEntity);
 
         //then
-        Assertions.assertThat(likeEntity.isEmpty()).isTrue();
+        Assertions.assertThat(likeEntity).isEmpty();
     }
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {

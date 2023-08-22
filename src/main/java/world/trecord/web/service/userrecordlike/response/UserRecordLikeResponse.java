@@ -10,10 +10,10 @@ import lombok.Setter;
 @Setter
 public class UserRecordLikeResponse {
 
-    private boolean isLiked;
+    private boolean liked;
 
     @Builder
-    private UserRecordLikeResponse(boolean isLiked) {
-        this.isLiked = isLiked;
+    private UserRecordLikeResponse(boolean liked) {
+        this.liked = liked;
     }
 }

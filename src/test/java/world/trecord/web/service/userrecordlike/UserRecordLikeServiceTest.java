@@ -13,6 +13,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.time.LocalDateTime;
@@ -39,7 +40,7 @@ class UserRecordLikeServiceTest {
 
 
     @Test
-    @DisplayName("사용자가 좋아요한 기록에 좋아요를 하면 isLiked=false 응답을 한다")
+    @DisplayName("사용자가 좋아요한 기록에 좋아요를 하면 liked=false 응답을 한다")
     void toggleLikeTestWhenUserAlreadyLikeRecord() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -50,8 +51,12 @@ class UserRecordLikeServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
 
+        RecordLikeRequest request = RecordLikeRequest.builder()
+                .recordId(recordEntity.getId())
+                .build();
+
         //when
-        UserRecordLikeResponse response = userRecordLikeService.toggleLike(recordEntity.getId(), userEntity.getId());
+        UserRecordLikeResponse response = userRecordLikeService.toggleLike(request, userEntity.getId());
 
         //then
         Assertions.assertThat(response.isLiked()).isFalse();
@@ -59,7 +64,7 @@ class UserRecordLikeServiceTest {
     }
 
     @Test
-    @DisplayName("사용자가 좋아요한 기록에 좋아요를 하면 isLiked=true 응답을 한다")
+    @DisplayName("사용자가 좋아요한 기록에 좋아요를 하면 liked=true 응답을 한다")
     void toggleLikeTestWhenUserNotLikeRecord() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -69,8 +74,12 @@ class UserRecordLikeServiceTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
+        RecordLikeRequest request = RecordLikeRequest.builder()
+                .recordId(recordEntity.getId())
+                .build();
+
         //when
-        UserRecordLikeResponse response = userRecordLikeService.toggleLike(recordEntity.getId(), userEntity.getId());
+        UserRecordLikeResponse response = userRecordLikeService.toggleLike(request, userEntity.getId());
 
         //then
         Assertions.assertThat(response.isLiked()).isTrue();
@@ -93,12 +102,11 @@ class UserRecordLikeServiceTest {
     }
 
     private UserRecordLikeEntity createUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
-        UserRecordLikeEntity userRecordLikeEntity = UserRecordLikeEntity
+        return UserRecordLikeEntity
                 .builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
                 .build();
-        return userRecordLikeEntity;
     }
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {

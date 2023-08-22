@@ -10,6 +10,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
+import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
 import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_RECORD;
@@ -25,9 +26,9 @@ public class UserRecordLikeService {
     private final UserRepository userRepository;
 
     @Transactional
-    public UserRecordLikeResponse toggleLike(Long recordId, Long userId) {
+    public UserRecordLikeResponse toggleLike(RecordLikeRequest recordLikeRequest, Long userId) {
         UserEntity userEntity = findUserEntityById(userId);
-        RecordEntity recordEntity = findRecordEntityById(recordId);
+        RecordEntity recordEntity = findRecordEntityById(recordLikeRequest.getRecordId());
 
         return userRecordLikeRepository.findUserRecordLikeEntityByUserEntityAndRecordEntity(userEntity, recordEntity)
                 .map(this::unlike)
@@ -53,9 +54,9 @@ public class UserRecordLikeService {
         userRecordLikeRepository.save(userRecordLikeEntity);
     }
 
-    private UserRecordLikeResponse createUserRecordLikeResponse(boolean isLiked) {
+    private UserRecordLikeResponse createUserRecordLikeResponse(boolean liked) {
         return UserRecordLikeResponse.builder()
-                .isLiked(isLiked)
+                .liked(liked)
                 .build();
     }
 
