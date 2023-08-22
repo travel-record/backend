@@ -107,4 +107,16 @@ public class RecordEntity extends BaseEntity {
         return this.commentEntities.stream()
                 .sorted(Comparator.comparing(CommentEntity::getCreatedDateTime));
     }
+
+    public void update(RecordEntity updateEntity) {
+        this.title = updateEntity.getTitle();
+        this.date = updateEntity.getDate();
+        this.place = updateEntity.getPlace();
+        this.feeling = updateEntity.getFeeling();
+        this.weather = updateEntity.getWeather();
+        this.transportation = updateEntity.getTransportation();
+        this.content = updateEntity.getContent();
+        this.companion = updateEntity.getCompanion();
+        this.imageUrl = updateEntity.getImageUrl();
+    }
 }

@@ -62,7 +62,7 @@ public class RecordService {
 
         RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
 
-        recordEntity.update(request.getTitle(), request.getDate(), request.getPlace(), request.getFeeling(), request.getWeather(), request.getTransportation(), request.getContent(), request.getCompanion());
+        updateRecordEntity(request, recordEntity);
 
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
@@ -107,6 +107,10 @@ public class RecordService {
 
     private UserEntity findUserEntityBy(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
+    }
+
+    private void updateRecordEntity(RecordUpdateRequest request, RecordEntity recordEntity) {
+        recordEntity.update(request.toUpdateEntity());
     }
 
     private void checkPermissionOverFeed(UserEntity userEntity, FeedEntity feedEntity) {

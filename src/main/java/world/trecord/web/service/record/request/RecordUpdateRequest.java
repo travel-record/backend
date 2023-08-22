@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.record.RecordEntity;
 
 import java.time.LocalDateTime;
 
@@ -58,5 +59,19 @@ public class RecordUpdateRequest {
         this.content = content;
         this.companion = companion;
         this.imageUrl = imageUrl;
+    }
+
+    public RecordEntity toUpdateEntity() {
+        return RecordEntity.builder()
+                .title(this.title)
+                .date(this.date)
+                .place(this.place)
+                .feeling(this.feeling)
+                .weather(this.weather)
+                .transportation(this.transportation)
+                .content(this.content)
+                .companion(this.companion)
+                .imageUrl(this.imageUrl)
+                .build();
     }
 }
