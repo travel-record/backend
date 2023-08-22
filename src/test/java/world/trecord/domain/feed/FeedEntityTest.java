@@ -69,5 +69,24 @@ class FeedEntityTest {
                 .date(date)
                 .build();
     }
+    
+    @Test
+    @DisplayName("피드의 필드값을 수정하면 수정된 값을 가진다")
+    void updateTest() throws Exception {
+        //given
+        FeedEntity feedEntity = FeedEntity.builder()
+                .build();
+
+        String updateDescription = "updated description";
+        FeedEntity updateEntity = FeedEntity.builder()
+                .description(updateDescription)
+                .build();
+
+        //when
+        feedEntity.update(updateEntity);
+
+        //then
+        Assertions.assertThat(feedEntity.getDescription()).isEqualTo(updateDescription);
+    }
 
 }

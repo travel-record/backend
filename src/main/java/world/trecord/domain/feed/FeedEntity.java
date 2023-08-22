@@ -79,17 +79,6 @@ public class FeedEntity extends BaseEntity {
         recordEntities.add(recordEntity);
     }
 
-    public void update(String name, String imageUrl, String description, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
-        this.name = name;
-        this.imageUrl = imageUrl;
-        this.description = description;
-        this.startAt = startAt;
-        this.endAt = endAt;
-        this.companion = companion;
-        this.place = place;
-        this.satisfaction = satisfaction;
-    }
-
     public void update(FeedEntity updateEntity) {
         this.name = updateEntity.getName();
         this.imageUrl = updateEntity.getImageUrl();

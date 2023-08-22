@@ -81,33 +81,6 @@ public class RecordEntity extends BaseEntity {
         this.commentEntities = new ArrayList<>();
     }
 
-    public void addCommentEntity(CommentEntity commentEntity) {
-        if (commentEntity == null) {
-            this.commentEntities = new ArrayList<>();
-        }
-        this.commentEntities.add(commentEntity);
-    }
-
-    public void update(String title, LocalDateTime date, String place, String feeling, String weather, String satisfaction, String content, String companion) {
-        this.title = title;
-        this.date = date;
-        this.place = place;
-        this.feeling = feeling;
-        this.weather = weather;
-        this.transportation = satisfaction;
-        this.content = content;
-        this.companion = companion;
-    }
-
-    public LocalDate convertDateToLocalDate() {
-        return this.date != null ? getDate().toLocalDate() : null;
-    }
-
-    public Stream<CommentEntity> sortCommentEntityByCreatedDateTimeAsc() {
-        return this.commentEntities.stream()
-                .sorted(Comparator.comparing(CommentEntity::getCreatedDateTime));
-    }
-
     public void update(RecordEntity updateEntity) {
         this.title = updateEntity.getTitle();
         this.date = updateEntity.getDate();
@@ -118,5 +91,21 @@ public class RecordEntity extends BaseEntity {
         this.content = updateEntity.getContent();
         this.companion = updateEntity.getCompanion();
         this.imageUrl = updateEntity.getImageUrl();
+    }
+
+    public void addCommentEntity(CommentEntity commentEntity) {
+        if (commentEntity == null) {
+            this.commentEntities = new ArrayList<>();
+        }
+        this.commentEntities.add(commentEntity);
+    }
+
+    public LocalDate convertDateToLocalDate() {
+        return this.date != null ? getDate().toLocalDate() : null;
+    }
+
+    public Stream<CommentEntity> sortCommentEntityByCreatedDateTimeAsc() {
+        return this.commentEntities.stream()
+                .sorted(Comparator.comparing(CommentEntity::getCreatedDateTime));
     }
 }
