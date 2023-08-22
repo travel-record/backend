@@ -37,4 +37,9 @@ public class UserController {
         return ApiResponse.ok(userService.getUserCommentsBy(Long.valueOf(userId)));
     }
 
+    @GetMapping("/likes")
+    public ApiResponse getUserRecordLikes(@LoginUserId String userId) {
+        return null;
+    }
+
 }

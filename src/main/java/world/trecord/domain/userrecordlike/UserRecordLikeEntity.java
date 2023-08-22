@@ -2,6 +2,7 @@ package world.trecord.domain.userrecordlike;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import world.trecord.domain.BaseEntity;
@@ -26,4 +27,10 @@ public class UserRecordLikeEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_record", nullable = false, foreignKey = @ForeignKey(name = "fk_user_record_like_record"))
     private RecordEntity recordEntity;
+
+    @Builder
+    private UserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
+        this.userEntity = userEntity;
+        this.recordEntity = recordEntity;
+    }
 }
