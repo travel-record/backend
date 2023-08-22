@@ -51,8 +51,8 @@ public class UserService implements UserDetailsService {
         if (isNicknameChangedAndDuplicate(updateRequest.getNickname(), userEntity.getNickname())) {
             throw new CustomException(EXISTING_NICKNAME);
         }
-
-        userEntity.update(updateRequest.getNickname(), updateRequest.getImageUrl(), updateRequest.getIntroduction());
+        
+        userEntity.update(updateRequest.toUpdateEntity());
 
         return UserInfoResponse.builder()
                 .userEntity(userEntity)

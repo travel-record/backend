@@ -39,11 +39,11 @@ public class UserEntity extends BaseEntity {
         this.imageUrl = imageUrl;
         this.introduction = introduction;
     }
-
-    public void update(String nickname, String imageUrl, String introduction) {
-        this.nickname = nickname;
-        this.imageUrl = imageUrl;
-        this.introduction = introduction;
+    
+    public void update(UserEntity updateEntity) {
+        this.nickname = updateEntity.getNickname();
+        this.imageUrl = updateEntity.getImageUrl();
+        this.introduction = updateEntity.getIntroduction();
     }
 
     public boolean isManagerOf(FeedEntity feedEntity) {

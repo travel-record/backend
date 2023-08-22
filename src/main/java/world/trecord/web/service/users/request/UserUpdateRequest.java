@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.users.UserEntity;
 
 @NoArgsConstructor
 @Setter
@@ -23,5 +24,13 @@ public class UserUpdateRequest {
         this.nickname = nickname;
         this.imageUrl = imageUrl;
         this.introduction = introduction;
+    }
+
+    public UserEntity toUpdateEntity() {
+        return UserEntity.builder()
+                .nickname(this.nickname)
+                .imageUrl(this.imageUrl)
+                .introduction(this.introduction)
+                .build();
     }
 }

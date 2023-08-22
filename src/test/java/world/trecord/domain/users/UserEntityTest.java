@@ -12,9 +12,9 @@ class UserEntityTest {
     @DisplayName("사용자 정보 업데이트 테스트")
     void updateTest() throws Exception {
         //given
-        String changeNickname = "after nickname";
-        String changeIntroduction = "after introduction";
-        String changeImageUrl = "after image url";
+        String updatedNickname = "after nickname";
+        String updatedIntroduction = "after introduction";
+        String updatedImageUrl = "after image url";
 
         UserEntity userEntity = UserEntity.builder()
                 .nickname("before nickname")
@@ -22,13 +22,19 @@ class UserEntityTest {
                 .imageUrl("before image url")
                 .build();
 
+        UserEntity updateEntity = UserEntity.builder()
+                .nickname(updatedNickname)
+                .introduction(updatedIntroduction)
+                .imageUrl(updatedImageUrl)
+                .build();
+
         //when
-        userEntity.update(changeNickname, changeImageUrl, changeIntroduction);
+        userEntity.update(updateEntity);
 
         //then
-        Assertions.assertThat(userEntity.getNickname()).isEqualTo(changeNickname);
-        Assertions.assertThat(userEntity.getImageUrl()).isEqualTo(changeImageUrl);
-        Assertions.assertThat(userEntity.getIntroduction()).isEqualTo(changeIntroduction);
+        Assertions.assertThat(userEntity)
+                .extracting("nickname", "imageUrl", "introduction")
+                .containsExactly(updatedNickname, updatedImageUrl, updatedIntroduction);
     }
 
     @Test
