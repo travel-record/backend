@@ -45,6 +45,7 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "transportation", nullable = false)
     private String transportation;
 
+    @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
