@@ -22,7 +22,7 @@ create table feed
     id_users           int          not null comment '사용자 FK',
     image_url          text         null comment '썸네일 이미지 URL',
     description        varchar(255) null comment '설명',
-    name               varchar(255) not null comment '피드 이름',
+    name               varchar(255) not null comment '페이지 이름',
     start_at           timestamp    null comment '시작 시간',
     end_at             timestamp    null comment '종료 시간',
     companion          varchar(255) null comment '동행자',
@@ -40,7 +40,7 @@ create table record
 (
     id_record          int auto_increment comment '기록 PK'
         primary key,
-    content            text         not null comment '내용',
+    content            longtext     not null comment '내용',
     date               datetime     not null comment '날짜',
     feeling            varchar(255) not null comment '기분',
     place              varchar(255) not null comment '장소',
@@ -103,3 +103,21 @@ create table notification
 )
     comment '알림';
 
+create table user_record_like
+(
+    id_like            int auto_increment comment '좋아요 PK'
+        primary key,
+    id_users           int                                  not null comment '사용자 FK',
+    id_record          int                                  not null comment '기록 FK',
+    created_date_time  datetime default current_timestamp() null comment '좋아요 생성 시간',
+    modified_date_time datetime default current_timestamp() null comment '좋아요 수정 시간',
+    constraint idx_users_record
+        unique (id_users, id_record) comment '유저 기록 인덱스',
+    constraint fk_user_record_like_record
+        foreign key (id_record) references record (id_record)
+            on delete cascade,
+    constraint fk_user_record_like_users
+        foreign key (id_users) references users (id_users)
+            on delete cascade
+)
+    comment '사용자의 기록 좋아요';
