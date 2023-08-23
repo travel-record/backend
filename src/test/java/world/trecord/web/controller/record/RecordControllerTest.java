@@ -18,7 +18,6 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.security.jwt.JwtGenerator;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
@@ -33,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.web.exception.CustomExceptionError.*;
 
 @MockMvcTestSupport
 class RecordControllerTest {
@@ -207,8 +206,8 @@ class RecordControllerTest {
                         get("/api/v1/records/{recordId}", 0L)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(CustomExceptionError.NOT_EXISTING_RECORD.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(CustomExceptionError.NOT_EXISTING_RECORD.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(NOT_EXISTING_RECORD.getErrorCode()))
+                .andExpect(jsonPath("$.message").value(NOT_EXISTING_RECORD.getErrorMsg()));
     }
 
     @Test
@@ -234,8 +233,8 @@ class RecordControllerTest {
                                 .content(body)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(CustomExceptionError.INVALID_ARGUMENT.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(CustomExceptionError.INVALID_ARGUMENT.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()))
+                .andExpect(jsonPath("$.message").value(INVALID_ARGUMENT.getErrorMsg()));
     }
 
     @Test
@@ -367,7 +366,7 @@ class RecordControllerTest {
                                 .content(body)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(CustomExceptionError.INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
     }
 
     @Test
@@ -392,7 +391,7 @@ class RecordControllerTest {
                                 .content(body)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(CustomExceptionError.INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
     }
 
     @Test

@@ -11,10 +11,11 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
+import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
-import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordDeleteRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static world.trecord.web.exception.CustomExceptionError.*;
 
 @IntegrationTestSupport
 class RecordServiceTest {
@@ -45,6 +47,9 @@ class RecordServiceTest {
 
     @Autowired
     CommentRepository commentRepository;
+
+    @Autowired
+    UserRecordLikeRepository userRecordLikeRepository;
 
     @Test
     @DisplayName("기록 작성자가 기록을 조회하면 기록 상세 정보, 댓글 리스트를 반환한다")
@@ -179,7 +184,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.getRecordInfoBy(0L, 0L))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_RECORD);
+                .isEqualTo(NOT_EXISTING_RECORD);
     }
 
     @Test
@@ -235,7 +240,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.createRecord(0L, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
+                .isEqualTo(NOT_EXISTING_USER);
     }
 
     @Test
@@ -254,7 +259,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.createRecord(writer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
+                .isEqualTo(NOT_EXISTING_FEED);
     }
 
     @Test
@@ -279,7 +284,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.createRecord(other.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FORBIDDEN);
+                .isEqualTo(FORBIDDEN);
     }
 
     @Test
@@ -339,7 +344,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.updateRecord(notExistingUserId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
+                .isEqualTo(NOT_EXISTING_USER);
     }
 
     @Test
@@ -359,7 +364,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.updateRecord(writer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
+                .isEqualTo(NOT_EXISTING_FEED);
     }
 
     @Test
@@ -384,7 +389,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.updateRecord(other.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FORBIDDEN);
+                .isEqualTo(FORBIDDEN);
     }
 
     @Test
@@ -412,7 +417,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.updateRecord(writer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_RECORD);
+                .isEqualTo(NOT_EXISTING_RECORD);
     }
 
     @Test
@@ -465,7 +470,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.deleteRecord(notExistingUserId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
+                .isEqualTo(NOT_EXISTING_USER);
     }
 
     @Test
@@ -486,7 +491,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.deleteRecord(writer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
+                .isEqualTo(NOT_EXISTING_FEED);
     }
 
     @Test
@@ -510,7 +515,7 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.deleteRecord(writer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_RECORD);
+                .isEqualTo(NOT_EXISTING_RECORD);
     }
 
     @Test
@@ -537,7 +542,72 @@ class RecordServiceTest {
         Assertions.assertThatThrownBy(() -> recordService.deleteRecord(viewer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FORBIDDEN);
+                .isEqualTo(FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("기록에 대해 좋아요 한 사용자가 기록을 조회하면 RecordInfoResponse의 필드 liked = true다")
+    void getRecordInfoByTestByUserWhoLikedOnRecord() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        UserEntity viewer = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        userRecordLikeRepository.save(createUserRecordLikeEntity(viewer, recordEntity));
+
+        //when
+        RecordInfoResponse response = recordService.getRecordInfoBy(recordEntity.getId(), viewer.getId());
+
+        //then
+        Assertions.assertThat(response.getLiked()).isTrue();
+    }
+
+    @Test
+    @DisplayName("기록에 대해 좋아요 하지 않은 사용자가 기록을 조회하면 RecordInfoResponse의 필드 liked = false다")
+    void getRecordInfoByTestByUserWhoNotLikedOnRecord() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        UserEntity viewer = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        //when
+        RecordInfoResponse response = recordService.getRecordInfoBy(recordEntity.getId(), viewer.getId());
+
+        //then
+        Assertions.assertThat(response.getLiked()).isFalse();
+    }
+
+    @Test
+    @DisplayName("인증받지 않은 사용자가 기록을 조회하면 RecordInfoResponse의 필드 liked = false다")
+    void getRecordInfoByTestByUserWhoNotAuthenticatedOnRecord() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        //when
+        RecordInfoResponse response = recordService.getRecordInfoBy(recordEntity.getId(), null);
+
+        //then
+        Assertions.assertThat(response.getLiked()).isFalse();
     }
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
@@ -570,5 +640,11 @@ class RecordServiceTest {
                 .build();
     }
 
-
+    private UserRecordLikeEntity createUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
+        return UserRecordLikeEntity
+                .builder()
+                .userEntity(userEntity)
+                .recordEntity(recordEntity)
+                .build();
+    }
 }

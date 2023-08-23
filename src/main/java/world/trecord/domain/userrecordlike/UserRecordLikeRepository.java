@@ -23,4 +23,6 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
             "WHERE lrle.userEntity = :userEntity " +
             "ORDER BY lrle.createdDateTime DESC ")
     List<UserRecordProjection> findLikedRecordsByUserEntity(@Param("userEntity") UserEntity userEntity);
+
+    boolean existsByUserEntityAndRecordEntity(UserEntity userEntity, RecordEntity recordEntity);
 }

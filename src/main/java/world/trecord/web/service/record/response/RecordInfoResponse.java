@@ -18,6 +18,7 @@ public class RecordInfoResponse {
     private Long feedId;
     private Long recordId;
     private Boolean isUpdatable;
+    private Boolean liked;
     private String title;
     private LocalDate date;
     private String place;
@@ -30,11 +31,12 @@ public class RecordInfoResponse {
     private List<Comment> comments;
 
     @Builder
-    private RecordInfoResponse(RecordEntity recordEntity, Long viewerId) {
+    private RecordInfoResponse(RecordEntity recordEntity, Long viewerId, Boolean liked) {
         this.writerId = recordEntity.getFeedEntity().getUserEntity().getId();
         this.feedId = recordEntity.getFeedEntity().getId();
         this.recordId = recordEntity.getId();
         this.isUpdatable = writerId.equals(viewerId);
+        this.liked = liked;
         this.title = recordEntity.getTitle();
         this.date = recordEntity.convertDateToLocalDate();
         this.place = recordEntity.getPlace();
