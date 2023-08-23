@@ -9,13 +9,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import world.trecord.IntegrationTestSupport;
 
 @IntegrationTestSupport
-class JwtResolverTest {
+class JwtParserTest {
 
     @Autowired
     private JwtProvider jwtProvider;
 
     @Autowired
-    private JwtResolver jwtResolver;
+    private JwtParser jwtParser;
 
     @Test
     @DisplayName("유효한 토큰으로 유저 ID를 추출할 수 있다")
@@ -25,7 +25,7 @@ class JwtResolverTest {
         String token = jwtProvider.createTokenWith(originalUserId);
 
         // when
-        Long extractedUserId = Long.parseLong(jwtResolver.extractUserIdFrom(token));
+        Long extractedUserId = Long.parseLong(jwtParser.extractUserIdFrom(token));
 
         // then
         Assertions.assertThat(originalUserId).isEqualTo(extractedUserId);
@@ -39,14 +39,14 @@ class JwtResolverTest {
         String token = jwtProvider.createTokenWith(originalUserId);
 
         //when //then
-        jwtResolver.verify(token);
+        jwtParser.verify(token);
     }
 
     @Test
     @DisplayName("유효하지 않은 토큰을 검증하면 예외가 발생한다")
     void validateInvalidTokenTest() throws Exception {
         //when //then
-        Assertions.assertThatThrownBy(() -> jwtResolver.verify("dummy"))
+        Assertions.assertThatThrownBy(() -> jwtParser.verify("dummy"))
                 .isInstanceOf(JwtException.class);
     }
 
@@ -54,7 +54,7 @@ class JwtResolverTest {
     @DisplayName("Null을 검증하면 예외가 발생한다")
     void verifyWithNullTest() throws Exception {
         //when //then
-        Assertions.assertThatThrownBy(() -> jwtResolver.verify(null))
+        Assertions.assertThatThrownBy(() -> jwtParser.verify(null))
                 .isInstanceOf(JwtException.class);
     }
 
@@ -65,7 +65,7 @@ class JwtResolverTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         //when
-        Long userId = jwtResolver.extractUserIdFrom(request);
+        Long userId = jwtParser.extractUserIdFrom(request);
 
         //then
         Assertions.assertThat(userId).isNull();
@@ -81,7 +81,7 @@ class JwtResolverTest {
         request.addHeader("Authorization", token);
 
         //when
-        Long extractId = jwtResolver.extractUserIdFrom(request);
+        Long extractId = jwtParser.extractUserIdFrom(request);
 
         //then
         Assertions.assertThat(userId).isEqualTo(extractId);
@@ -95,7 +95,7 @@ class JwtResolverTest {
         request.addHeader("Authorization", "dummy");
 
         //when //then
-        Assertions.assertThatThrownBy(() -> jwtResolver.extractUserIdFrom(request))
+        Assertions.assertThatThrownBy(() -> jwtParser.extractUserIdFrom(request))
                 .isInstanceOf(JwtException.class);
     }
 

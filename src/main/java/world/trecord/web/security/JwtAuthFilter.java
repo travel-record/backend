@@ -30,12 +30,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     public static final String UTF_8 = "UTF-8";
     public static final String APPLICATION_JSON = "application/json";
 
-    private final JwtResolver jwtResolver;
+    private final JwtParser jwtParser;
     private final UserService userService;
     private final List<RequestMatcher> whitelist = new ArrayList<>();
 
-    public JwtAuthFilter(JwtResolver jwtResolver, UserService userService, List<String> whiteListUrlList) {
-        this.jwtResolver = jwtResolver;
+    public JwtAuthFilter(JwtParser jwtParser, UserService userService, List<String> whiteListUrlList) {
+        this.jwtParser = jwtParser;
         this.userService = userService;
         whiteListUrlList.forEach(url -> whitelist.add(new AntPathRequestMatcher(url)));
     }
@@ -50,8 +50,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            jwtResolver.verify(token);
-            String userId = jwtResolver.extractUserIdFrom(token);
+            jwtParser.verify(token);
+            String userId = jwtParser.extractUserIdFrom(token);
             setAuthenticationWith(Long.parseLong(userId));
             filterChain.doFilter(request, response);
 

@@ -22,7 +22,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtResolver jwtResolver;
+    private final JwtParser jwtParser;
     private final UserService userService;
 
     @Bean
@@ -47,7 +47,7 @@ public class SecurityConfig {
     @Bean
     public JwtAuthFilter jwtAuthFilter() {
         List<String> whitelist = List.of("/", "/api/v1/auth/google-login", "/api/v1/auth/token", "/api/v1/users/{userId}", "/api/v1/feeds/{feedId}", "/api/v1/records/{recordId}");
-        return new JwtAuthFilter(jwtResolver, userService, whitelist);
+        return new JwtAuthFilter(jwtParser, userService, whitelist);
     }
 
     @Bean
@@ -64,8 +64,8 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
         configuration.setMaxAge(Duration.ofHours(1));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

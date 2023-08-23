@@ -11,8 +11,8 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
+import world.trecord.web.security.JwtParser;
 import world.trecord.web.security.JwtProvider;
-import world.trecord.web.security.JwtResolver;
 import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
@@ -36,7 +36,7 @@ class AuthHandlerTest {
     JwtProvider jwtProvider;
 
     @Mock
-    JwtResolver jwtResolver;
+    JwtParser jwtParser;
 
     @InjectMocks
     AuthHandler authHandler;
@@ -98,7 +98,7 @@ class AuthHandlerTest {
         String token = "testToken";
         String refreshToken = "testRefreshToken";
 
-        BDDMockito.given(jwtResolver.extractUserIdFrom(anyString()))
+        BDDMockito.given(jwtParser.extractUserIdFrom(anyString()))
                 .willReturn(String.valueOf(userId));
 
         BDDMockito.given(jwtProvider.createTokenWith(userId))
@@ -121,7 +121,7 @@ class AuthHandlerTest {
         String invalidToken = "dummy";
 
         Mockito.doThrow(new JwtException("Invalid Token"))
-                .when(jwtResolver).verify(invalidToken);
+                .when(jwtParser).verify(invalidToken);
 
         //when //then
         Assertions.assertThatThrownBy(() -> authHandler.reissueTokenWith(invalidToken))
