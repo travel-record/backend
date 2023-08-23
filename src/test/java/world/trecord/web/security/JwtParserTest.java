@@ -12,7 +12,7 @@ import world.trecord.IntegrationTestSupport;
 class JwtParserTest {
 
     @Autowired
-    private JwtProvider jwtProvider;
+    private JwtGenerator jwtGenerator;
 
     @Autowired
     private JwtParser jwtParser;
@@ -22,7 +22,7 @@ class JwtParserTest {
     public void extractUserIdFromTokenTest() {
         // given
         Long originalUserId = 123L;
-        String token = jwtProvider.createTokenWith(originalUserId);
+        String token = jwtGenerator.createTokenWith(originalUserId);
 
         // when
         Long extractedUserId = Long.parseLong(jwtParser.extractUserIdFrom(token));
@@ -32,11 +32,11 @@ class JwtParserTest {
     }
 
     @Test
-    @DisplayName("유효한 토큰을 검증하면 아무것도 반환하지 않는다")
+    @DisplayName("유효한 토큰을 검증하면 예외가 발생하지 않는다")
     void validateValidTokenTest() throws Exception {
         //given
         Long originalUserId = 123L;
-        String token = jwtProvider.createTokenWith(originalUserId);
+        String token = jwtGenerator.createTokenWith(originalUserId);
 
         //when //then
         jwtParser.verify(token);
@@ -76,7 +76,7 @@ class JwtParserTest {
     void extractUserIdFromValidTokenTest() throws Exception {
         //given
         Long userId = 1L;
-        String token = jwtProvider.createTokenWith(userId);
+        String token = jwtGenerator.createTokenWith(userId);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", token);
 

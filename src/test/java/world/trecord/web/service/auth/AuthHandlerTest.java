@@ -11,8 +11,8 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
+import world.trecord.web.security.JwtGenerator;
 import world.trecord.web.security.JwtParser;
-import world.trecord.web.security.JwtProvider;
 import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
@@ -33,7 +33,7 @@ class AuthHandlerTest {
     UserService userService;
 
     @Mock
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Mock
     JwtParser jwtParser;
@@ -59,10 +59,10 @@ class AuthHandlerTest {
                         .nickname(nickname)
                         .build());
 
-        BDDMockito.given(jwtProvider.createTokenWith(null))
+        BDDMockito.given(jwtGenerator.createTokenWith(null))
                 .willReturn(token);
 
-        BDDMockito.given(jwtProvider.createRefreshTokenWith(null))
+        BDDMockito.given(jwtGenerator.createRefreshTokenWith(null))
                 .willReturn(refreshToken);
 
         //when
@@ -101,10 +101,10 @@ class AuthHandlerTest {
         BDDMockito.given(jwtParser.extractUserIdFrom(anyString()))
                 .willReturn(String.valueOf(userId));
 
-        BDDMockito.given(jwtProvider.createTokenWith(userId))
+        BDDMockito.given(jwtGenerator.createTokenWith(userId))
                 .willReturn(token);
 
-        BDDMockito.given(jwtProvider.createRefreshTokenWith(userId))
+        BDDMockito.given(jwtGenerator.createRefreshTokenWith(userId))
                 .willReturn(refreshToken);
 
         //when

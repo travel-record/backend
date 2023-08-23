@@ -11,15 +11,17 @@ import java.util.Date;
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 
 @Component
-public class JwtProvider {
+public class JwtGenerator {
 
     @Value("${jwt.secret-key}")
     private String secretKey;
-    public static final long EXPIRATION_TIME = 86400000L;
+
+    private static final String USER_ID = "user_id";
+    private static final long EXPIRATION_TIME = 86400000L;
 
     public String createTokenWith(Long userId) {
         Claims claims = Jwts.claims();
-        claims.put("user_id", userId);
+        claims.put(USER_ID, userId);
         Date now = new Date();
 
         return Jwts.builder()
@@ -32,7 +34,7 @@ public class JwtProvider {
 
     public String createRefreshTokenWith(Long userId) {
         Claims claims = Jwts.claims();
-        claims.put("user_id", userId);
+        claims.put(USER_ID, userId);
         Date now = new Date();
 
         return Jwts.builder()

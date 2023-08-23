@@ -17,7 +17,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.security.JwtProvider;
+import world.trecord.web.security.JwtGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +37,7 @@ class NotificationControllerTest {
     MockMvc mockMvc;
 
     @Autowired
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Autowired
     UserRepository userRepository;
@@ -67,7 +67,7 @@ class NotificationControllerTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.createTokenWith(userEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -88,7 +88,7 @@ class NotificationControllerTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.createTokenWith(userEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -105,7 +105,7 @@ class NotificationControllerTest {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtProvider.createTokenWith(author.getId());
+        String token = jwtGenerator.createTokenWith(author.getId());
 
         UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());

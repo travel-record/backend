@@ -19,8 +19,8 @@ public class JwtParser {
     @Value("${jwt.secret-key}")
     private String secretKey;
 
-    public static final String AUTHORIZATION = "Authorization";
-    public static final String USER_ID = "user_id";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String USER_ID = "user_id";
 
     public String extractUserIdFrom(String token) {
         return (String) getClaimsFromToken(token).get(USER_ID);

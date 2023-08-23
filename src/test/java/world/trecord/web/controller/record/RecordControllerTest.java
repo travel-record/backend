@@ -19,7 +19,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomExceptionError;
-import world.trecord.web.security.JwtProvider;
+import world.trecord.web.security.JwtGenerator;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordDeleteRequest;
@@ -57,7 +57,7 @@ class RecordControllerTest {
     CommentRepository commentRepository;
 
     @Autowired
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -90,7 +90,7 @@ class RecordControllerTest {
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        String token = jwtProvider.createTokenWith(writer.getId());
+        String token = jwtGenerator.createTokenWith(writer.getId());
 
         //when //then
         mockMvc.perform(
@@ -132,7 +132,7 @@ class RecordControllerTest {
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        String token = jwtProvider.createTokenWith(commenter1.getId());
+        String token = jwtGenerator.createTokenWith(commenter1.getId());
 
         //when //then
         mockMvc.perform(
@@ -222,7 +222,7 @@ class RecordControllerTest {
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .build();
 
-        String token = jwtProvider.createTokenWith(writer.getId());
+        String token = jwtGenerator.createTokenWith(writer.getId());
 
         String body = objectMapper.writeValueAsString(request);
 
@@ -271,7 +271,7 @@ class RecordControllerTest {
                 .imageUrl(imageUrl)
                 .build();
 
-        String token = jwtProvider.createTokenWith(writer.getId());
+        String token = jwtGenerator.createTokenWith(writer.getId());
 
         String body = objectMapper.writeValueAsString(request);
 
@@ -300,7 +300,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(writer.getId());
+        String token = jwtGenerator.createTokenWith(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -353,7 +353,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(writer.getId());
+        String token = jwtGenerator.createTokenWith(writer.getId());
 
         RecordUpdateRequest request = RecordUpdateRequest.builder().build();
 
@@ -378,7 +378,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(writer.getId());
+        String token = jwtGenerator.createTokenWith(writer.getId());
 
         RecordDeleteRequest request = RecordDeleteRequest.builder().build();
 
@@ -411,7 +411,7 @@ class RecordControllerTest {
                 .email("test2@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(writer.getId());
+        String token = jwtGenerator.createTokenWith(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -451,7 +451,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.createTokenWith(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
@@ -484,7 +484,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.createTokenWith(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));

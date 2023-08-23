@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.web.security.JwtGenerator;
 import world.trecord.web.security.JwtParser;
-import world.trecord.web.security.JwtProvider;
 import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
@@ -17,7 +17,7 @@ public class AuthHandler {
 
     private final UserRepository userRepository;
     private final UserService userService;
-    private final JwtProvider jwtProvider;
+    private final JwtGenerator jwtGenerator;
     private final JwtParser jwtParser;
     private final GoogleAuthManager googleAuthManager;
 
@@ -29,8 +29,8 @@ public class AuthHandler {
         return LoginResponse.builder()
                 .userId(userEntity.getId())
                 .nickname(userEntity.getNickname())
-                .token(jwtProvider.createTokenWith(userEntity.getId()))
-                .refreshToken(jwtProvider.createRefreshTokenWith(userEntity.getId()))
+                .token(jwtGenerator.createTokenWith(userEntity.getId()))
+                .refreshToken(jwtGenerator.createRefreshTokenWith(userEntity.getId()))
                 .build();
     }
 
@@ -41,8 +41,8 @@ public class AuthHandler {
         Long userId = Long.valueOf(jwtParser.extractUserIdFrom(refreshToken));
 
         return RefreshResponse.builder()
-                .token(jwtProvider.createTokenWith(userId))
-                .refreshToken(jwtProvider.createRefreshTokenWith(userId))
+                .token(jwtGenerator.createTokenWith(userId))
+                .refreshToken(jwtGenerator.createRefreshTokenWith(userId))
                 .build();
     }
 

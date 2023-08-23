@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.IntegrationTestSupport;
 
 @IntegrationTestSupport
-class JwtProviderTest {
+class JwtGeneratorTest {
 
     @Autowired
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Test
     @DisplayName("userId로 토큰을 생성한다")
@@ -19,7 +19,7 @@ class JwtProviderTest {
         Long originalUserId = 123L;
 
         //when
-        String token = jwtProvider.createTokenWith(originalUserId);
+        String token = jwtGenerator.createTokenWith(originalUserId);
 
         //then
         Assertions.assertThat(token).isNotEqualTo(originalUserId);
@@ -32,7 +32,7 @@ class JwtProviderTest {
         Long originalUserId = 123L;
 
         //when
-        String token = jwtProvider.createRefreshTokenWith(originalUserId);
+        String token = jwtGenerator.createRefreshTokenWith(originalUserId);
 
         //then
         Assertions.assertThat(token).isNotEqualTo(originalUserId);

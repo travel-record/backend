@@ -15,7 +15,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.security.JwtProvider;
+import world.trecord.web.security.JwtGenerator;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -40,7 +40,7 @@ class UserControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Autowired
     CommentRepository commentRepository;
@@ -68,7 +68,7 @@ class UserControllerTest {
                 .build();
 
         UserEntity saveUser = userRepository.save(userEntity);
-        String token = jwtProvider.createTokenWith(saveUser.getId());
+        String token = jwtGenerator.createTokenWith(saveUser.getId());
 
         //when //then
         mockMvc.perform(
@@ -85,7 +85,7 @@ class UserControllerTest {
     @DisplayName("존재하지 않는 사용자 아이디를 암호화한 토큰으로 사용자 정보를 조회하면 601 에러 응답 코드를 반환한다")
     void getUserInfoWithNotExistingTokenTest() throws Exception {
         //given
-        String token = jwtProvider.createTokenWith(-1L);
+        String token = jwtGenerator.createTokenWith(-1L);
 
         //when //then
         mockMvc.perform(
@@ -114,7 +114,7 @@ class UserControllerTest {
 
         UserEntity saveUser = userRepository.save(userEntity);
 
-        String token = jwtProvider.createTokenWith(saveUser.getId());
+        String token = jwtGenerator.createTokenWith(saveUser.getId());
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(nickname)
@@ -156,7 +156,7 @@ class UserControllerTest {
 
         userRepository.save(requestUserEntity);
 
-        String token = jwtProvider.createTokenWith(requestUserEntity.getId());
+        String token = jwtGenerator.createTokenWith(requestUserEntity.getId());
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(duplicatedNickname)
@@ -226,7 +226,7 @@ class UserControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.createTokenWith(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
