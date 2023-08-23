@@ -71,7 +71,6 @@ class JwtAuthFilterMockTest {
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(response.getWriter()).thenReturn(mockPrintWriter);
-
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class); // Capture the printed value
 
         //when
@@ -100,6 +99,32 @@ class JwtAuthFilterMockTest {
 
         //then
         verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    @DisplayName("토큰 없이 보안 URL 리소스에 대해서 요청을 하면 601 에러 응답 코드를 반환한다")
+    void doFilterInternalWithoutTokenToSecuritylistUrlTest() throws Exception {
+        //given
+        jwtAuthFilter = new JwtAuthFilter(jwtResolver, userService, List.of("/whitelist"));
+
+        when(request.getHeader("Authorization")).thenReturn(null);
+        when(request.getServletPath()).thenReturn("/security");
+
+        doThrow(new JwtException("invalid jwt exception")).when(jwtResolver).validate(null);
+
+        PrintWriter mockPrintWriter = mock(PrintWriter.class);
+        when(response.getWriter()).thenReturn(mockPrintWriter);
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class); // Capture the printed value
+
+        //when
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        //then
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(mockPrintWriter).print(captor.capture()); // Capture
+
+        String responseBody = captor.getValue();
+        Assertions.assertThat(responseBody).contains(String.valueOf(INVALID_TOKEN.getErrorCode()));
     }
 
 }
