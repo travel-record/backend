@@ -9,6 +9,7 @@ import world.trecord.web.service.users.UserService;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
+import world.trecord.web.service.users.response.UserRecordLikeListResponse;
 
 @RequiredArgsConstructor
 @RestController
@@ -38,8 +39,7 @@ public class UserController {
     }
 
     @GetMapping("/likes")
-    public ApiResponse getUserRecordLikes(@LoginUserId String userId) {
-        return null;
+    public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@LoginUserId String userId) {
+        return ApiResponse.ok(userService.getUserRecordLikeListBy(Long.valueOf(userId)));
     }
-
 }

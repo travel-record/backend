@@ -477,7 +477,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 좋아요 하지않은 기록에 좋아요를 요청하면 liked=true 응답을 한다")
+    @DisplayName("사용자가 좋아요 하지 않은 기록에 좋아요를 요청하면 liked=true 응답을 한다")
     void toggleLikeTestWhenUserNotLikeRecord() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()

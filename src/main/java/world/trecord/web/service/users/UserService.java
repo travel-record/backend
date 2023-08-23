@@ -11,12 +11,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
+import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
+import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
+import world.trecord.web.service.users.response.UserRecordLikeListResponse;
 
 import java.util.List;
 
@@ -30,6 +33,7 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final UserRecordLikeRepository userRecordLikeRepository;
 
     @Transactional
     public UserEntity createNewUserWith(String email) {
@@ -70,6 +74,16 @@ public class UserService implements UserDetailsService {
 
         return UserCommentsResponse.builder()
                 .commentEntities(commentEntities)
+                .build();
+    }
+
+    public UserRecordLikeListResponse getUserRecordLikeListBy(Long userId) {
+        UserEntity userEntity = findUserEntityBy(userId);
+
+        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikedRecordsByUserEntity(userEntity);
+
+        return UserRecordLikeListResponse.builder()
+                .projectionList(projectionList)
                 .build();
     }
 

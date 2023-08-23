@@ -11,6 +11,8 @@ import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
 import world.trecord.web.service.users.UserService;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Component
 public class AuthHandler {
@@ -24,7 +26,7 @@ public class AuthHandler {
     public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
         String email = googleAuthManager.getUserEmail(authorizationCode, redirectionUri);
 
-        UserEntity userEntity = findOrCreateUserBy(email);
+        UserEntity userEntity = getOrCreateUserBy(email);
 
         return LoginResponse.builder()
                 .userId(userEntity.getId())
@@ -33,7 +35,6 @@ public class AuthHandler {
                 .refreshToken(jwtGenerator.generateRefreshToken(userEntity.getId()))
                 .build();
     }
-
 
     public RefreshResponse reissueTokenWith(String refreshToken) {
         jwtParser.verify(refreshToken);
@@ -46,13 +47,8 @@ public class AuthHandler {
                 .build();
     }
 
-    private UserEntity findOrCreateUserBy(String email) {
-        UserEntity userEntity = userRepository.findByEmail(email);
-
-        if (userEntity == null) {
-            userEntity = userService.createNewUserWith(email);
-        }
-
-        return userEntity;
+    private UserEntity getOrCreateUserBy(String email) {
+        return Optional.ofNullable(userRepository.findByEmail(email))
+                .orElseGet(() -> userService.createNewUserWith(email));
     }
 }
