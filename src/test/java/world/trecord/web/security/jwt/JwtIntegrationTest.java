@@ -27,10 +27,10 @@ class JwtIntegrationTest {
     void generateAndExtractTokenTest() {
         //given
         Long originalUserId = 123L;
+        String token = jwtGenerator.generateToken(originalUserId, secretKey, expiredTimeMs);
 
         //when
-        String token = jwtGenerator.generateToken(originalUserId, secretKey, expiredTimeMs);
-        Long extractedUserId = Long.valueOf(jwtParser.extractUserIdFrom(token));
+        Long extractedUserId = Long.valueOf(jwtParser.extractUserId(secretKey, token));
 
         //then
         Assertions.assertThat(extractedUserId).isEqualTo(originalUserId);

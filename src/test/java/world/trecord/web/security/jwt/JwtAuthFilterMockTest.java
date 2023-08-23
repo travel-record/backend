@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.web.service.users.UserService;
 
 import java.io.PrintWriter;
@@ -41,15 +42,19 @@ class JwtAuthFilterMockTest {
 
     private JwtAuthFilter jwtAuthFilter;
 
-
     @Test
     @DisplayName("올바른 토큰을 가지고 요청하면 filterchain.doFilter이 호출된다")
     void doFilterInternalWithValidTokenTest() throws Exception {
         //given
         jwtAuthFilter = new JwtAuthFilter(jwtParser, userService, List.of("/whitelist"));
 
-        when(request.getHeader("Authorization")).thenReturn("validToken");
-        when(jwtParser.extractUserIdFrom("validToken")).thenReturn("1");
+        String validToken = "validToken";
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+
+        ReflectionTestUtils.setField(jwtAuthFilter, "secretKey", secretKey);
+
+        when(request.getHeader("Authorization")).thenReturn(validToken);
+        when(jwtParser.extractUserId(secretKey, validToken)).thenReturn("1");
         when(userService.loadUserByUsername("1")).thenReturn(mock(UserDetails.class));
 
         //when
@@ -65,9 +70,13 @@ class JwtAuthFilterMockTest {
         //given
         jwtAuthFilter = new JwtAuthFilter(jwtParser, userService, List.of("/whitelist"));
 
-        when(request.getHeader("Authorization")).thenReturn("invalidToken");
+        String invalidToken = "invalidToken";
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
-        doThrow(new JwtException("invalid jwt exception")).when(jwtParser).verify("invalidToken");
+        ReflectionTestUtils.setField(jwtAuthFilter, "secretKey", secretKey);
+
+        when(request.getHeader("Authorization")).thenReturn(invalidToken);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtParser).verify(secretKey, invalidToken);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(response.getWriter()).thenReturn(mockPrintWriter);
@@ -107,10 +116,13 @@ class JwtAuthFilterMockTest {
         //given
         jwtAuthFilter = new JwtAuthFilter(jwtParser, userService, List.of("/whitelist"));
 
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+
+        ReflectionTestUtils.setField(jwtAuthFilter, "secretKey", secretKey);
+
         when(request.getHeader("Authorization")).thenReturn(null);
         when(request.getServletPath()).thenReturn("/security");
-
-        doThrow(new JwtException("invalid jwt exception")).when(jwtParser).verify(null);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtParser).verify(secretKey, null);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(response.getWriter()).thenReturn(mockPrintWriter);

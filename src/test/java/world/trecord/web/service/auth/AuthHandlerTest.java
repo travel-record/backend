@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -22,6 +21,8 @@ import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -108,10 +109,10 @@ class AuthHandlerTest {
         ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
         ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
 
-        given(jwtParser.extractUserIdFrom(anyString()))
+        given(jwtParser.extractUserId(secretKey, token))
                 .willReturn(String.valueOf(userId));
 
-        given(jwtGenerator.generateToken(userId, secretKey, expiredTimeMs))
+        given(jwtGenerator.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))
                 .willReturn(token);
 
         //when
@@ -126,9 +127,14 @@ class AuthHandlerTest {
     void reissueTokenWithInvalidRefreshTokenTest() throws Exception {
         //given
         String invalidToken = "dummy";
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long expiredTimeMs = 86400000L;
 
-        Mockito.doThrow(new JwtException("Invalid Token"))
-                .when(jwtParser).verify(invalidToken);
+        ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
+
+        doThrow(new JwtException("Invalid Token"))
+                .when(jwtParser).verify(secretKey, invalidToken);
 
         //when //then
         Assertions.assertThatThrownBy(() -> authHandler.reissueTokenWith(invalidToken))

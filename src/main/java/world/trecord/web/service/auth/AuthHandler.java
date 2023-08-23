@@ -44,9 +44,9 @@ public class AuthHandler {
     }
 
     public RefreshResponse reissueTokenWith(String refreshToken) {
-        jwtParser.verify(refreshToken);
+        jwtParser.verify(secretKey, refreshToken);
 
-        Long userId = Long.valueOf(jwtParser.extractUserIdFrom(refreshToken));
+        Long userId = Long.valueOf(jwtParser.extractUserId(secretKey, refreshToken));
 
         return RefreshResponse.builder()
                 .token(jwtGenerator.generateToken(userId, secretKey, expiredTimeMs))
