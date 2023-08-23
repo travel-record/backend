@@ -37,9 +37,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     public JwtAuthFilter(JwtResolver jwtResolver, UserService userService, List<String> whiteListUrlList) {
         this.jwtResolver = jwtResolver;
         this.userService = userService;
-        for (String url : whiteListUrlList) {
-            whitelist.add(new AntPathRequestMatcher(url));
-        }
+        whiteListUrlList.forEach(url -> whitelist.add(new AntPathRequestMatcher(url)));
     }
 
     @Override
@@ -52,9 +50,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            verify(token);
-            long userId = extractUserIdFrom(token);
-            setAuthenticationWith(userId);
+            jwtResolver.verify(token);
+            String userId = jwtResolver.extractUserIdFrom(token);
+            setAuthenticationWith(Long.parseLong(userId));
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
@@ -70,17 +68,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
     }
 
-    private void verify(String token) {
-        jwtResolver.validate(token);
-    }
-
     private void setAuthenticationWith(long userId) {
         UserDetails userDetails = userService.loadUserByUsername(String.valueOf(userId));
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    private long extractUserIdFrom(String token) {
-        return Long.parseLong(jwtResolver.extractUserIdFrom(token));
     }
 }

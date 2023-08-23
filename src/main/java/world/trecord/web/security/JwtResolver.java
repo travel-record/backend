@@ -37,14 +37,14 @@ public class JwtResolver {
                 .get("user_id");
     }
 
-    public void validate(String token) {
+    public void verify(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (JwtException e) {
+        } catch (Exception e) {
             throw new JwtException(e.getMessage());
         }
     }
@@ -56,7 +56,7 @@ public class JwtResolver {
             return null;
         }
 
-        validate(token);
+        verify(token);
         return Long.parseLong(extractUserIdFrom(token));
     }
 

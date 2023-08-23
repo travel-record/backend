@@ -121,7 +121,7 @@ class AuthHandlerTest {
         String invalidToken = "dummy";
 
         Mockito.doThrow(new JwtException("Invalid Token"))
-                .when(jwtResolver).validate(invalidToken);
+                .when(jwtResolver).verify(invalidToken);
 
         //when //then
         Assertions.assertThatThrownBy(() -> authHandler.reissueTokenWith(invalidToken))

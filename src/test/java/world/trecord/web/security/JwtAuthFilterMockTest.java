@@ -67,7 +67,7 @@ class JwtAuthFilterMockTest {
 
         when(request.getHeader("Authorization")).thenReturn("invalidToken");
 
-        doThrow(new JwtException("invalid jwt exception")).when(jwtResolver).validate("invalidToken");
+        doThrow(new JwtException("invalid jwt exception")).when(jwtResolver).verify("invalidToken");
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(response.getWriter()).thenReturn(mockPrintWriter);
@@ -110,7 +110,7 @@ class JwtAuthFilterMockTest {
         when(request.getHeader("Authorization")).thenReturn(null);
         when(request.getServletPath()).thenReturn("/security");
 
-        doThrow(new JwtException("invalid jwt exception")).when(jwtResolver).validate(null);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtResolver).verify(null);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(response.getWriter()).thenReturn(mockPrintWriter);

@@ -36,7 +36,7 @@ public class AuthHandler {
 
 
     public RefreshResponse reissueTokenWith(String refreshToken) {
-        jwtResolver.validate(refreshToken);
+        jwtResolver.verify(refreshToken);
 
         Long userId = Long.valueOf(jwtResolver.extractUserIdFrom(refreshToken));
 

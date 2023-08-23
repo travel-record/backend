@@ -39,14 +39,22 @@ class JwtResolverTest {
         String token = jwtProvider.createTokenWith(originalUserId);
 
         //when //then
-        jwtResolver.validate(token);
+        jwtResolver.verify(token);
     }
 
     @Test
     @DisplayName("유효하지 않은 토큰을 검증하면 예외가 발생한다")
     void validateInvalidTokenTest() throws Exception {
         //when //then
-        Assertions.assertThatThrownBy(() -> jwtResolver.validate("dummy"))
+        Assertions.assertThatThrownBy(() -> jwtResolver.verify("dummy"))
+                .isInstanceOf(JwtException.class);
+    }
+
+    @Test
+    @DisplayName("Null을 검증하면 예외가 발생한다")
+    void verifyWithNullTest() throws Exception {
+        //when //then
+        Assertions.assertThatThrownBy(() -> jwtResolver.verify(null))
                 .isInstanceOf(JwtException.class);
     }
 
