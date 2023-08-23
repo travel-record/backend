@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
@@ -32,6 +33,12 @@ public class AuthControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${jwt.token.expired-time-ms}")
+    private Long expiredTimeMs;
 
     @Test
     @DisplayName("유효하지 않는 구글 인가 코드는 600 에러 코드로 반환한다")
@@ -85,7 +92,7 @@ public class AuthControllerTest {
                 .build();
         userRepository.save(userEntity);
 
-        String refreshToken = jwtGenerator.generateRefreshToken(userEntity.getId());
+        String refreshToken = jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         RefreshTokenRequest request = RefreshTokenRequest.builder()
                 .refreshToken(refreshToken)

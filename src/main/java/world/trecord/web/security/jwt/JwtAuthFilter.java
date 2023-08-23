@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,8 +28,11 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION = "Authorization";
-    public static final String UTF_8 = "UTF-8";
-    public static final String APPLICATION_JSON = "application/json";
+    private static final String UTF_8 = "UTF-8";
+    private static final String APPLICATION_JSON = "application/json";
+
+    @Value("${jwt.secret-key}")
+    private String secretKey;
 
     private final JwtParser jwtParser;
     private final UserService userService;
@@ -50,8 +54,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            jwtParser.verify(token);
-            String userId = jwtParser.extractUserIdFrom(token);
+            jwtParser.verify(secretKey, token);
+            String userId = jwtParser.extractUserId(secretKey, token);
             setAuthenticationWith(Long.parseLong(userId));
             filterChain.doFilter(request, response);
 

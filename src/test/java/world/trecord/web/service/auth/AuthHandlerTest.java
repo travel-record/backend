@@ -5,8 +5,11 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
@@ -16,9 +19,11 @@ import world.trecord.web.security.jwt.JwtParser;
 import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
-import world.trecord.web.service.users.UserService;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.doThrow;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class AuthHandlerTest {
@@ -28,9 +33,6 @@ class AuthHandlerTest {
 
     @Spy
     UserRepository userRepository;
-
-    @Mock
-    UserService userService;
 
     @Mock
     JwtGenerator jwtGenerator;
@@ -49,29 +51,34 @@ class AuthHandlerTest {
         String accessToken = "dummy access token";
         String nickname = "nickname";
         String token = "testToken";
-        String refreshToken = "testRefreshToken";
 
-        BDDMockito.given(googleAuthManager.getUserEmail(anyString(), anyString()))
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long expiredTimeMs = 86400000L;
+
+        ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
+
+        given(googleAuthManager.getUserEmail(anyString(), anyString()))
                 .willReturn("test@email.com");
 
-        BDDMockito.given(userRepository.findByEmail(anyString()))
+        given(userRepository.findByEmail(anyString()))
                 .willReturn(UserEntity.builder()
                         .nickname(nickname)
                         .build());
 
-        BDDMockito.given(jwtGenerator.generateToken(null))
+        given(jwtGenerator.generateToken(null, secretKey, expiredTimeMs))
                 .willReturn(token);
 
-        BDDMockito.given(jwtGenerator.generateRefreshToken(null))
-                .willReturn(refreshToken);
+        given(jwtGenerator.generateToken(null, secretKey, expiredTimeMs * 14))
+                .willReturn(token);
 
         //when
         LoginResponse loginResponse = authHandler.googleLogin(accessToken, redirectionUri);
 
         //then
-        Assertions.assertThat(loginResponse.getUser().getNickname()).isEqualTo(nickname);
-        Assertions.assertThat(loginResponse.getToken().getToken()).isEqualTo(token);
-        Assertions.assertThat(loginResponse.getToken().getRefreshToken()).isEqualTo(refreshToken);
+        Assertions.assertThat(loginResponse)
+                .extracting("user.nickname", "token.token", "token.refreshToken")
+                .containsExactly(nickname, token, token);
     }
 
     @Test
@@ -80,7 +87,7 @@ class AuthHandlerTest {
         //given
         String authorizationCode = "dummy access token";
         String redirectionUri = "dummy redirection uri";
-        BDDMockito.given(googleAuthManager.getUserEmail(anyString(), anyString()))
+        given(googleAuthManager.getUserEmail(anyString(), anyString()))
                 .willThrow(new CustomException(CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE));
 
         //when // then
@@ -96,19 +103,20 @@ class AuthHandlerTest {
         //given
         Long userId = 1L;
         String token = "testToken";
-        String refreshToken = "testRefreshToken";
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long expiredTimeMs = 86400000L;
 
-        BDDMockito.given(jwtParser.extractUserIdFrom(anyString()))
+        ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
+
+        given(jwtParser.extractUserId(secretKey, token))
                 .willReturn(String.valueOf(userId));
 
-        BDDMockito.given(jwtGenerator.generateToken(userId))
+        given(jwtGenerator.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))
                 .willReturn(token);
 
-        BDDMockito.given(jwtGenerator.generateRefreshToken(userId))
-                .willReturn(refreshToken);
-
         //when
-        RefreshResponse refreshResponse = authHandler.reissueTokenWith(refreshToken);
+        RefreshResponse refreshResponse = authHandler.reissueTokenWith(token);
 
         //then
         Assertions.assertThat(refreshResponse.getToken()).isEqualTo(token);
@@ -119,9 +127,14 @@ class AuthHandlerTest {
     void reissueTokenWithInvalidRefreshTokenTest() throws Exception {
         //given
         String invalidToken = "dummy";
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long expiredTimeMs = 86400000L;
 
-        Mockito.doThrow(new JwtException("Invalid Token"))
-                .when(jwtParser).verify(invalidToken);
+        ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
+
+        doThrow(new JwtException("Invalid Token"))
+                .when(jwtParser).verify(secretKey, invalidToken);
 
         //when //then
         Assertions.assertThatThrownBy(() -> authHandler.reissueTokenWith(invalidToken))

@@ -1,6 +1,7 @@
 package world.trecord.web.service.auth;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -23,6 +24,12 @@ public class AuthHandler {
     private final JwtParser jwtParser;
     private final GoogleAuthManager googleAuthManager;
 
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${jwt.token.expired-time-ms}")
+    private Long expiredTimeMs;
+
     public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
         String email = googleAuthManager.getUserEmail(authorizationCode, redirectionUri);
 
@@ -31,19 +38,19 @@ public class AuthHandler {
         return LoginResponse.builder()
                 .userId(userEntity.getId())
                 .nickname(userEntity.getNickname())
-                .token(jwtGenerator.generateToken(userEntity.getId()))
-                .refreshToken(jwtGenerator.generateRefreshToken(userEntity.getId()))
+                .token(jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs))
+                .refreshToken(jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs * 14))
                 .build();
     }
 
     public RefreshResponse reissueTokenWith(String refreshToken) {
-        jwtParser.verify(refreshToken);
+        jwtParser.verify(secretKey, refreshToken);
 
-        Long userId = Long.valueOf(jwtParser.extractUserIdFrom(refreshToken));
+        Long userId = Long.valueOf(jwtParser.extractUserId(secretKey, refreshToken));
 
         return RefreshResponse.builder()
-                .token(jwtGenerator.generateToken(userId))
-                .refreshToken(jwtGenerator.generateRefreshToken(userId))
+                .token(jwtGenerator.generateToken(userId, secretKey, expiredTimeMs))
+                .refreshToken(jwtGenerator.generateToken(userId, secretKey, expiredTimeMs * 14))
                 .build();
     }
 
