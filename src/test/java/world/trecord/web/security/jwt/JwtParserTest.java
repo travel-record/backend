@@ -73,7 +73,6 @@ class JwtParserTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
         //when //then
-
         Assertions.assertThatThrownBy(() -> jwtParser.verify(secretKey, invalidToken))
                 .isInstanceOf(JwtException.class);
     }
@@ -81,15 +80,32 @@ class JwtParserTest {
     @Test
     @DisplayName("null을 검증하면 예외가 발생한다")
     void verifyWithNullTest() throws Exception {
-        //when //then
+        //given
         JwtParser jwtParser = new JwtParser();
 
         String nullToken = null;
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
+        //when //then
         Assertions.assertThatThrownBy(() -> jwtParser.verify(secretKey, nullToken))
                 .isInstanceOf(JwtException.class);
     }
 
-    // TODO 만료 시간 테스트
+    @Test
+    @DisplayName("만료된 JWT 토큰 검증시 JwtException 예외가 발생한다")
+    void verifyExpiredTokenTest() {
+        //given
+        JwtGenerator jwtGenerator = new JwtGenerator();
+        JwtParser jwtParser = new JwtParser();
+
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long expiredTimeMs = -1000L;
+        long userId = 1L;
+
+        String expiredToken = jwtGenerator.generateToken(userId, secretKey, expiredTimeMs);
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> jwtParser.verify(secretKey, expiredToken))
+                .isInstanceOf(JwtException.class);
+    }
 }
