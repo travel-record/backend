@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
@@ -48,6 +49,12 @@ class FeedControllerTest {
     @Autowired
     RecordRepository recordRepository;
 
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${jwt.token.expired-time-ms}")
+    private Long expiredTimeMs;
+
     @Test
     @DisplayName("사용자가 등록한 피드가 없다면 feeds 필드에 빈 배열을 반환한다")
     void getEmptyFeedListByUserIdTest() throws Exception {
@@ -58,7 +65,7 @@ class FeedControllerTest {
 
         UserEntity savedUserEntity = userRepository.save(userEntity);
 
-        String token = jwtGenerator.generateToken(savedUserEntity.getId());
+        String token = jwtGenerator.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -87,7 +94,7 @@ class FeedControllerTest {
 
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
-        String token = jwtGenerator.generateToken(savedUserEntity.getId());
+        String token = jwtGenerator.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -109,7 +116,7 @@ class FeedControllerTest {
     @DisplayName("사용자가 존재하지 않으면 601 에러 응답 코드를 반환한다")
     void getFeedListNotExistingUserTest() throws Exception {
         //given
-        String token = jwtGenerator.generateToken(0L);
+        String token = jwtGenerator.generateToken(0L, secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -141,7 +148,7 @@ class FeedControllerTest {
 
         UserEntity savedUserEntity = userRepository.save(userEntity);
 
-        String token = jwtGenerator.generateToken(savedUserEntity.getId());
+        String token = jwtGenerator.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
 
         String feedName = "feed name";
         String imageUrl = "image";
@@ -187,7 +194,7 @@ class FeedControllerTest {
         FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
 
-        String token = jwtGenerator.generateToken(savedUserEntity.getId());
+        String token = jwtGenerator.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -233,7 +240,7 @@ class FeedControllerTest {
                 .build();
         UserEntity savedUserEntity = userRepository.save(userEntity);
 
-        String token = jwtGenerator.generateToken(savedUserEntity.getId());
+        String token = jwtGenerator.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
 
         FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity savedFeedEntity = feedRepository.save(feedEntity);

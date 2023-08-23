@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
 import world.trecord.domain.comment.CommentEntity;
@@ -57,6 +58,12 @@ class NotificationControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${jwt.token.expired-time-ms}")
+    private Long expiredTimeMs;
+
     @Test
     @DisplayName("사용자가 읽지 않은 알림이 있으면 새로운 알림이 있음을 반환한다")
     void checkExistingNewNotificationTest() throws Exception {
@@ -67,7 +74,7 @@ class NotificationControllerTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = jwtGenerator.generateToken(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -88,7 +95,7 @@ class NotificationControllerTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = jwtGenerator.generateToken(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -105,7 +112,7 @@ class NotificationControllerTest {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtGenerator.generateToken(author.getId());
+        String token = jwtGenerator.generateToken(author.getId(), secretKey, expiredTimeMs);
 
         UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
