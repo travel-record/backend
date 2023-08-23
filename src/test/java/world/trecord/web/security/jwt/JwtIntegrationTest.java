@@ -1,5 +1,6 @@
 package world.trecord.web.security.jwt;
 
+import io.jsonwebtoken.JwtException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,4 +36,28 @@ class JwtIntegrationTest {
         //then
         Assertions.assertThat(extractedUserId).isEqualTo(originalUserId);
     }
+
+    @Test
+    @DisplayName("유효하지 않는 토큰으로 userId를 추출하려고 하면 JwtException이 발생한다")
+    void extractUserIdWithInvalidToken() throws Exception {
+        //given
+        String invalidToken = "-1";
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> jwtParser.extractUserId(secretKey, invalidToken))
+                .isInstanceOf(JwtException.class);
+    }
+
+    @Test
+    @DisplayName("만료된 토큰으로 userId를 추출하려고 하면 JwtException이 발생한다")
+    void extractUserIdWithExpiredToken() throws Exception {
+        //given
+        Long originalUserId = 123L;
+        String expiredToken = jwtGenerator.generateToken(originalUserId, secretKey, -1000L);
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> jwtParser.extractUserId(secretKey, expiredToken))
+                .isInstanceOf(JwtException.class);
+    }
+
 }
