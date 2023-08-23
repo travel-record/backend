@@ -11,4 +11,6 @@ public class GoogleFeignConfig {
     public GoogleFeignErrorDecoder googleErrorDecoder() {
         return new GoogleFeignErrorDecoder();
     }
+
+    //TODO add retry call
 }

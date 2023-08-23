@@ -57,7 +57,7 @@ public class NotificationService {
     public NotificationListResponse getNotificationsBy(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userId);
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityOrderByCreatedDateTimeDesc(userEntity);
 
         NotificationListResponse response = NotificationListResponse.builder()
                 .notificationEntities(notificationList)

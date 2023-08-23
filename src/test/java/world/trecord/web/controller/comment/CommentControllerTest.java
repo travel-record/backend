@@ -16,7 +16,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.security.JwtProvider;
+import world.trecord.web.security.jwt.JwtGenerator;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentDeleteRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
@@ -24,6 +24,7 @@ import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
@@ -35,7 +36,7 @@ class CommentControllerTest {
     MockMvc mockMvc;
 
     @Autowired
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Autowired
     UserRepository userRepository;
@@ -60,7 +61,7 @@ class CommentControllerTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId());
 
         String content = "content";
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -89,7 +90,7 @@ class CommentControllerTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId());
 
         String invalidContent = "";
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -107,6 +108,7 @@ class CommentControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest())
+                .andDo(print())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
     }
 
@@ -119,7 +121,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId());
 
         String changeContent = "change content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -149,7 +151,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId());
 
         String invalidContent = "";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -179,7 +181,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId());
 
         CommentDeleteRequest request = CommentDeleteRequest.builder()
                 .commentId(commentEntity.getId())
@@ -208,7 +210,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId());
 
         CommentDeleteRequest request = CommentDeleteRequest.builder()
                 .build();

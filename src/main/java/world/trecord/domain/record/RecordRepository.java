@@ -19,9 +19,9 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "WHERE r.id = :id " +
             "ORDER BY c.createdDateTime ASC")
     Optional<RecordEntity> findRecordEntityWithFeedEntityAndCommentEntitiesBy(@Param("id") Long recordId);
-
+    
     @EntityGraph(attributePaths = {"commentEntities"})
-    Optional<RecordEntity> findRecordEntityWithCommentEntitiesById(@Param("id") Long recordId);
+    Optional<RecordEntity> findRecordEntityWithCommentEntitiesById(Long recordId);
 
     @Query("SELECT r.id as id, r.title as title, r.place as place, r.imageUrl as imageUrl , r.date as date " +
             "FROM RecordEntity r " +

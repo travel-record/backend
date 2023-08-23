@@ -13,9 +13,11 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
+import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.security.JwtProvider;
+import world.trecord.web.security.jwt.JwtGenerator;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -40,7 +42,7 @@ class UserControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Autowired
     CommentRepository commentRepository;
@@ -50,6 +52,9 @@ class UserControllerTest {
 
     @Autowired
     FeedRepository feedRepository;
+
+    @Autowired
+    UserRecordLikeRepository userRecordLikeRepository;
 
     @Test
     @DisplayName("사용자 아이디로 사용자 정보를 반환한다")
@@ -68,7 +73,7 @@ class UserControllerTest {
                 .build();
 
         UserEntity saveUser = userRepository.save(userEntity);
-        String token = jwtProvider.createTokenWith(saveUser.getId());
+        String token = jwtGenerator.generateToken(saveUser.getId());
 
         //when //then
         mockMvc.perform(
@@ -85,7 +90,7 @@ class UserControllerTest {
     @DisplayName("존재하지 않는 사용자 아이디를 암호화한 토큰으로 사용자 정보를 조회하면 601 에러 응답 코드를 반환한다")
     void getUserInfoWithNotExistingTokenTest() throws Exception {
         //given
-        String token = jwtProvider.createTokenWith(-1L);
+        String token = jwtGenerator.generateToken(-1L);
 
         //when //then
         mockMvc.perform(
@@ -114,7 +119,7 @@ class UserControllerTest {
 
         UserEntity saveUser = userRepository.save(userEntity);
 
-        String token = jwtProvider.createTokenWith(saveUser.getId());
+        String token = jwtGenerator.generateToken(saveUser.getId());
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(nickname)
@@ -156,7 +161,7 @@ class UserControllerTest {
 
         userRepository.save(requestUserEntity);
 
-        String token = jwtProvider.createTokenWith(requestUserEntity.getId());
+        String token = jwtGenerator.generateToken(requestUserEntity.getId());
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(duplicatedNickname)
@@ -226,7 +231,7 @@ class UserControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtProvider.createTokenWith(userEntity.getId());
+        String token = jwtGenerator.generateToken(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
@@ -269,6 +274,44 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
     }
 
+    @Test
+    @DisplayName("사용자가 좋아요한 기록 리스트를 등록 시간 내림차순으로 조회하여 반환한다")
+    void getUserRecordLikesTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        String token = jwtGenerator.generateToken(userEntity.getId());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity4 = createRecordEntity(feedEntity, "record4", "place4", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
+
+        UserRecordLikeEntity userRecordLikeEntity1 = createUserRecordLikeEntity(userEntity, recordEntity1);
+        UserRecordLikeEntity userRecordLikeEntity2 = createUserRecordLikeEntity(userEntity, recordEntity4);
+
+        userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/likes")
+                                .header("Authorization", token)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.records.size()").value(2))
+                .andExpect(jsonPath("$.data.records[0].recordId").value(recordEntity4.getId()))
+                .andExpect(jsonPath("$.data.records[0].title").value(recordEntity4.getTitle()))
+                .andExpect(jsonPath("$.data.records[0].imageUrl").value(recordEntity4.getImageUrl()))
+                .andExpect(jsonPath("$.data.records[0].authorId").value(userEntity.getId()))
+                .andExpect(jsonPath("$.data.records[0].authorNickname").value(userEntity.getNickname()));
+    }
+
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
         return RecordEntity.builder()
@@ -297,6 +340,14 @@ class UserControllerTest {
                 .name(name)
                 .startAt(startAt)
                 .endAt(endAt)
+                .build();
+    }
+
+    private UserRecordLikeEntity createUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
+        return UserRecordLikeEntity
+                .builder()
+                .userEntity(userEntity)
+                .recordEntity(recordEntity)
                 .build();
     }
 }

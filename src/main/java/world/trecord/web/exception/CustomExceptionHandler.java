@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import world.trecord.web.controller.ApiResponse;
 
+import java.util.List;
+
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.*;
@@ -26,10 +28,10 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
-    // TODO response에 exception cause 추가
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ApiResponse> bindException(BindException exception) {
-        ApiResponse apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
+        ValidationErrorDTO validationErrorDTO = getFieldErrorDTO(exception);
+        ApiResponse apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), validationErrorDTO);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
@@ -68,4 +70,16 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(apiResponse);
     }
 
+    private ValidationErrorDTO getFieldErrorDTO(BindException exception) {
+        List<ValidationErrorDTO.FieldError> fieldErrors = exception.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> ValidationErrorDTO.FieldError.builder()
+                        .field(fieldError.getField())
+                        .message(fieldError.getDefaultMessage())
+                        .build())
+                .toList();
+
+        return ValidationErrorDTO.builder()
+                .fieldErrors(fieldErrors)
+                .build();
+    }
 }

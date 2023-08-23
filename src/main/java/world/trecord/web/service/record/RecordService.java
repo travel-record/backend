@@ -7,6 +7,7 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
@@ -23,16 +24,21 @@ import static world.trecord.web.exception.CustomExceptionError.*;
 @RequiredArgsConstructor
 @Service
 public class RecordService {
+
     private final RecordRepository recordRepository;
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
+    private final UserRecordLikeRepository userRecordLikeRepository;
 
     public RecordInfoResponse getRecordInfoBy(Long recordId, Long viewerId) {
         RecordEntity recordEntity = findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId);
 
+        boolean liked = hasUserLikedRecord(viewerId, recordEntity);
+
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
                 .viewerId(viewerId)
+                .liked(liked)
                 .build();
     }
 
@@ -117,5 +123,15 @@ public class RecordService {
         if (!userEntity.isManagerOf(feedEntity)) {
             throw new CustomException(FORBIDDEN);
         }
+    }
+
+    private boolean hasUserLikedRecord(Long viewerId, RecordEntity recordEntity) {
+        if (viewerId == null) {
+            return false;
+        }
+
+        return userRepository.findById(viewerId)
+                .map(userEntity -> userRecordLikeRepository.existsByUserEntityAndRecordEntity(userEntity, recordEntity))
+                .orElseGet(() -> false);
     }
 }

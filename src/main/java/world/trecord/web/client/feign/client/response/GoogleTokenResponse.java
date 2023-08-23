@@ -9,4 +9,8 @@ import lombok.Setter;
 @Getter
 public class GoogleTokenResponse {
     private String access_token;
+
+    public String getAccessToken() {
+        return this.access_token;
+    }
 }

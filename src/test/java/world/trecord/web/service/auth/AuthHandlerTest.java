@@ -11,8 +11,8 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
-import world.trecord.web.security.JwtProvider;
-import world.trecord.web.security.JwtResolver;
+import world.trecord.web.security.jwt.JwtGenerator;
+import world.trecord.web.security.jwt.JwtParser;
 import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
@@ -33,10 +33,10 @@ class AuthHandlerTest {
     UserService userService;
 
     @Mock
-    JwtProvider jwtProvider;
+    JwtGenerator jwtGenerator;
 
     @Mock
-    JwtResolver jwtResolver;
+    JwtParser jwtParser;
 
     @InjectMocks
     AuthHandler authHandler;
@@ -59,10 +59,10 @@ class AuthHandlerTest {
                         .nickname(nickname)
                         .build());
 
-        BDDMockito.given(jwtProvider.createTokenWith(null))
+        BDDMockito.given(jwtGenerator.generateToken(null))
                 .willReturn(token);
 
-        BDDMockito.given(jwtProvider.createRefreshTokenWith(null))
+        BDDMockito.given(jwtGenerator.generateRefreshToken(null))
                 .willReturn(refreshToken);
 
         //when
@@ -98,13 +98,13 @@ class AuthHandlerTest {
         String token = "testToken";
         String refreshToken = "testRefreshToken";
 
-        BDDMockito.given(jwtResolver.extractUserIdFrom(anyString()))
+        BDDMockito.given(jwtParser.extractUserIdFrom(anyString()))
                 .willReturn(String.valueOf(userId));
 
-        BDDMockito.given(jwtProvider.createTokenWith(userId))
+        BDDMockito.given(jwtGenerator.generateToken(userId))
                 .willReturn(token);
 
-        BDDMockito.given(jwtProvider.createRefreshTokenWith(userId))
+        BDDMockito.given(jwtGenerator.generateRefreshToken(userId))
                 .willReturn(refreshToken);
 
         //when
@@ -121,7 +121,7 @@ class AuthHandlerTest {
         String invalidToken = "dummy";
 
         Mockito.doThrow(new JwtException("Invalid Token"))
-                .when(jwtResolver).validate(invalidToken);
+                .when(jwtParser).verify(invalidToken);
 
         //when //then
         Assertions.assertThatThrownBy(() -> authHandler.reissueTokenWith(invalidToken))

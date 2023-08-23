@@ -12,6 +12,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import world.trecord.web.security.jwt.JwtAuthFilter;
+import world.trecord.web.security.jwt.JwtParser;
 import world.trecord.web.service.users.UserService;
 
 import java.time.Duration;
@@ -22,7 +24,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtResolver jwtResolver;
+    private final JwtParser jwtParser;
     private final UserService userService;
 
     @Bean
@@ -35,7 +37,7 @@ public class SecurityConfig {
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeHttpRequests((it) -> it
+                .authorizeHttpRequests(request -> request
                         .requestMatchers("/", "/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -46,8 +48,8 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthFilter jwtAuthFilter() {
-        List<String> whitelist = List.of("/", "/api/v1/auth/google-login", "/api/v1/auth/token", "/api/v1/users/\\d+", "/api/v1/feeds/\\d+", "/api/v1/records/\\d+");
-        return new JwtAuthFilter(jwtResolver, userService, whitelist);
+        List<String> whitelist = List.of("/", "/api/v1/auth/google-login", "/api/v1/auth/token", "/api/v1/users/{userId}", "/api/v1/feeds/{feedId}", "/api/v1/records/{recordId}");
+        return new JwtAuthFilter(jwtParser, userService, whitelist);
     }
 
     @Bean
@@ -64,8 +66,8 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
         configuration.setMaxAge(Duration.ofHours(1));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
