@@ -20,6 +20,7 @@ public class JwtGenerator {
     private static final long EXPIRATION_TIME = 86400000L;
     private static final long REFRESH_TOKEN_EXPIRATION_MULTIPLIER = 14;
 
+    // TODO extract EXPIRATION_TIME
     public String generateToken(Long userId) {
         return generateToken(userId, EXPIRATION_TIME);
     }

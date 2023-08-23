@@ -23,38 +23,39 @@ class JwtGeneratorTest {
     @DisplayName("userId로 토큰을 생성한다")
     void generateTokenTest() {
         //given
-        Long originalUserId = 123L;
+        Long userId = 123L;
+        String tokenPattern = "^[a-zA-Z0-9-_]+(=)*$";
 
         //when
-        String token = jwtGenerator.generateToken(originalUserId);
+        String token = jwtGenerator.generateToken(userId);
 
         //then
-        Assertions.assertThat(token).isNotNull();
-
-        //verify JWT format
-        Assertions.assertThat(token.split("\\.").length).isEqualTo(3);
-        Assertions.assertThat(token.split("\\.")[0]).matches("^[a-zA-Z0-9-_]+(=)*$");
-        Assertions.assertThat(token.split("\\.")[1]).matches("^[a-zA-Z0-9-_]+(=)*$");
-        Assertions.assertThat(token.split("\\.")[2]).matches("^[a-zA-Z0-9-_]+(=)*$");
+        Assertions.assertThat(token)
+                .isNotNull()
+                .satisfies(t -> {
+                    Assertions.assertThat(t.split("\\."))
+                            .hasSize(3)
+                            .allMatch(part -> part.matches(tokenPattern));  // verify jwt format
+                });
     }
 
     @Test
     @DisplayName("userId로 리프레시 토큰을 생성한다")
     void generateRefreshTokenTest() {
         //given
-        Long originalUserId = 123L;
+        Long userId = 123L;
+        String tokenPattern = "^[a-zA-Z0-9-_]+(=)*$";
 
         //when
-        String token = jwtGenerator.generateRefreshToken(originalUserId);
+        String token = jwtGenerator.generateRefreshToken(userId);
 
         //then
-        Assertions.assertThat(token).isNotNull();
-
-        //verify JWT format
-        Assertions.assertThat(token.split("\\.").length).isEqualTo(3);
-        Assertions.assertThat(token.split("\\.")[0]).matches("^[a-zA-Z0-9-_]+(=)*$");
-        Assertions.assertThat(token.split("\\.")[1]).matches("^[a-zA-Z0-9-_]+(=)*$");
-        Assertions.assertThat(token.split("\\.")[2]).matches("^[a-zA-Z0-9-_]+(=)*$");
+        Assertions.assertThat(token)
+                .isNotNull()
+                .satisfies(t -> {
+                    Assertions.assertThat(t.split("\\."))
+                            .hasSize(3)
+                            .allMatch(part -> part.matches(tokenPattern));  // verify jwt format
+                });
     }
-
 }

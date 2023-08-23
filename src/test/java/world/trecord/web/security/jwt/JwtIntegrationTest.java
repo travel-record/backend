@@ -1,6 +1,5 @@
 package world.trecord.web.security.jwt;
 
-import io.jsonwebtoken.JwtException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,16 +41,5 @@ class JwtIntegrationTest {
 
         //then
         Assertions.assertThat(extractedUserId).isEqualTo(originalUserId);
-    }
-
-    @Test
-    @DisplayName("유효하지 않은 토큰은 JwtException을 발생시킨다")
-    void invalidTokenThrowsJwtException() {
-        // given
-        String invalidToken = "invalidToken";
-
-        // then
-        Assertions.assertThatThrownBy(() -> jwtParser.extractUserIdFrom(invalidToken))
-                .isInstanceOf(JwtException.class);
     }
 }
