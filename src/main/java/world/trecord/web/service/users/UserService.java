@@ -9,8 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
+import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
@@ -70,10 +70,10 @@ public class UserService implements UserDetailsService {
     public UserCommentsResponse getUserCommentsBy(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        List<CommentEntity> commentEntities = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
 
         return UserCommentsResponse.builder()
-                .commentEntities(commentEntities)
+                .projectionList(projectionList)
                 .build();
     }
 

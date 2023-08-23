@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.IntegrationTestSupport;
+import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -33,7 +34,7 @@ class CommentRepositoryTest {
     FeedRepository feedRepository;
 
     @Test
-    @DisplayName("사용자가 작성한 댓글 리스트를 등록 시간 내림차순으로 기록과 함께 조회한다")
+    @DisplayName("사용자가 작성한 댓글 리스트를 등록 시간 내림차순으로 기록과 함께 조회하여 projection으로 반환한다")
     void findByUserEntityOrderByCreatedDateTimeDescTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -49,25 +50,40 @@ class CommentRepositoryTest {
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content1));
-        CommentEntity commentEntity2 = commentRepository.save(createCommentEntity(userEntity, recordEntity2, content2));
-        CommentEntity commentEntity3 = commentRepository.save(createCommentEntity(userEntity, recordEntity2, content3));
-        CommentEntity commentEntity4 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content4));
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, content1);
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, content2);
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, content3);
+        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, content4);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
-        List<CommentEntity> list = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
 
         //then
-        Assertions.assertThat(list)
+        Assertions.assertThat(projectionList)
                 .hasSize(4)
-                .extracting("content", "recordEntity")
+                .extracting("recordId", "commentId")
                 .containsExactly(
-                        tuple(content4, recordEntity1),
-                        tuple(content3, recordEntity2),
-                        tuple(content2, recordEntity2),
-                        tuple(content1, recordEntity1));
+                        tuple(recordEntity1.getId(), commentEntity4.getId()),
+                        tuple(recordEntity2.getId(), commentEntity3.getId()),
+                        tuple(recordEntity2.getId(), commentEntity2.getId()),
+                        tuple(recordEntity1.getId(), commentEntity1.getId()));
+    }
+
+    @Test
+    @DisplayName("사용자가 작성한 댓글이 없으면 빈 배열을 반환한다")
+    void findByUserEntityOrderByCreatedDateTimeDescWhenUserNotCommentOnRecordTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        //when
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
+
+        //then
+        Assertions.assertThat(projectionList).isEmpty();
     }
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
