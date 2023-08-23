@@ -1,10 +1,12 @@
 package world.trecord.domain.notification;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import world.trecord.domain.users.UserEntity;
 
 import java.util.List;
 
@@ -12,12 +14,8 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
     boolean existsByUsersToEntityIdAndStatus(Long userId, NotificationStatus status);
 
-    @Query("SELECT n " +
-            "FROM NotificationEntity n " +
-            "JOIN FETCH n.usersToEntity u " +
-            "WHERE u.id = :userId " +
-            "ORDER BY n.createdDateTime DESC")
-    List<NotificationEntity> findByUsersToEntityIdOrderByCreatedDateTimeDesc(@Param("userId") Long userId);
+    @EntityGraph(attributePaths = "usersToEntity")
+    List<NotificationEntity> findByUsersToEntityOrderByCreatedDateTimeDesc(UserEntity userToEntity);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE NotificationEntity n " +
