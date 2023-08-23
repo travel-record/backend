@@ -52,9 +52,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            long userId = verifyTokenAndExtractUserId(token);
+            verify(token);
+            long userId = extractUserIdFrom(token);
             setAuthenticationWith(userId);
             filterChain.doFilter(request, response);
+
         } catch (Exception e) {
             ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
 
@@ -68,14 +70,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
     }
 
+    private void verify(String token) {
+        jwtResolver.validate(token);
+    }
+
     private void setAuthenticationWith(long userId) {
         UserDetails userDetails = userService.loadUserByUsername(String.valueOf(userId));
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private long verifyTokenAndExtractUserId(String token) {
-        jwtResolver.validate(token);
+    private long extractUserIdFrom(String token) {
         return Long.parseLong(jwtResolver.extractUserIdFrom(token));
     }
 }
