@@ -1,34 +1,55 @@
-package world.trecord.web.security;
+package world.trecord.web.security.jwt;
 
 import io.jsonwebtoken.JwtException;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
-import world.trecord.IntegrationTestSupport;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@IntegrationTestSupport
+@ExtendWith(MockitoExtension.class)
 class JwtParserTest {
 
-    @Autowired
+    private JwtParser jwtParser;
     private JwtGenerator jwtGenerator;
 
-    @Autowired
-    private JwtParser jwtParser;
+    @BeforeEach
+    void setUp() {
+        jwtParser = new JwtParser();
+        jwtGenerator = new JwtGenerator();
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        ReflectionTestUtils.setField(jwtParser, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtGenerator, "secretKey", secretKey);
+    }
 
     @Test
-    @DisplayName("유효한 토큰으로 유저 ID를 추출할 수 있다")
-    public void extractUserIdFromTokenTest() {
-        // given
+    @DisplayName("유효한 토큰에서 userId를 추출한다")
+    void extractUserIdFromValidTokenTest() {
+        //given
         Long originalUserId = 123L;
-        String token = jwtGenerator.createTokenWith(originalUserId);
+        String token = jwtGenerator.generateToken(originalUserId);
 
-        // when
-        Long extractedUserId = Long.parseLong(jwtParser.extractUserIdFrom(token));
+        //when
+        String userId = jwtParser.extractUserIdFrom(token);
 
-        // then
-        Assertions.assertThat(originalUserId).isEqualTo(extractedUserId);
+        //then
+        Assertions.assertThat(userId).isEqualTo(String.valueOf(originalUserId));
+    }
+
+    @Test
+    @DisplayName("유효하지 않은 토큰에서 userId를 추출할 때 예외가 발생한다")
+    void extractUserIdFromInvalidTokenTest() {
+        //given
+        String invalidToken = "invalidToken";
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> {
+                    jwtParser.extractUserIdFrom(invalidToken);
+                })
+                .isInstanceOf(JwtException.class);
     }
 
     @Test
@@ -36,7 +57,7 @@ class JwtParserTest {
     void validateValidTokenTest() throws Exception {
         //given
         Long originalUserId = 123L;
-        String token = jwtGenerator.createTokenWith(originalUserId);
+        String token = jwtGenerator.generateToken(originalUserId);
 
         //when //then
         jwtParser.verify(token);
@@ -73,10 +94,10 @@ class JwtParserTest {
 
     @Test
     @DisplayName("요청 메시지에 Authorization 헤더가 있으면 토큰을 검증하고 유요한 토큰이면 userId를 반환한다")
-    void extractUserIdFromValidTokenTest() throws Exception {
+    void extractUserIdFromValidTokenWithRequestTest() throws Exception {
         //given
         Long userId = 1L;
-        String token = jwtGenerator.createTokenWith(userId);
+        String token = jwtGenerator.generateToken(userId);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", token);
 
@@ -89,7 +110,7 @@ class JwtParserTest {
 
     @Test
     @DisplayName("요청 메시지에 Authorization 헤더가 있으면 토큰을 검증하고 유효하지 않은 토큰이면 예외가 발생한다")
-    void extractUserIdFromInvalidTokenTest() throws Exception {
+    void extractUserIdFromInvalidTokenWithRequestTest() throws Exception {
         //given
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "dummy");
@@ -98,5 +119,4 @@ class JwtParserTest {
         Assertions.assertThatThrownBy(() -> jwtParser.extractUserIdFrom(request))
                 .isInstanceOf(JwtException.class);
     }
-
 }

@@ -1,4 +1,4 @@
-package world.trecord.web.security;
+package world.trecord.web.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,29 +18,25 @@ public class JwtGenerator {
 
     private static final String USER_ID = "user_id";
     private static final long EXPIRATION_TIME = 86400000L;
+    private static final long REFRESH_TOKEN_EXPIRATION_MULTIPLIER = 14;
 
-    public String createTokenWith(Long userId) {
-        Claims claims = Jwts.claims();
-        claims.put(USER_ID, userId);
-        Date now = new Date();
-
-        return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + EXPIRATION_TIME))
-                .signWith(hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
-                .compact();
+    public String generateToken(Long userId) {
+        return generateToken(userId, EXPIRATION_TIME);
     }
 
-    public String createRefreshTokenWith(Long userId) {
+    public String generateRefreshToken(Long userId) {
+        return generateToken(userId, EXPIRATION_TIME * REFRESH_TOKEN_EXPIRATION_MULTIPLIER);
+    }
+
+    private String generateToken(Long userId, long expirationTime) {
         Claims claims = Jwts.claims();
-        claims.put(USER_ID, userId);
+        claims.put(USER_ID, String.valueOf(userId));
         Date now = new Date();
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + EXPIRATION_TIME * 14))
+                .setExpiration(new Date(now.getTime() + expirationTime))
                 .signWith(hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
                 .compact();
     }

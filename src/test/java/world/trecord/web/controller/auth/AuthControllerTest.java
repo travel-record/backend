@@ -11,7 +11,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
-import world.trecord.web.security.JwtGenerator;
+import world.trecord.web.security.jwt.JwtGenerator;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -85,7 +85,7 @@ public class AuthControllerTest {
                 .build();
         userRepository.save(userEntity);
 
-        String refreshToken = jwtGenerator.createRefreshTokenWith(userEntity.getId());
+        String refreshToken = jwtGenerator.generateRefreshToken(userEntity.getId());
 
         RefreshTokenRequest request = RefreshTokenRequest.builder()
                 .refreshToken(refreshToken)

@@ -1,4 +1,4 @@
-package world.trecord.web.security;
+package world.trecord.web.security.jwt;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
