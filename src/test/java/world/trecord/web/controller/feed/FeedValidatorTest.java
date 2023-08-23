@@ -23,7 +23,7 @@ class FeedValidatorTest {
         FeedValidator feedValidator = new FeedValidator();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedValidator.validateFeedCreateRequest(request))
+        Assertions.assertThatThrownBy(() -> feedValidator.verify(request))
                 .isInstanceOf(CustomException.class);
     }
 
@@ -39,7 +39,7 @@ class FeedValidatorTest {
         FeedValidator feedValidator = new FeedValidator();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedValidator.validateFeedUpdateRequest(request))
+        Assertions.assertThatThrownBy(() -> feedValidator.verify(request))
                 .isInstanceOf(CustomException.class);
     }
 

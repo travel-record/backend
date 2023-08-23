@@ -10,7 +10,7 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
 @Component
 public class FeedValidator {
 
-    public void validateFeedCreateRequest(FeedCreateRequest request) {
+    public void verify(FeedCreateRequest request) {
         if (request.getStartAt() == null || request.getEndAt() == null) {
             return;
         }
@@ -20,7 +20,7 @@ public class FeedValidator {
         }
     }
 
-    public void validateFeedUpdateRequest(FeedUpdateRequest request) {
+    public void verify(FeedUpdateRequest request) {
         if (request.getStartAt() == null || request.getEndAt() == null) {
             return;
         }

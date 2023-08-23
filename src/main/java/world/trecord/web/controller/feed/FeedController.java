@@ -31,13 +31,13 @@ public class FeedController {
 
     @PostMapping
     public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest feedCreateRequest, @LoginUserId String userId) {
-        feedValidator.validateFeedCreateRequest(feedCreateRequest);
+        feedValidator.verify(feedCreateRequest);
         return ApiResponse.ok(feedService.createFeed(Long.valueOf(userId), feedCreateRequest));
     }
 
     @PutMapping
     public ApiResponse<FeedUpdateResponse> updateFeed(@RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @LoginUserId String userId) {
-        feedValidator.validateFeedUpdateRequest(feedUpdateRequest);
+        feedValidator.verify(feedUpdateRequest);
         return ApiResponse.ok(feedService.updateFeed(Long.valueOf(userId), feedUpdateRequest));
     }
 
