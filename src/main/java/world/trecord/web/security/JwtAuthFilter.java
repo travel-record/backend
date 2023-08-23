@@ -27,6 +27,8 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION = "Authorization";
+    public static final String UTF_8 = "UTF-8";
+    public static final String APPLICATION_JSON = "application/json";
 
     private final JwtResolver jwtResolver;
     private final UserService userService;
@@ -44,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = request.getHeader(AUTHORIZATION);
-            
+
             if (token == null && whitelist.stream().anyMatch(requestMatcher -> requestMatcher.matches(request))) {
                 filterChain.doFilter(request, response);
                 return;
@@ -53,14 +55,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             long userId = verifyTokenAndExtractUserId(token);
             setAuthenticationWith(userId);
             filterChain.doFilter(request, response);
-
         } catch (Exception e) {
-            ApiResponse apiResponse = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
+            ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
+
             response.setStatus(SC_BAD_REQUEST);
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("application/json");
+            response.setCharacterEncoding(UTF_8);
+            response.setContentType(APPLICATION_JSON);
+
             PrintWriter out = response.getWriter();
-            out.print(new ObjectMapper().writeValueAsString(apiResponse));
+            out.print(new ObjectMapper().writeValueAsString(body));
             out.flush();
         }
     }
