@@ -29,6 +29,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
+import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @IntegrationTestSupport
 class NotificationServiceTest {
@@ -55,7 +56,7 @@ class NotificationServiceTest {
     NotificationService notificationService;
 
     @Test
-    @DisplayName("사용자가 기록에 댓글을 작성하면 생성된 알림을 반환한다")
+    @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 기록 알림을 생성하여 반환한다")
     void createNotificationTest() throws Exception {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -198,6 +199,39 @@ class NotificationServiceTest {
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("사용자가 다른 사용자의 기록에 좋아요하면 좋아요 알림을 생성하여 반환한다 ")
+    void createRecordLikeNotificationTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity viewer = userRepository.save(UserEntity.builder().email("test2@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        //when
+        NotificationEntity notificationEntity = notificationService.createRecordLikeNotification(recordEntity, viewer);
+
+        //then
+        Assertions.assertThat(notificationEntity)
+                .extracting("type", "status", "usersToEntity", "usersFromEntity", "recordEntity")
+                .containsExactly(RECORD_LIKE, UNREAD, writer, viewer, recordEntity);
+    }
+
+    @Test
+    @DisplayName("기록 작성자 본인이 자신의 기록에 좋아요하면 좋아요 알림이 생성되지 않는다")
+    void createRecordLikeNotificationWhenAuthorLikeSelfTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        //when
+        NotificationEntity notificationEntity = notificationService.createRecordLikeNotification(recordEntity, writer);
+
+        //then
+        Assertions.assertThat(notificationEntity).isNull();
     }
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {

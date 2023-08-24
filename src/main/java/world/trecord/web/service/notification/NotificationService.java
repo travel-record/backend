@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
+import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
@@ -17,6 +18,7 @@ import java.util.List;
 import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
+import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
 
 @Transactional(readOnly = true)
@@ -38,7 +40,21 @@ public class NotificationService {
             return null;
         }
 
-        NotificationEntity notificationEntity = createCommentNotification(commentEntity, userToEntity, userFromEntity);
+        NotificationEntity notificationEntity = createCommentNotificationEntity(commentEntity, userToEntity, userFromEntity);
+
+        return notificationRepository.save(notificationEntity);
+    }
+
+    @Transactional
+    public NotificationEntity createRecordLikeNotification(RecordEntity recordEntity, UserEntity userFromEntity) {
+
+        UserEntity userToEntity = recordEntity.getFeedEntity().getUserEntity();
+
+        if (isUserLikeOnSelf(userToEntity, userFromEntity)) {
+            return null;
+        }
+
+        NotificationEntity notificationEntity = createRecordLikeNotificationEntity(recordEntity, userToEntity, userFromEntity);
 
         return notificationRepository.save(notificationEntity);
     }
@@ -72,11 +88,25 @@ public class NotificationService {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
     }
 
+    private boolean isUserLikeOnSelf(UserEntity userToEntity, UserEntity userFromEntity) {
+        return userToEntity.equals(userFromEntity);
+    }
+
     private boolean isUserCommentingOnSelf(UserEntity userToEntity, UserEntity userFromEntity) {
         return userToEntity.equals(userFromEntity);
     }
 
-    private NotificationEntity createCommentNotification(CommentEntity commentEntity, UserEntity userToEntity, UserEntity userFromEntity) {
+    private NotificationEntity createRecordLikeNotificationEntity(RecordEntity recordEntity, UserEntity userToEntity, UserEntity userFromEntity) {
+        return NotificationEntity.builder()
+                .recordEntity(recordEntity)
+                .usersToEntity(userToEntity)
+                .usersFromEntity(userFromEntity)
+                .type(RECORD_LIKE)
+                .status(UNREAD)
+                .build();
+    }
+
+    private NotificationEntity createCommentNotificationEntity(CommentEntity commentEntity, UserEntity userToEntity, UserEntity userFromEntity) {
         return NotificationEntity.builder()
                 .recordEntity(commentEntity.getRecordEntity())
                 .commentEntity(commentEntity)

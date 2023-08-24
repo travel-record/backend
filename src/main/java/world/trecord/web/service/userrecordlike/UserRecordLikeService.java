@@ -10,6 +10,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
+import world.trecord.web.service.notification.NotificationService;
 import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -24,6 +25,7 @@ public class UserRecordLikeService {
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final RecordRepository recordRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public UserRecordLikeResponse toggleLike(RecordLikeRequest recordLikeRequest, Long userId) {
@@ -42,6 +44,7 @@ public class UserRecordLikeService {
 
     private UserRecordLikeResponse like(UserEntity userEntity, RecordEntity recordEntity) {
         saveUserRecordLikeEntity(userEntity, recordEntity);
+        notificationService.createRecordLikeNotification(recordEntity, userEntity);
         return createUserRecordLikeResponse(true);
     }
 
