@@ -10,11 +10,11 @@ import world.trecord.web.client.feign.config.GoogleFeignConfig;
 
 @FeignClient(
         name = "google-token-client",
-        url = "https://oauth2.googleapis.com/token",
+        url = "${google.oauth2.endpoint}",
         configuration = GoogleFeignConfig.class
 )
 public interface GoogleTokenFeignClient {
 
-    @PostMapping
+    @PostMapping("/token")
     ResponseEntity<GoogleTokenResponse> call(@RequestBody GoogleTokenRequest request);
 }

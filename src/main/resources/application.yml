@@ -27,6 +27,10 @@ jwt:
 google:
   client-id: "client id"
   client-secret: "client secret"
+  oauth2:
+    endpoint: "https://oauth2.googleapis.com"
+  api:
+    baseUrl: "https://www.googleapis.com"
 ---
 spring:
   config:
@@ -60,3 +64,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+google:
+  oauth2:
+    endpoint: "http://localhost:8089"
+  api:
+    baseUrl: "http://localhost:8089"
