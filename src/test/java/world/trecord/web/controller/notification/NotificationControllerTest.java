@@ -119,11 +119,12 @@ class NotificationControllerTest {
         UserEntity commenter3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-        CommentEntity commentEntity3 = createCommentEntity(commenter3, recordEntity, "content3");
+        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity1, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity2, "content2");
+        CommentEntity commentEntity3 = createCommentEntity(commenter3, recordEntity2, "content3");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 

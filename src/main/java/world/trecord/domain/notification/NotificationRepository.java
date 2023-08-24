@@ -14,7 +14,7 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
     boolean existsByUsersToEntityIdAndStatus(Long userId, NotificationStatus status);
 
-    @EntityGraph(attributePaths = "usersToEntity")
+    @EntityGraph(attributePaths = {"usersToEntity", "commentEntity"})
     List<NotificationEntity> findByUsersToEntityOrderByCreatedDateTimeDesc(UserEntity userToEntity);
 
     @Modifying(clearAutomatically = true)

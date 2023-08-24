@@ -12,6 +12,7 @@ import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationStatus;
+import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
@@ -23,6 +24,7 @@ import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
+import world.trecord.web.service.userrecordlike.UserRecordLikeService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,6 +52,9 @@ class NotificationServiceTest {
 
     @Autowired
     CommentService commentService;
+
+    @Autowired
+    UserRecordLikeService userRecordLikeService;
 
     @Autowired
     NotificationRepository notificationRepository;
@@ -103,8 +108,11 @@ class NotificationServiceTest {
     void checkNewUnreadNotificationReturnTrueTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        CommentEntity commentEntity = createCommentEntity(userEntity, recordEntity, "content1");
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, null, UNREAD);
+        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, commentEntity, UNREAD, COMMENT);
 
         notificationRepository.save(notificationEntity);
 
@@ -120,8 +128,11 @@ class NotificationServiceTest {
     void checkNewUnreadNotificationReturnFalseTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        CommentEntity commentEntity = createCommentEntity(userEntity, recordEntity, "content1");
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, null, READ);
+        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, commentEntity, READ, COMMENT);
 
         notificationRepository.save(notificationEntity);
 
@@ -163,25 +174,25 @@ class NotificationServiceTest {
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
-        // TODO noti 타입 추가
+        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, commentEntity1, READ, COMMENT);
+        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, commentEntity2, READ, RECORD_LIKE);
+        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, commentEntity3, READ, COMMENT);
+        NotificationEntity notificationEntity4 = createNotificationEntity(author, commenter1, commentEntity3, READ, RECORD_LIKE);
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, commentEntity1, READ);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, commentEntity2, READ);
-        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, commentEntity3, READ);
-
-        notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
+        notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
         NotificationListResponse response = notificationService.getNotificationsBy(author.getId());
 
         //then
         Assertions.assertThat(response.getNotifications())
-                .hasSize(3)
+                .hasSize(4)
                 .extracting("type", "nickname", "content")
                 .containsExactly(
-                        tuple(COMMENT, "nickname3", "content3"),
-                        tuple(COMMENT, "nickname2", "content2"),
-                        tuple(COMMENT, "nickname1", "content1")
+                        tuple(RECORD_LIKE, commenter1.getNickname(), notificationEntity4.getNotificationContent()),
+                        tuple(COMMENT, commenter3.getNickname(), notificationEntity3.getNotificationContent()),
+                        tuple(RECORD_LIKE, commenter2.getNickname(), notificationEntity2.getNotificationContent()),
+                        tuple(COMMENT, commenter1.getNickname(), notificationEntity1.getNotificationContent())
                 );
     }
 
@@ -277,12 +288,13 @@ class NotificationServiceTest {
                 .build();
     }
 
-    private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, CommentEntity commentEntity, NotificationStatus notificationStatus) {
+    private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, CommentEntity commentEntity, NotificationStatus notificationStatus, NotificationType notificationType) {
         return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
                 .usersFromEntity(userFromEntity)
                 .commentEntity(commentEntity)
-                .type(COMMENT)
+                .recordEntity(commentEntity.getRecordEntity())
+                .type(notificationType)
                 .status(notificationStatus)
                 .build();
     }

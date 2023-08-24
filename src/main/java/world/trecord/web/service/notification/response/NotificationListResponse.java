@@ -22,10 +22,7 @@ public class NotificationListResponse {
     private NotificationListResponse(List<NotificationEntity> notificationEntities) {
         this.notifications = notificationEntities.stream()
                 .map(notificationEntity -> Notification.builder()
-                        .type(notificationEntity.getType())
-                        .nickname(notificationEntity.getUsersFromEntity().getNickname())
-                        .date(notificationEntity.getCreatedDateTime())
-                        .content(notificationEntity.getNotificationContent())
+                        .notificationEntity(notificationEntity)
                         .build())
                 .toList();
     }
@@ -36,7 +33,7 @@ public class NotificationListResponse {
     public static class Notification {
 
         private NotificationType type;
-        // TODO 필드 추가
+        private Long recordId;
         private String nickname;
         private String content;
 
@@ -44,11 +41,13 @@ public class NotificationListResponse {
         private LocalDateTime date;
 
         @Builder
-        private Notification(NotificationType type, String nickname, String content, LocalDateTime date) {
-            this.type = type;
-            this.nickname = nickname;
-            this.content = content;
-            this.date = date;
+        private Notification(NotificationEntity notificationEntity) {
+            // TODO type에 따라서 null 처리
+            this.type = notificationEntity.getType();
+            this.recordId = notificationEntity.getCommentEntity().getRecordEntity().getId();
+            this.nickname = notificationEntity.getUsersFromEntity().getNickname();
+            this.content = notificationEntity.getNotificationContent();
+            this.date = notificationEntity.getCreatedDateTime();
         }
     }
 }
