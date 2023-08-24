@@ -30,7 +30,7 @@ public class RecordService {
     private final FeedRepository feedRepository;
     private final UserRecordLikeRepository userRecordLikeRepository;
 
-    public RecordInfoResponse getRecordInfoBy(Long recordId, Long viewerId) {
+    public RecordInfoResponse getRecordInfo(Long recordId, Long viewerId) {
         RecordEntity recordEntity = findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId);
 
         boolean liked = hasUserLikedRecord(viewerId, recordEntity);

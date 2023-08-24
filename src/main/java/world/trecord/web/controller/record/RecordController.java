@@ -25,8 +25,8 @@ public class RecordController {
     private final UserRecordLikeService userRecordLikeService;
 
     @GetMapping("/{recordId}")
-    public ApiResponse<RecordInfoResponse> getRecordInfoBy(@PathVariable("recordId") String recordId, @LoginUserId String viewerId) {
-        return ApiResponse.ok(recordService.getRecordInfoBy(Long.valueOf(recordId), viewerId != null ? Long.valueOf(viewerId) : null));
+    public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable("recordId") String recordId, @LoginUserId String viewerId) {
+        return ApiResponse.ok(recordService.getRecordInfo(Long.valueOf(recordId), viewerId != null ? Long.valueOf(viewerId) : null));
     }
 
     @PostMapping
