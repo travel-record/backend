@@ -5,8 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.security.jwt.JwtGenerator;
-import world.trecord.web.security.jwt.JwtParser;
+import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
@@ -20,8 +19,7 @@ public class AuthHandler {
 
     private final UserRepository userRepository;
     private final UserService userService;
-    private final JwtGenerator jwtGenerator;
-    private final JwtParser jwtParser;
+    private final JwtTokenHandler jwtTokenHandler;
     private final GoogleAuthManager googleAuthManager;
 
     @Value("${jwt.secret-key}")
@@ -38,19 +36,19 @@ public class AuthHandler {
         return LoginResponse.builder()
                 .userId(userEntity.getId())
                 .nickname(userEntity.getNickname())
-                .token(jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs))
-                .refreshToken(jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs * 14))
+                .token(jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs))
+                .refreshToken(jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs * 14))
                 .build();
     }
 
     public RefreshResponse reissueTokenWith(String refreshToken) {
-        jwtParser.verify(secretKey, refreshToken);
+        jwtTokenHandler.verify(secretKey, refreshToken);
 
-        Long userId = Long.valueOf(jwtParser.extractUserId(secretKey, refreshToken));
+        Long userId = Long.valueOf(jwtTokenHandler.extractUserId(secretKey, refreshToken));
 
         return RefreshResponse.builder()
-                .token(jwtGenerator.generateToken(userId, secretKey, expiredTimeMs))
-                .refreshToken(jwtGenerator.generateToken(userId, secretKey, expiredTimeMs * 14))
+                .token(jwtTokenHandler.generateToken(userId, secretKey, expiredTimeMs))
+                .refreshToken(jwtTokenHandler.generateToken(userId, secretKey, expiredTimeMs * 14))
                 .build();
     }
 

@@ -12,8 +12,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import world.trecord.web.security.jwt.JwtAuthFilter;
-import world.trecord.web.security.jwt.JwtParser;
+import world.trecord.web.security.jwt.JwtTokenFilter;
+import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.users.UserService;
 
 import java.time.Duration;
@@ -24,7 +24,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtParser jwtParser;
+    private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
 
     @Bean
@@ -47,14 +47,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthFilter jwtAuthFilter() {
+    public JwtTokenFilter jwtAuthFilter() {
         List<String> whitelist = List.of("/", "/api/v1/auth/google-login", "/api/v1/auth/token", "/api/v1/users/{userId}", "/api/v1/feeds/{feedId}", "/api/v1/records/{recordId}");
-        return new JwtAuthFilter(jwtParser, userService, whitelist);
+        return new JwtTokenFilter(jwtTokenHandler, userService, whitelist);
     }
 
     @Bean
-    public FilterRegistrationBean<JwtAuthFilter> filter() {
-        FilterRegistrationBean<JwtAuthFilter> registrationBean = new FilterRegistrationBean<>();
+    public FilterRegistrationBean<JwtTokenFilter> filter() {
+        FilterRegistrationBean<JwtTokenFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(jwtAuthFilter());
         registrationBean.addUrlPatterns("/api/*");
         return registrationBean;

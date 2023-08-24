@@ -23,10 +23,10 @@ import static org.mockito.Mockito.mock;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
 @ExtendWith(MockitoExtension.class)
-class JwtAuthFilterMockTest {
+class JwtTokenFilterMockTest {
 
     @Mock
-    private JwtParser jwtParser;
+    private JwtTokenHandler jwtTokenHandler;
 
     @Mock
     private UserService userService;
@@ -40,25 +40,25 @@ class JwtAuthFilterMockTest {
     @Mock
     private FilterChain filterChain;
 
-    private JwtAuthFilter jwtAuthFilter;
+    private JwtTokenFilter jwtTokenFilter;
 
     @Test
     @DisplayName("올바른 토큰을 가지고 요청하면 filterchain.doFilter이 호출된다")
     void doFilterInternalWithValidTokenTest() throws Exception {
         //given
-        jwtAuthFilter = new JwtAuthFilter(jwtParser, userService, List.of("/whitelist"));
+        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, List.of("/whitelist"));
 
         String validToken = "validToken";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
-        ReflectionTestUtils.setField(jwtAuthFilter, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
         when(request.getHeader("Authorization")).thenReturn(validToken);
-        when(jwtParser.extractUserId(secretKey, validToken)).thenReturn("1");
+        when(jwtTokenHandler.extractUserId(secretKey, validToken)).thenReturn("1");
         when(userService.loadUserByUsername("1")).thenReturn(mock(UserDetails.class));
 
         //when
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         //then
         verify(filterChain).doFilter(request, response);
@@ -68,22 +68,22 @@ class JwtAuthFilterMockTest {
     @DisplayName("올바르지 않은 토큰을 요청하면 601 에러 응답 코드를 반환한다")
     void doFilterInternalWithInvalidTokenTest() throws Exception {
         //given
-        jwtAuthFilter = new JwtAuthFilter(jwtParser, userService, List.of("/whitelist"));
+        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, List.of("/whitelist"));
 
         String invalidToken = "invalidToken";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
-        ReflectionTestUtils.setField(jwtAuthFilter, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
         when(request.getHeader("Authorization")).thenReturn(invalidToken);
-        doThrow(new JwtException("invalid jwt exception")).when(jwtParser).verify(secretKey, invalidToken);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, invalidToken);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(response.getWriter()).thenReturn(mockPrintWriter);
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class); // Capture the printed value
 
         //when
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         //then
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -98,13 +98,13 @@ class JwtAuthFilterMockTest {
     void doFilterInternalWithoutTokenToWhitelistUrlTest() throws Exception {
         //given
         String whiteListPath = "/whitelist";
-        jwtAuthFilter = new JwtAuthFilter(jwtParser, userService, List.of(whiteListPath));
+        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, List.of(whiteListPath));
 
         when(request.getHeader("Authorization")).thenReturn(null);
         when(request.getServletPath()).thenReturn(whiteListPath);
 
         //when
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         //then
         verify(filterChain).doFilter(request, response);
@@ -114,22 +114,22 @@ class JwtAuthFilterMockTest {
     @DisplayName("토큰 없이 보안 URL 리소스에 대해서 요청을 하면 601 에러 응답 코드를 반환한다")
     void doFilterInternalWithoutTokenToSecuritylistUrlTest() throws Exception {
         //given
-        jwtAuthFilter = new JwtAuthFilter(jwtParser, userService, List.of("/whitelist"));
+        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, List.of("/whitelist"));
 
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
-        ReflectionTestUtils.setField(jwtAuthFilter, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
         when(request.getHeader("Authorization")).thenReturn(null);
         when(request.getServletPath()).thenReturn("/security");
-        doThrow(new JwtException("invalid jwt exception")).when(jwtParser).verify(secretKey, null);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, null);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(response.getWriter()).thenReturn(mockPrintWriter);
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class); // Capture the printed value
 
         //when
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         //then
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);

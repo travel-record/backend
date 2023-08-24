@@ -14,8 +14,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
-import world.trecord.web.security.jwt.JwtGenerator;
-import world.trecord.web.security.jwt.JwtParser;
+import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
@@ -35,10 +34,7 @@ class AuthHandlerTest {
     UserRepository userRepository;
 
     @Mock
-    JwtGenerator jwtGenerator;
-
-    @Mock
-    JwtParser jwtParser;
+    JwtTokenHandler jwtTokenHandler;
 
     @InjectMocks
     AuthHandler authHandler;
@@ -66,10 +62,10 @@ class AuthHandlerTest {
                         .nickname(nickname)
                         .build());
 
-        given(jwtGenerator.generateToken(null, secretKey, expiredTimeMs))
+        given(jwtTokenHandler.generateToken(null, secretKey, expiredTimeMs))
                 .willReturn(token);
 
-        given(jwtGenerator.generateToken(null, secretKey, expiredTimeMs * 14))
+        given(jwtTokenHandler.generateToken(null, secretKey, expiredTimeMs * 14))
                 .willReturn(token);
 
         //when
@@ -109,10 +105,10 @@ class AuthHandlerTest {
         ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
         ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
 
-        given(jwtParser.extractUserId(secretKey, token))
+        given(jwtTokenHandler.extractUserId(secretKey, token))
                 .willReturn(String.valueOf(userId));
 
-        given(jwtGenerator.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))
+        given(jwtTokenHandler.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))
                 .willReturn(token);
 
         //when
@@ -134,7 +130,7 @@ class AuthHandlerTest {
         ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
 
         doThrow(new JwtException("Invalid Token"))
-                .when(jwtParser).verify(secretKey, invalidToken);
+                .when(jwtTokenHandler).verify(secretKey, invalidToken);
 
         //when //then
         Assertions.assertThatThrownBy(() -> authHandler.reissueTokenWith(invalidToken))

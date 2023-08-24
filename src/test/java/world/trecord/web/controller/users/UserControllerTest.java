@@ -18,7 +18,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.security.jwt.JwtGenerator;
+import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -43,7 +43,7 @@ class UserControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtGenerator jwtGenerator;
+    JwtTokenHandler jwtTokenHandler;
 
     @Autowired
     CommentRepository commentRepository;
@@ -80,7 +80,7 @@ class UserControllerTest {
                 .build();
 
         UserEntity saveUser = userRepository.save(userEntity);
-        String token = jwtGenerator.generateToken(saveUser.getId(), secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(saveUser.getId(), secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -97,7 +97,7 @@ class UserControllerTest {
     @DisplayName("존재하지 않는 사용자 아이디를 암호화한 토큰으로 사용자 정보를 조회하면 601 에러 응답 코드를 반환한다")
     void getUserInfoWithNotExistingTokenTest() throws Exception {
         //given
-        String token = jwtGenerator.generateToken(-1L, secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(-1L, secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -126,7 +126,7 @@ class UserControllerTest {
 
         UserEntity saveUser = userRepository.save(userEntity);
 
-        String token = jwtGenerator.generateToken(saveUser.getId(), secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(saveUser.getId(), secretKey, expiredTimeMs);
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(nickname)
@@ -168,7 +168,7 @@ class UserControllerTest {
 
         userRepository.save(requestUserEntity);
 
-        String token = jwtGenerator.generateToken(requestUserEntity.getId(), secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(requestUserEntity.getId(), secretKey, expiredTimeMs);
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(duplicatedNickname)
@@ -238,7 +238,7 @@ class UserControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
@@ -289,7 +289,7 @@ class UserControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtGenerator.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
