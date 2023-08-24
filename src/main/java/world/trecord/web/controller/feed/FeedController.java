@@ -27,7 +27,7 @@ public class FeedController {
 
     @GetMapping("/{feedId}")
     public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @LoginUserId String viewerId) {
-        return ApiResponse.ok(feedService.getFeedBy(feedId, Long.parseLong(viewerId)));
+        return ApiResponse.ok(feedService.getFeedBy(feedId, viewerId != null ? Long.parseLong(viewerId) : null));
     }
 
     @PostMapping

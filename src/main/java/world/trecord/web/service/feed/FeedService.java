@@ -42,12 +42,12 @@ public class FeedService {
     public FeedInfoResponse getFeedBy(Long feedId, Long viewerId) {
         FeedEntity feedEntity = feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
 
-        List<RecordWithFeedProjection> records = recordRepository.findRecordEntityByFeedId(feedId);
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedId);
 
         return FeedInfoResponse.builder()
                 .feedEntity(feedEntity)
                 .viewerId(viewerId)
-                .records(records)
+                .projectionList(projectionList)
                 .build();
     }
 

@@ -29,7 +29,7 @@ public class FeedInfoResponse {
     private List<Record> records;
 
     @Builder
-    private FeedInfoResponse(FeedEntity feedEntity, Long viewerId, List<RecordWithFeedProjection> records) {
+    private FeedInfoResponse(FeedEntity feedEntity, Long viewerId, List<RecordWithFeedProjection> projectionList) {
         this.writerId = feedEntity.getUserEntity().getId();
         this.feedId = feedEntity.getId();
         this.isUpdatable = writerId.equals(viewerId);
@@ -41,7 +41,7 @@ public class FeedInfoResponse {
         this.companion = feedEntity.getCompanion();
         this.startAt = feedEntity.convertStartAtToLocalDate();
         this.endAt = feedEntity.convertEndAtToLocalDate();
-        this.records = records.stream()
+        this.records = projectionList.stream()
                 .map(Record::new)
                 .toList();
     }
