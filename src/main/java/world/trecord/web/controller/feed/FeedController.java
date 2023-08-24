@@ -2,6 +2,7 @@ package world.trecord.web.controller.feed;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.LoginUserId;
@@ -30,13 +31,13 @@ public class FeedController {
     }
 
     @PostMapping
-    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest feedCreateRequest, @LoginUserId String userId) {
+    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest feedCreateRequest, @LoginUserId String userId) throws BindException {
         feedValidator.verify(feedCreateRequest);
         return ApiResponse.ok(feedService.createFeed(Long.valueOf(userId), feedCreateRequest));
     }
 
     @PutMapping
-    public ApiResponse<FeedUpdateResponse> updateFeed(@RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @LoginUserId String userId) {
+    public ApiResponse<FeedUpdateResponse> updateFeed(@RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @LoginUserId String userId) throws BindException {
         feedValidator.verify(feedUpdateRequest);
         return ApiResponse.ok(feedService.updateFeed(Long.valueOf(userId), feedUpdateRequest));
     }

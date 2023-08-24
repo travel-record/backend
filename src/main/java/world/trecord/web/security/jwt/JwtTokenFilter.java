@@ -25,7 +25,7 @@ import java.util.List;
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
-public class JwtAuthFilter extends OncePerRequestFilter {
+public class JwtTokenFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION = "Authorization";
     private static final String UTF_8 = "UTF-8";
@@ -34,12 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Value("${jwt.secret-key}")
     private String secretKey;
 
-    private final JwtParser jwtParser;
+    private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
     private final List<RequestMatcher> whitelist = new ArrayList<>();
 
-    public JwtAuthFilter(JwtParser jwtParser, UserService userService, List<String> whiteListUrlList) {
-        this.jwtParser = jwtParser;
+    public JwtTokenFilter(JwtTokenHandler jwtTokenHandler, UserService userService, List<String> whiteListUrlList) {
+        this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
         whiteListUrlList.forEach(url -> whitelist.add(new AntPathRequestMatcher(url)));
     }
@@ -54,8 +54,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            jwtParser.verify(secretKey, token);
-            String userId = jwtParser.extractUserId(secretKey, token);
+            jwtTokenHandler.verify(secretKey, token);
+            String userId = jwtTokenHandler.extractUserId(secretKey, token);
             setAuthenticationWith(Long.parseLong(userId));
             filterChain.doFilter(request, response);
 

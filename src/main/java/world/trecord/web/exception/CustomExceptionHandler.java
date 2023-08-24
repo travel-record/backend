@@ -13,9 +13,8 @@ import world.trecord.web.controller.ApiResponse;
 
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.*;
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @Slf4j
@@ -23,50 +22,50 @@ import static world.trecord.web.exception.CustomExceptionError.*;
 public class CustomExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ApiResponse> customException(CustomException exception) {
-        ApiResponse apiResponse = ApiResponse.of(exception.getError().getErrorCode(), exception.getError().getErrorMsg(), null);
+    public ResponseEntity<ApiResponse<Object>> customException(CustomException exception) {
+        ApiResponse<Object> apiResponse = ApiResponse.of(exception.getError().getErrorCode(), exception.getError().getErrorMsg(), null);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
     @ExceptionHandler(BindException.class)
-    public ResponseEntity<ApiResponse> bindException(BindException exception) {
+    public ResponseEntity<ApiResponse<ValidationErrorDTO>> bindException(BindException exception) {
         ValidationErrorDTO validationErrorDTO = getFieldErrorDTO(exception);
-        ApiResponse apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), validationErrorDTO);
+        ApiResponse<ValidationErrorDTO> apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), validationErrorDTO);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse> httpMessageNotReadableException(HttpMessageNotReadableException exception) {
-        ApiResponse apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
+    public ResponseEntity<ApiResponse<Object>> httpMessageNotReadableException(HttpMessageNotReadableException exception) {
+        ApiResponse<Object> apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ApiResponse> noHandlerFoundException(NoHandlerFoundException exception) {
+    public ResponseEntity<ApiResponse<Object>> noHandlerFoundException(NoHandlerFoundException exception) {
         CustomExceptionError error = CustomExceptionError.NOT_FOUND;
-        ApiResponse apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
-        return ResponseEntity.status(NOT_FOUND).body(apiResponse);
+        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
+        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ApiResponse> httpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
+    public ResponseEntity<ApiResponse<Object>> httpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
         CustomExceptionError error = INVALID_REQUEST_METHOD;
-        ApiResponse apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
+        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
     @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ApiResponse> jwtException(JwtException exception) {
+    public ResponseEntity<ApiResponse<Object>> jwtException(JwtException exception) {
         CustomExceptionError error = INVALID_TOKEN;
-        ApiResponse apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
+        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse> runtimeException(RuntimeException exception) {
+    public ResponseEntity<ApiResponse<Object>> runtimeException(RuntimeException exception) {
         log.error("[Runtime Error] == [{}]", exception);
         CustomExceptionError error = CustomExceptionError.INTERNAL_SERVER_ERROR;
-        ApiResponse apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
+        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(apiResponse);
     }
 
