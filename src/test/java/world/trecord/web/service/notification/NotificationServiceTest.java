@@ -14,6 +14,8 @@ import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationStatus;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
+import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
@@ -55,6 +57,9 @@ class NotificationServiceTest {
     @Autowired
     NotificationService notificationService;
 
+    @Autowired
+    UserRecordLikeRepository userRecordLikeRepository;
+
     @Test
     @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 기록 알림을 생성하여 반환한다")
     void createNotificationTest() throws Exception {
@@ -66,12 +71,15 @@ class NotificationServiceTest {
         CommentEntity commentEntity = createCommentEntity(commenter, recordEntity, "content1");
 
         //when
-        NotificationEntity commentNotification = notificationService.createCommentNotification(commentEntity);
+        notificationService.createCommentNotification(commentEntity);
 
         //then
-        Assertions.assertThat(commentNotification)
+        Assertions.assertThat(notificationRepository.findAll())
+                .hasSize(1)
                 .extracting("type", "status", "usersToEntity", "usersFromEntity", "commentEntity", "recordEntity")
-                .containsExactly(COMMENT, UNREAD, author, commenter, commentEntity, recordEntity);
+                .containsExactly(
+                        tuple(COMMENT, UNREAD, author, commenter, commentEntity, recordEntity)
+                );
     }
 
     @Test
@@ -84,10 +92,10 @@ class NotificationServiceTest {
         CommentEntity commentEntity = createCommentEntity(author, recordEntity, "content1");
 
         //when
-        NotificationEntity commentNotification = notificationService.createCommentNotification(commentEntity);
+        notificationService.createCommentNotification(commentEntity);
 
         //then
-        Assertions.assertThat(commentNotification).isNull();
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
     }
 
     @Test
@@ -155,6 +163,8 @@ class NotificationServiceTest {
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
+        // TODO noti 타입 추가
+
         NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, commentEntity1, READ);
         NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, commentEntity2, READ);
         NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, commentEntity3, READ);
@@ -211,12 +221,15 @@ class NotificationServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        NotificationEntity notificationEntity = notificationService.createRecordLikeNotification(recordEntity, viewer);
+        notificationService.createRecordLikeNotification(recordEntity, viewer);
 
         //then
-        Assertions.assertThat(notificationEntity)
+        Assertions.assertThat(notificationRepository.findAll())
+                .hasSize(1)
                 .extracting("type", "status", "usersToEntity", "usersFromEntity", "recordEntity")
-                .containsExactly(RECORD_LIKE, UNREAD, writer, viewer, recordEntity);
+                .containsExactly(
+                        tuple(RECORD_LIKE, UNREAD, writer, viewer, recordEntity)
+                );
     }
 
     @Test
@@ -228,10 +241,10 @@ class NotificationServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        NotificationEntity notificationEntity = notificationService.createRecordLikeNotification(recordEntity, writer);
+        notificationService.createRecordLikeNotification(recordEntity, writer);
 
         //then
-        Assertions.assertThat(notificationEntity).isNull();
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
     }
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
@@ -271,6 +284,14 @@ class NotificationServiceTest {
                 .commentEntity(commentEntity)
                 .type(COMMENT)
                 .status(notificationStatus)
+                .build();
+    }
+
+    private UserRecordLikeEntity createUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
+        return UserRecordLikeEntity
+                .builder()
+                .userEntity(userEntity)
+                .recordEntity(recordEntity)
                 .build();
     }
 }

@@ -20,13 +20,12 @@ public class NotificationListResponse {
 
     @Builder
     private NotificationListResponse(List<NotificationEntity> notificationEntities) {
-        // TODO notificationEntity.type에 따른 content 변경
         this.notifications = notificationEntities.stream()
                 .map(notificationEntity -> Notification.builder()
                         .type(notificationEntity.getType())
                         .nickname(notificationEntity.getUsersFromEntity().getNickname())
                         .date(notificationEntity.getCreatedDateTime())
-                        .content(notificationEntity.getCommentEntity().getContent())
+                        .content(notificationEntity.getNotificationContent())
                         .build())
                 .toList();
     }
@@ -37,6 +36,7 @@ public class NotificationListResponse {
     public static class Notification {
 
         private NotificationType type;
+        // TODO 필드 추가
         private String nickname;
         private String content;
 

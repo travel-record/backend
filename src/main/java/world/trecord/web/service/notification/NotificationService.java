@@ -30,33 +30,33 @@ public class NotificationService {
     private final UserRepository userRepository;
 
     @Transactional
-    public NotificationEntity createCommentNotification(CommentEntity commentEntity) {
+    public void createCommentNotification(CommentEntity commentEntity) {
 
         UserEntity userToEntity = commentEntity.getRecordEntity().getFeedEntity().getUserEntity();
 
         UserEntity userFromEntity = commentEntity.getUserEntity();
 
         if (isUserCommentingOnSelf(userToEntity, userFromEntity)) {
-            return null;
+            return;
         }
 
         NotificationEntity notificationEntity = createCommentNotificationEntity(commentEntity, userToEntity, userFromEntity);
 
-        return notificationRepository.save(notificationEntity);
+        notificationRepository.save(notificationEntity);
     }
 
     @Transactional
-    public NotificationEntity createRecordLikeNotification(RecordEntity recordEntity, UserEntity userFromEntity) {
+    public void createRecordLikeNotification(RecordEntity recordEntity, UserEntity userFromEntity) {
 
         UserEntity userToEntity = recordEntity.getFeedEntity().getUserEntity();
 
         if (isUserLikeOnSelf(userToEntity, userFromEntity)) {
-            return null;
+            return;
         }
 
         NotificationEntity notificationEntity = createRecordLikeNotificationEntity(recordEntity, userToEntity, userFromEntity);
 
-        return notificationRepository.save(notificationEntity);
+        notificationRepository.save(notificationEntity);
     }
 
     public CheckNewNotificationResponse checkNewNotificationBy(Long userId) {
@@ -79,6 +79,7 @@ public class NotificationService {
                 .notificationEntities(notificationList)
                 .build();
 
+        // TODO async 처리
         notificationRepository.updateNotificationStatusByUserId(userEntity.getId(), UNREAD, READ);
 
         return response;
