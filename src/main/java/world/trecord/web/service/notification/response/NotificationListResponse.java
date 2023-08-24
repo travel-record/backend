@@ -20,13 +20,9 @@ public class NotificationListResponse {
 
     @Builder
     private NotificationListResponse(List<NotificationEntity> notificationEntities) {
-        // TODO notificationEntity.type에 따른 content 변경
         this.notifications = notificationEntities.stream()
                 .map(notificationEntity -> Notification.builder()
-                        .type(notificationEntity.getType())
-                        .nickname(notificationEntity.getUsersFromEntity().getNickname())
-                        .date(notificationEntity.getCreatedDateTime())
-                        .content(notificationEntity.getCommentEntity().getContent())
+                        .notificationEntity(notificationEntity)
                         .build())
                 .toList();
     }
@@ -37,6 +33,7 @@ public class NotificationListResponse {
     public static class Notification {
 
         private NotificationType type;
+        private Long recordId;
         private String nickname;
         private String content;
 
@@ -44,11 +41,13 @@ public class NotificationListResponse {
         private LocalDateTime date;
 
         @Builder
-        private Notification(NotificationType type, String nickname, String content, LocalDateTime date) {
-            this.type = type;
-            this.nickname = nickname;
-            this.content = content;
-            this.date = date;
+        private Notification(NotificationEntity notificationEntity) {
+            // TODO type에 따라서 null 처리
+            this.type = notificationEntity.getType();
+            this.recordId = notificationEntity.getCommentEntity().getRecordEntity().getId();
+            this.nickname = notificationEntity.getUsersFromEntity().getNickname();
+            this.content = notificationEntity.getNotificationContent();
+            this.date = notificationEntity.getCreatedDateTime();
         }
     }
 }

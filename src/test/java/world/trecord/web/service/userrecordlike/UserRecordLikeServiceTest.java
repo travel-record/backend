@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
@@ -19,6 +20,8 @@ import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static world.trecord.domain.notification.NotificationStatus.UNREAD;
+import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @IntegrationTestSupport
 class UserRecordLikeServiceTest {
@@ -37,6 +40,9 @@ class UserRecordLikeServiceTest {
 
     @Autowired
     FeedRepository feedRepository;
+
+    @Autowired
+    NotificationRepository notificationRepository;
 
 
     @Test
@@ -89,6 +95,52 @@ class UserRecordLikeServiceTest {
                 .containsExactly(
                         tuple(userEntity, recordEntity)
                 );
+    }
+
+    @Test
+    @DisplayName("기록 작성자가 아닌 사용자가 좋아요하지 않은 기록에 좋아요를 하면 기록 작성자를 향한 좋아요 알림을 생성한다")
+    void createNotificationTestWhenViewerLikeOnRecordTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity viewer = userRepository.save(UserEntity.builder().email("test2@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        RecordLikeRequest request = RecordLikeRequest.builder()
+                .recordId(recordEntity.getId())
+                .build();
+
+        //when
+        userRecordLikeService.toggleLike(request, viewer.getId());
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll())
+                .hasSize(1)
+                .extracting("type", "status", "usersToEntity", "usersFromEntity", "recordEntity")
+                .containsExactly(
+                        tuple(RECORD_LIKE, UNREAD, writer, viewer, recordEntity)
+                );
+    }
+
+    @Test
+    @DisplayName("기록 작성자가 본인이 작성하였고 좋아요하지 않은 기록에 좋아요를 하면 기록 작성자를 향한 좋아요 알림을 생성하지 않는다")
+    void createNotificationTestWhenWriterLikeOnRecordTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        RecordLikeRequest request = RecordLikeRequest.builder()
+                .recordId(recordEntity.getId())
+                .build();
+
+        //when
+        userRecordLikeService.toggleLike(request, writer.getId());
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
     }
 
 

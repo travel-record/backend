@@ -114,6 +114,44 @@ class RecordControllerTest {
     }
 
     @Test
+    @DisplayName("인증되지 않은 사용자가 기록을 조회할 수 있다")
+    void getRecordInfoByWhoNotAuthenticatedTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        UserEntity commenter1 = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        UserEntity commenter2 = userRepository.save(UserEntity.builder()
+                .email("test2@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/records/{recordId}", recordEntity.getId())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
+                .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
+                .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
+                .andExpect(jsonPath("$.data.isUpdatable").value(false))
+                .andExpect(jsonPath("$.data.comments[0].isUpdatable").value(false))
+                .andExpect(jsonPath("$.data.comments[1].isUpdatable").value(false));
+    }
+
+    @Test
     @DisplayName("댓글 작성자가 기록을 조회하면 기록 상세 정보와 댓글 리스트를 반환한다")
     void getRecordInfoByCommenterTest() throws Exception {
         //given

@@ -54,4 +54,8 @@ public class NotificationEntity extends BaseEntity {
         this.commentEntity = commentEntity;
         this.recordEntity = recordEntity;
     }
+
+    public String getNotificationContent() {
+        return type.getContent(this);
+    }
 }
