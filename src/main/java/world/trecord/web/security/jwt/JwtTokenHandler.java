@@ -19,12 +19,13 @@ public class JwtTokenHandler {
     public String generateToken(Long userId, String secretKey, long expiredTimeMs) {
         Claims claims = Jwts.claims();
         claims.put(USER_ID, String.valueOf(userId));
-        Date now = new Date();
+
+        Date issuedAt = new Date();
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + expiredTimeMs))
+                .setIssuedAt(issuedAt)
+                .setExpiration(new Date(issuedAt.getTime() + expiredTimeMs))
                 .signWith(hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
                 .compact();
     }
