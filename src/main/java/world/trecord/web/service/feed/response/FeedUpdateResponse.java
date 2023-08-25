@@ -53,11 +53,13 @@ public class FeedUpdateResponse {
         private Long id;
         private String title;
         private String place;
+        private String imageUrl;
         private LocalDate date;
 
         public Record(RecordEntity recordEntity) {
             this.id = recordEntity.getId();
             this.title = recordEntity.getTitle();
+            this.imageUrl = recordEntity.getImageUrl();
             this.place = recordEntity.getPlace();
             this.date = recordEntity.convertDateToLocalDate();
         }

@@ -30,12 +30,10 @@ public class FeedService {
     public FeedListResponse getFeedListBy(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        List<FeedListResponse.Feed> feeds = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity)
-                .stream()
-                .map(FeedListResponse.Feed::new).toList();
+        List<FeedEntity> feedEntities = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity);
 
         return FeedListResponse.builder()
-                .feeds(feeds)
+                .feedEntities(feedEntities)
                 .build();
     }
 
@@ -66,14 +64,14 @@ public class FeedService {
     public FeedUpdateResponse updateFeed(Long userId, FeedUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
+        // TODO find feedEntity with record entity specific field
         FeedEntity feedEntity = findFeedEntityBy(request.getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
         updateFeedEntity(request, feedEntity);
 
-        return FeedUpdateResponse
-                .builder()
+        return FeedUpdateResponse.builder()
                 .feedEntity(feedEntity)
                 .build();
     }

@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
+import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.auth.AuthHandler;
 import world.trecord.web.service.auth.response.LoginResponse;
 
@@ -56,6 +57,23 @@ class AuthControllerMockTest {
         Assertions.assertThat(apiResponse.getData().getToken())
                 .extracting("token", "refreshToken")
                 .containsExactly(token, refreshToken);
+    }
+
+    @Test
+    @DisplayName("유효하지 않는 구글 인가 코드는 예외가 발생한다")
+    void googleLoginWithInvalidAccessTokenTest() throws Exception {
+        //given
+        String redirectionUri = "redirection uri";
+        String validAuthorizationCode = "test authorization code";
+
+        GoogleLoginRequest request = GoogleLoginRequest.builder().authorizationCode(validAuthorizationCode).redirectionUri(redirectionUri).build();
+
+        BDDMockito.when(authHandler.googleLogin(validAuthorizationCode, redirectionUri))
+                .thenThrow(CustomException.class);
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> authController.googleLogin(request))
+                .isInstanceOf(CustomException.class);
     }
 
 }

@@ -17,7 +17,8 @@ import world.trecord.web.security.jwt.JwtTokenHandler;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.web.exception.CustomExceptionError.*;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
 @MockMvcTestSupport
 public class AuthControllerTest {
@@ -39,28 +40,6 @@ public class AuthControllerTest {
 
     @Value("${jwt.token.expired-time-ms}")
     private Long expiredTimeMs;
-
-    @Test
-    @DisplayName("유효하지 않는 구글 인가 코드는 600 에러 코드로 반환한다")
-    void googleLoginWithInvalidAccessTokenTest() throws Exception {
-        //given
-        GoogleLoginRequest request = GoogleLoginRequest.builder()
-                .authorizationCode("dummy")
-                .redirectionUri("dummy")
-                .build();
-
-        String content = objectMapper.writeValueAsString(request);
-
-        //when //then
-        mockMvc.perform(
-                        post("/api/v1/auth/google-login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
-                )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_GOOGLE_AUTHORIZATION_CODE.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(INVALID_GOOGLE_AUTHORIZATION_CODE.getErrorMsg()));
-    }
 
     @Test
     @DisplayName("인가 코드를 전송하지 않으면 602 에러 코드로 반환한다")

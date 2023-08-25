@@ -9,11 +9,11 @@ import world.trecord.web.client.feign.config.GoogleFeignConfig;
 
 @FeignClient(
         name = "google-user-info-client",
-        url = "https://www.googleapis.com/oauth2/v3/userinfo",
+        url = "${google.api.baseUrl}",
         configuration = GoogleFeignConfig.class
 )
 public interface GoogleUserInfoFeignClient {
 
-    @GetMapping
+    @GetMapping("/oauth2/v3/userinfo")
     ResponseEntity<GoogleUserInfoResponse> call(@RequestHeader("Authorization") String accessToken);
 }

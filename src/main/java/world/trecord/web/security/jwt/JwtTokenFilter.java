@@ -56,10 +56,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             jwtTokenHandler.verify(secretKey, token);
             String userId = jwtTokenHandler.extractUserId(secretKey, token);
-            setAuthenticationWith(Long.parseLong(userId));
+            setAuthenticationWith(userId);
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
+            // TODO exception 구분
             ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
 
             response.setStatus(SC_BAD_REQUEST);
@@ -72,8 +73,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
     }
 
-    private void setAuthenticationWith(long userId) {
-        UserDetails userDetails = userService.loadUserByUsername(String.valueOf(userId));
+    private void setAuthenticationWith(String userId) {
+        UserDetails userDetails = userService.loadUserByUsername(userId);
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
