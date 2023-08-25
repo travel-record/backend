@@ -44,7 +44,7 @@ class GoogleFeignErrorDecoderTest {
     }
 
     @Test
-    @DisplayName("응답이 500이면 RuntimeException 예외를 던진다")
+    @DisplayName("응답이 500이면 IllegalStateException 예외를 던진다")
     void decodeTestWhenResponseIs500() {
         //given
         GoogleFeignErrorDecoder decoder = new GoogleFeignErrorDecoder();
