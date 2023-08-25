@@ -64,14 +64,14 @@ public class FeedService {
     public FeedUpdateResponse updateFeed(Long userId, FeedUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
+        // TODO find feedEntity with record entity specific field
         FeedEntity feedEntity = findFeedEntityBy(request.getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
         updateFeedEntity(request, feedEntity);
 
-        return FeedUpdateResponse
-                .builder()
+        return FeedUpdateResponse.builder()
                 .feedEntity(feedEntity)
                 .build();
     }
