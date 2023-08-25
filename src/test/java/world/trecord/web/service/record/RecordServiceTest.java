@@ -72,11 +72,6 @@ class RecordServiceTest {
 
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
-
         //when
         RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), writer.getId());
 
@@ -85,13 +80,6 @@ class RecordServiceTest {
         Assertions.assertThat(recordInfoResponse.getTitle()).isEqualTo(recordEntity.getTitle());
         Assertions.assertThat(recordInfoResponse.getContent()).isEqualTo(recordEntity.getContent());
         Assertions.assertThat(recordInfoResponse.getIsUpdatable()).isTrue();
-        Assertions.assertThat(recordInfoResponse.getComments())
-                .hasSize(2)
-                .extracting("commentId", "commenterId", "isUpdatable", "content")
-                .containsExactly(
-                        tuple(commentEntity1.getId(), commentEntity1.getUserEntity().getId(), false, commentEntity1.getContent()),
-                        tuple(commentEntity2.getId(), commentEntity2.getUserEntity().getId(), false, commentEntity2.getContent())
-                );
     }
 
     @Test
@@ -127,13 +115,6 @@ class RecordServiceTest {
         Assertions.assertThat(recordInfoResponse.getTitle()).isEqualTo(recordEntity.getTitle());
         Assertions.assertThat(recordInfoResponse.getContent()).isEqualTo(recordEntity.getContent());
         Assertions.assertThat(recordInfoResponse.getIsUpdatable()).isFalse();
-        Assertions.assertThat(recordInfoResponse.getComments())
-                .hasSize(2)
-                .extracting("commentId", "commenterId", "isUpdatable", "content")
-                .containsExactly(
-                        tuple(commentEntity1.getId(), commentEntity1.getUserEntity().getId(), true, commentEntity1.getContent()),
-                        tuple(commentEntity2.getId(), commentEntity2.getUserEntity().getId(), false, commentEntity2.getContent())
-                );
     }
 
     @Test
@@ -169,13 +150,6 @@ class RecordServiceTest {
         Assertions.assertThat(recordInfoResponse.getTitle()).isEqualTo(recordEntity.getTitle());
         Assertions.assertThat(recordInfoResponse.getContent()).isEqualTo(recordEntity.getContent());
         Assertions.assertThat(recordInfoResponse.getIsUpdatable()).isFalse();
-        Assertions.assertThat(recordInfoResponse.getComments())
-                .hasSize(2)
-                .extracting("commentId", "commenterId", "isUpdatable", "content")
-                .containsExactly(
-                        tuple(commentEntity1.getId(), commentEntity1.getUserEntity().getId(), false, commentEntity1.getContent()),
-                        tuple(commentEntity2.getId(), commentEntity2.getUserEntity().getId(), false, commentEntity2.getContent())
-                );
     }
 
     @Test

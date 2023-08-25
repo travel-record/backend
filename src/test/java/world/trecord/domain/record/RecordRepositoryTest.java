@@ -15,7 +15,6 @@ import world.trecord.domain.users.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @IntegrationTestSupport
 class RecordRepositoryTest {
@@ -31,36 +30,6 @@ class RecordRepositoryTest {
 
     @Autowired
     CommentRepository commentRepository;
-
-    @Test
-    @DisplayName("기록 상세 정보를 등록 시간 오름차순으로 정렬된 댓글 리스트와 사용자 정보를 함께 조회한다")
-    void findWithFeedEntityAndCommentEntitiesByTest() throws Exception {
-        //given
-        UserEntity savedUserEntity1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity savedUserEntity2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
-
-        FeedEntity savedFeedEntity = feedRepository.save(createFeedEntity(savedUserEntity1, "feed name"));
-        RecordEntity savedRecordEntity = recordRepository.save(createRecordEntity(savedFeedEntity, "record", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling"));
-        CommentEntity commentEntity1 = createCommentEntity(savedUserEntity1, savedRecordEntity);
-        CommentEntity commentEntity2 = createCommentEntity(savedUserEntity2, savedRecordEntity);
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
-
-        //when
-        RecordEntity recordEntity = recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesBy(savedRecordEntity.getId()).get();
-
-        //then
-        Assertions.assertThat(recordEntity).isEqualTo(savedRecordEntity);
-        Assertions.assertThat(recordEntity.getCommentEntities()).containsExactly(commentEntity1, commentEntity2);
-        Assertions.assertThat(recordEntity.getFeedEntity()).isEqualTo(savedFeedEntity);
-        Assertions.assertThat(recordEntity.getCommentEntities().stream().map(CommentEntity::getUserEntity).collect(Collectors.toList()))
-                .contains(savedUserEntity1, savedUserEntity2);
-    }
 
     @Test
     @DisplayName("피드 아이디로 기록 리스트를 기록 날짜,기록 등록 날짜 오름차순으로 projection으로 조회한다")

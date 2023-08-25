@@ -37,7 +37,7 @@ public class RecordService {
     private final CommentRepository commentRepository;
 
     public RecordInfoResponse getRecordInfo(Long recordId, Long viewerId) {
-        RecordEntity recordEntity = findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId);
+        RecordEntity recordEntity = findRecordEntityBy(recordId);
 
         boolean liked = hasUserLikedRecord(viewerId, recordEntity);
 
@@ -114,10 +114,6 @@ public class RecordService {
 
     private RecordEntity findRecordEntityBy(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
-    }
-
-    private RecordEntity findRecordEntityWithFeedEntityAndCommentEntitiesBy(Long recordId) {
-        return recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
     private RecordEntity findRecordEntityWithCommentEntitiesBy(Long recordId) {

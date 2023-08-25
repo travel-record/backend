@@ -7,7 +7,6 @@ import lombok.Setter;
 import world.trecord.domain.record.RecordEntity;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -28,7 +27,6 @@ public class RecordInfoResponse {
     private String content;
     private String companion;
     private String imageUrl;
-    private List<Comment> comments;
 
     @Builder
     private RecordInfoResponse(RecordEntity recordEntity, Long viewerId, Boolean liked) {
@@ -46,32 +44,5 @@ public class RecordInfoResponse {
         this.content = recordEntity.getContent();
         this.companion = recordEntity.getCompanion();
         this.imageUrl = recordEntity.getImageUrl();
-        this.comments = recordEntity.sortCommentEntityByCreatedDateTimeAsc()
-                .map(c -> Comment.builder()
-                        .commenterId(c.getUserEntity().getId())
-                        .commentId(c.getId())
-                        .content(c.getContent())
-                        .viewerId(viewerId)
-                        .build())
-                .toList();
     }
-
-    @NoArgsConstructor
-    @Getter
-    @Setter
-    public static class Comment {
-        private Long commentId;
-        private Long commenterId;
-        private Boolean isUpdatable;
-        private String content;
-
-        @Builder
-        private Comment(Long commenterId, Long commentId, String content, Long viewerId) {
-            this.commenterId = commenterId;
-            this.commentId = commentId;
-            this.isUpdatable = commenterId.equals(viewerId);
-            this.content = content;
-        }
-    }
-
 }
