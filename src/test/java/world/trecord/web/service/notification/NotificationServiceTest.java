@@ -15,7 +15,6 @@ import world.trecord.domain.notification.NotificationStatus;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
-import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -88,7 +87,7 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("기록 작성자가 자신의 기록에 댓글을 작성하면 null을 반환한다")
+    @DisplayName("기록 작성자가 자신의 기록에 댓글을 작성하면 알림이 생성되지 않는다")
     void createNotificationItselfTest() throws Exception {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -197,6 +196,41 @@ class NotificationServiceTest {
     }
 
     @Test
+    @DisplayName("사용자가 알림 리스트를 조회하면 읽지 않은 알림을 모두 알림 처리 한다")
+    void getNotificationsByTestUpdateUnreadToReadStatus() throws Exception {
+        //given
+        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
+        UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
+        UserEntity commenter3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
+        CommentEntity commentEntity3 = createCommentEntity(commenter3, recordEntity, "content3");
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
+
+        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, commentEntity2, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, commentEntity3, UNREAD, COMMENT);
+        NotificationEntity notificationEntity4 = createNotificationEntity(author, commenter1, commentEntity3, UNREAD, RECORD_LIKE);
+
+        notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
+
+        //when
+        notificationService.getNotificationsBy(author.getId());
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll())
+                .extracting("status")
+                .containsOnly(READ);
+    }
+
+    @Test
     @DisplayName("존재하지 않는 사용자가 알림 리스트를 조회하면 예외가 발생한다")
     void getNotificationsByNotExistingUserIdTest() throws Exception {
         //given
@@ -296,14 +330,6 @@ class NotificationServiceTest {
                 .recordEntity(commentEntity.getRecordEntity())
                 .type(notificationType)
                 .status(notificationStatus)
-                .build();
-    }
-
-    private UserRecordLikeEntity createUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
-        return UserRecordLikeEntity
-                .builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
                 .build();
     }
 }

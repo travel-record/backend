@@ -60,8 +60,6 @@ public class FeedEntity extends BaseEntity {
 
     @Builder
     private FeedEntity(UserEntity userEntity, String name, String description, String imageUrl, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
-        this.userEntity = userEntity;
-        this.recordEntities = new ArrayList<>();
         this.name = name;
         this.imageUrl = imageUrl;
         this.description = description;
@@ -70,12 +68,11 @@ public class FeedEntity extends BaseEntity {
         this.companion = companion;
         this.place = place;
         this.satisfaction = satisfaction;
+        this.userEntity = userEntity;
+        this.recordEntities = new ArrayList<>();
     }
 
     public void addRecordEntity(RecordEntity recordEntity) {
-        if (this.recordEntities == null) {
-            recordEntities = new ArrayList<>();
-        }
         recordEntities.add(recordEntity);
     }
 

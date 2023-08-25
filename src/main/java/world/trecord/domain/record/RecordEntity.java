@@ -12,9 +12,7 @@ import world.trecord.domain.feed.FeedEntity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -94,18 +92,10 @@ public class RecordEntity extends BaseEntity {
     }
 
     public void addCommentEntity(CommentEntity commentEntity) {
-        if (commentEntity == null) {
-            this.commentEntities = new ArrayList<>();
-        }
         this.commentEntities.add(commentEntity);
     }
 
     public LocalDate convertDateToLocalDate() {
         return this.date != null ? getDate().toLocalDate() : null;
-    }
-
-    public Stream<CommentEntity> sortCommentEntityByCreatedDateTimeAsc() {
-        return this.commentEntities.stream()
-                .sorted(Comparator.comparing(CommentEntity::getCreatedDateTime));
     }
 }
