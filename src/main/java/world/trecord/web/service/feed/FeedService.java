@@ -30,12 +30,10 @@ public class FeedService {
     public FeedListResponse getFeedListBy(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        List<FeedListResponse.Feed> feeds = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity)
-                .stream()
-                .map(FeedListResponse.Feed::new).toList();
+        List<FeedEntity> feedEntities = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity);
 
         return FeedListResponse.builder()
-                .feeds(feeds)
+                .feedEntities(feedEntities)
                 .build();
     }
 

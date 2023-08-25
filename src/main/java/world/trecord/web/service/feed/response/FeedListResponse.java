@@ -17,8 +17,8 @@ public class FeedListResponse {
     private List<Feed> feeds;
 
     @Builder
-    private FeedListResponse(List<Feed> feeds) {
-        this.feeds = feeds;
+    private FeedListResponse(List<FeedEntity> feedEntities) {
+        this.feeds = feedEntities.stream().map(Feed::new).toList();
     }
 
     @NoArgsConstructor
@@ -32,13 +32,13 @@ public class FeedListResponse {
         private LocalDate startAt;
         private LocalDate endAt;
 
-        public Feed(FeedEntity feed) {
-            this.id = feed.getId();
-            this.name = feed.getName();
-            this.place = feed.getPlace();
-            this.imageUrl = feed.getImageUrl();
-            this.startAt = feed.convertStartAtToLocalDate();
-            this.endAt = feed.convertEndAtToLocalDate();
+        public Feed(FeedEntity feedEntity) {
+            this.id = feedEntity.getId();
+            this.name = feedEntity.getName();
+            this.place = feedEntity.getPlace();
+            this.imageUrl = feedEntity.getImageUrl();
+            this.startAt = feedEntity.convertStartAtToLocalDate();
+            this.endAt = feedEntity.convertEndAtToLocalDate();
         }
     }
 }
