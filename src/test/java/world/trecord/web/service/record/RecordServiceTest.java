@@ -19,6 +19,7 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordDeleteRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
+import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
 import world.trecord.web.service.record.response.RecordDeleteResponse;
 import world.trecord.web.service.record.response.RecordInfoResponse;
@@ -609,6 +610,66 @@ class RecordServiceTest {
         //then
         Assertions.assertThat(response.getLiked()).isFalse();
     }
+
+    @Test
+    @DisplayName("기록에 등록된 댓글들을 등록 시간 오름차 순으로 조회하여 RecordCommentsResponse로 반환한다")
+    void getRecordCommentsTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        UserEntity viewer = userRepository.save(UserEntity.builder()
+                .email("viewer@email.com")
+                .build());
+
+        UserEntity commenter1 = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        UserEntity commenter2 = userRepository.save(UserEntity.builder()
+                .email("test2@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
+
+        commentRepository.saveAll(List.of(commentEntity2, commentEntity1));
+
+        //when
+        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), viewer.getId());
+
+        //then
+        Assertions.assertThat(response.getComments())
+                .hasSize(2)
+                .extracting("commentId", "commenterId", "commenterImageUrl", "isUpdatable", "content")
+                .containsExactly(
+                        tuple(commentEntity2.getId(), commenter2.getId(), commenter2.getImageUrl(), false, commentEntity2.getContent()),
+                        tuple(commentEntity1.getId(), commenter1.getId(), commenter1.getImageUrl(), false, commentEntity1.getContent())
+                );
+    }
+
+    @Test
+    @DisplayName("기록에 등록된 댓글들이 없을때 댓글 리스트가 빈 배열인 RecordCommentsResponse로 반환한다")
+    void getRecordCommentsReturnsCommentsEmptyTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        //when
+        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), writer.getId());
+
+        //then
+        Assertions.assertThat(response.getComments()).isEmpty();
+    }
+
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()

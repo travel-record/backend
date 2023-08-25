@@ -48,7 +48,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtTokenFilter jwtAuthFilter() {
-        List<String> whitelist = List.of("/", "/api/v1/auth/google-login", "/api/v1/auth/token", "/api/v1/users/{userId}", "/api/v1/feeds/{feedId}", "/api/v1/records/{recordId}");
+        List<String> whitelist = List.of("/", "/api/v1/auth/google-login", "/api/v1/auth/token", "/api/v1/users/{userId}", "/api/v1/feeds/{feedId}", "/api/v1/records/{recordId}", "/api/v1/records/{recordId}/comments");
         return new JwtTokenFilter(jwtTokenHandler, userService, whitelist);
     }
 
