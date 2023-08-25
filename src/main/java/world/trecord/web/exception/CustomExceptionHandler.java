@@ -8,6 +8,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import world.trecord.web.controller.ApiResponse;
 
@@ -34,9 +35,22 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> illegalArgumentException(IllegalArgumentException exception) {
+        ApiResponse<Object> apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
+        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Object>> httpMessageNotReadableException(HttpMessageNotReadableException exception) {
         ApiResponse<Object> apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
+        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Object>> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+        CustomExceptionError error = INVALID_ARGUMENT;
+        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
