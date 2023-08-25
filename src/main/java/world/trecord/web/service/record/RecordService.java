@@ -3,6 +3,8 @@ package world.trecord.web.service.record;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.domain.comment.CommentEntity;
+import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -14,9 +16,12 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordDeleteRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
+import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
 import world.trecord.web.service.record.response.RecordDeleteResponse;
 import world.trecord.web.service.record.response.RecordInfoResponse;
+
+import java.util.List;
 
 import static world.trecord.web.exception.CustomExceptionError.*;
 
@@ -29,9 +34,10 @@ public class RecordService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final UserRecordLikeRepository userRecordLikeRepository;
+    private final CommentRepository commentRepository;
 
     public RecordInfoResponse getRecordInfo(Long recordId, Long viewerId) {
-        RecordEntity recordEntity = findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId);
+        RecordEntity recordEntity = findRecordEntityBy(recordId);
 
         boolean liked = hasUserLikedRecord(viewerId, recordEntity);
 
@@ -95,12 +101,19 @@ public class RecordService {
                 .build();
     }
 
-    private RecordEntity findRecordEntityBy(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+    public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
+        RecordEntity recordEntity = findRecordEntityBy(recordId);
+
+        List<CommentEntity> commentEntities = commentRepository.findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(recordEntity);
+
+        return RecordCommentsResponse.builder()
+                .commentEntities(commentEntities)
+                .viewerId(viewerId)
+                .build();
     }
 
-    private RecordEntity findRecordEntityWithFeedEntityAndCommentEntitiesBy(Long recordId) {
-        return recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+    private RecordEntity findRecordEntityBy(Long recordId) {
+        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
     private RecordEntity findRecordEntityWithCommentEntitiesBy(Long recordId) {

@@ -10,6 +10,7 @@ import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordDeleteRequest;
 import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
+import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
 import world.trecord.web.service.record.response.RecordDeleteResponse;
 import world.trecord.web.service.record.response.RecordInfoResponse;
@@ -27,6 +28,11 @@ public class RecordController {
     @GetMapping("/{recordId}")
     public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable("recordId") String recordId, @LoginUserId String viewerId) {
         return ApiResponse.ok(recordService.getRecordInfo(Long.valueOf(recordId), viewerId != null ? Long.valueOf(viewerId) : null));
+    }
+
+    @GetMapping("/{recordId}/comments")
+    public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") String recordId, @LoginUserId String viewerId) {
+        return ApiResponse.ok(recordService.getRecordComments(Long.valueOf(recordId), viewerId != null ? Long.valueOf(viewerId) : null));
     }
 
     @PostMapping

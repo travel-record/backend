@@ -75,26 +75,9 @@ class RecordControllerTest {
     @DisplayName("기록 작성자가 기록을 조회하면 기록 상세 정보와 댓글 리스트를 반환한다")
     void getRecordInfoByWriterTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
-
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
 
@@ -107,36 +90,16 @@ class RecordControllerTest {
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
                 .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
                 .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
-
-                .andExpect(jsonPath("$.data.isUpdatable").value(true))
-                .andExpect(jsonPath("$.data.comments[0].isUpdatable").value(false))
-                .andExpect(jsonPath("$.data.comments[1].isUpdatable").value(false));
+                .andExpect(jsonPath("$.data.isUpdatable").value(true));
     }
 
     @Test
     @DisplayName("인증되지 않은 사용자가 기록을 조회할 수 있다")
     void getRecordInfoByWhoNotAuthenticatedTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
-
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when //then
         mockMvc.perform(
@@ -146,50 +109,7 @@ class RecordControllerTest {
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
                 .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
                 .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
-                .andExpect(jsonPath("$.data.isUpdatable").value(false))
-                .andExpect(jsonPath("$.data.comments[0].isUpdatable").value(false))
-                .andExpect(jsonPath("$.data.comments[1].isUpdatable").value(false));
-    }
-
-    @Test
-    @DisplayName("댓글 작성자가 기록을 조회하면 기록 상세 정보와 댓글 리스트를 반환한다")
-    void getRecordInfoByCommenterTest() throws Exception {
-        //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
-
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
-
-        String token = jwtTokenHandler.generateToken(commenter1.getId(), secretKey, expiredTimeMs);
-
-        //when //then
-        mockMvc.perform(
-                        get("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", token)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
-                .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
-                .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
-                .andExpect(jsonPath("$.data.isUpdatable").value(false))
-                .andExpect(jsonPath("$.data.comments[0].isUpdatable").value(true))
-                .andExpect(jsonPath("$.data.comments[1].isUpdatable").value(false));
+                .andExpect(jsonPath("$.data.isUpdatable").value(false));
     }
 
     @Test
@@ -200,22 +120,8 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
-
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when //then
         mockMvc.perform(
@@ -225,9 +131,7 @@ class RecordControllerTest {
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
                 .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
                 .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
-                .andExpect(jsonPath("$.data.isUpdatable").value(false))
-                .andExpect(jsonPath("$.data.comments[0].isUpdatable").value(false))
-                .andExpect(jsonPath("$.data.comments[1].isUpdatable").value(false));
+                .andExpect(jsonPath("$.data.isUpdatable").value(false));
     }
 
     @Test
@@ -548,6 +452,40 @@ class RecordControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.liked").value(true));
+    }
+
+    @Test
+    @DisplayName("기록에 등록된 댓글 리스트를 조회하여 반환한다")
+    void getRecordCommentsTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        UserEntity commenter1 = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        UserEntity commenter2 = userRepository.save(UserEntity.builder()
+                .email("test2@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
+
+        commentRepository.saveAll(List.of(commentEntity2, commentEntity1));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/records/{recordId}/comments", recordEntity.getId())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.comments.size()").value(2))
+                .andExpect(jsonPath("$.data.comments[0].commentId").value(commentEntity2.getId()))
+                .andExpect(jsonPath("$.data.comments[1].commentId").value(commentEntity1.getId()));
     }
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {

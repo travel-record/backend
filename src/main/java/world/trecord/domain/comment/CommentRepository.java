@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
+import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.util.List;
@@ -23,4 +24,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
             "WHERE ce.userEntity = :userEntity " +
             "ORDER BY ce.createdDateTime DESC")
     List<CommentRecordProjection> findByUserEntityOrderByCreatedDateTimeDesc(@Param("userEntity") UserEntity userEntity);
+
+    @EntityGraph(attributePaths = "userEntity")
+    List<CommentEntity> findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(RecordEntity recordEntity);
 }
