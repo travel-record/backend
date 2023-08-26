@@ -36,7 +36,7 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "description", nullable = true)
     private String description;
 
-    @Column(name = "start_at", nullable = true)
+    @Column(name = "start_at", nullable = false)
     private LocalDateTime startAt;
 
     @Column(name = "end_at", nullable = true)
