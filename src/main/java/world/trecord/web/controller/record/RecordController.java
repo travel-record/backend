@@ -2,6 +2,7 @@ package world.trecord.web.controller.record;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.LoginUserId;
@@ -22,6 +23,7 @@ import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 @RequestMapping(value = "/api/v1/records")
 public class RecordController {
 
+    private final RecordValidator recordValidator;
     private final RecordService recordService;
     private final UserRecordLikeService userRecordLikeService;
 
@@ -36,12 +38,14 @@ public class RecordController {
     }
 
     @PostMapping
-    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Valid RecordCreateRequest recordCreateRequest, @LoginUserId String userId) {
+    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Valid RecordCreateRequest recordCreateRequest, @LoginUserId String userId) throws BindException {
+        recordValidator.verify(recordCreateRequest);
         return ApiResponse.ok(recordService.createRecord(Long.valueOf(userId), recordCreateRequest));
     }
 
     @PutMapping
-    public ApiResponse<RecordInfoResponse> updateRecord(@RequestBody @Valid RecordUpdateRequest recordUpdateRequest, @LoginUserId String userId) {
+    public ApiResponse<RecordInfoResponse> updateRecord(@RequestBody @Valid RecordUpdateRequest recordUpdateRequest, @LoginUserId String userId) throws BindException {
+        recordValidator.verify(recordUpdateRequest);
         return ApiResponse.ok(recordService.updateRecord(Long.valueOf(userId), recordUpdateRequest));
     }
 
