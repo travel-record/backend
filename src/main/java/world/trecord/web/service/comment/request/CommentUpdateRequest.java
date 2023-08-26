@@ -2,6 +2,7 @@ package world.trecord.web.service.comment.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class CommentUpdateRequest {
     @NotNull
     private Long commentId;
 
+    @Size(max = 255)
     @NotEmpty
     private String content;
 

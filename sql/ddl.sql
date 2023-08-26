@@ -19,17 +19,17 @@ create table feed
 (
     id_feed            int auto_increment comment '피드 PK'
         primary key,
-    id_users           int          not null comment '사용자 FK',
-    image_url          text         null comment '썸네일 이미지 URL',
-    description        varchar(255) null comment '설명',
-    name               varchar(255) not null comment '페이지 이름',
-    start_at           timestamp    null comment '시작 시간',
-    end_at             timestamp    null comment '종료 시간',
-    companion          varchar(255) null comment '동행자',
-    satisfaction       varchar(255) null comment '만족도',
-    place              varchar(255) null comment '장소',
-    created_date_time  datetime     null comment '기록 생성 시간',
-    modified_date_time datetime     null comment '기록 수정 시간',
+    id_users           int                                   not null comment '사용자 FK',
+    image_url          text                                  null comment '썸네일 이미지 URL',
+    description        varchar(255)                          null comment '설명',
+    name               varchar(255)                          not null comment '피드 이름',
+    start_at           timestamp default current_timestamp() not null on update current_timestamp() comment '시작 시간',
+    end_at             timestamp                             null comment '종료 시간',
+    companion          varchar(255)                          null comment '동행자',
+    satisfaction       varchar(255)                          null comment '만족도',
+    place              varchar(255)                          null comment '장소',
+    created_date_time  datetime                              null comment '기록 생성 시간',
+    modified_date_time datetime                              null comment '기록 수정 시간',
     constraint fk_feed_users
         foreign key (id_users) references users (id_users)
             on update cascade on delete cascade
@@ -121,3 +121,7 @@ create table user_record_like
             on delete cascade
 )
     comment '사용자의 기록 좋아요';
+
+create index idx_user_id
+    on user_record_like (id_users)
+    comment '유저 PK 인덱스';

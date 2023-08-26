@@ -1,6 +1,7 @@
 package world.trecord.web.service.feed.request;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,9 +20,10 @@ public class FeedCreateRequest {
     private String name;
 
     private String satisfaction;
-
+    
     private String place;
 
+    @NotNull
     private LocalDateTime startAt;
 
     private LocalDateTime endAt;
