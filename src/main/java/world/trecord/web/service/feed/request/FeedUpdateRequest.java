@@ -25,8 +25,10 @@ public class FeedUpdateRequest {
 
     private String place;
 
+    @NotNull
     private LocalDateTime startAt;
 
+    @NotNull
     private LocalDateTime endAt;
 
     private String companion;

@@ -20,12 +20,13 @@ public class FeedCreateRequest {
     private String name;
 
     private String satisfaction;
-    
+
     private String place;
 
     @NotNull
     private LocalDateTime startAt;
 
+    @NotNull
     private LocalDateTime endAt;
 
     private String companion;

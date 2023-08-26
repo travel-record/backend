@@ -39,7 +39,7 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "start_at", nullable = false)
     private LocalDateTime startAt;
 
-    @Column(name = "end_at", nullable = true)
+    @Column(name = "end_at", nullable = false)
     private LocalDateTime endAt;
 
     @Column(name = "companion", nullable = true)

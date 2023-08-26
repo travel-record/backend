@@ -39,7 +39,10 @@ class RecordRepositoryTest {
                 .email("test1@email.com")
                 .build());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), "feed name"));
+        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
+        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
         RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling");
         RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling");
         RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling");
@@ -64,7 +67,10 @@ class RecordRepositoryTest {
                 .email("test1@email.com")
                 .build());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), "feed name"));
+        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
+        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling"));
 
         CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity);
@@ -90,9 +96,10 @@ class RecordRepositoryTest {
     }
 
 
-    private FeedEntity createFeedEntity(UserEntity userEntity, LocalDateTime startAt, String name) {
+    private FeedEntity createFeedEntity(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt, String name) {
         return FeedEntity.builder()
                 .startAt(startAt)
+                .endAt(endAt)
                 .userEntity(userEntity)
                 .name(name)
                 .build();
