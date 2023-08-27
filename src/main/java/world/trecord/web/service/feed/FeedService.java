@@ -65,7 +65,7 @@ public class FeedService {
         UserEntity userEntity = findUserEntityBy(userId);
 
         // TODO find feedEntity with record entity specific field
-        FeedEntity feedEntity = findFeedEntityBy(feedId);
+        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
@@ -80,7 +80,7 @@ public class FeedService {
     public FeedDeleteResponse deleteFeed(Long userId, Long feedId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityBy(feedId);
+        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
@@ -97,8 +97,8 @@ public class FeedService {
         }
     }
 
-    private FeedEntity findFeedEntityBy(Long feedId) {
-        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+    private FeedEntity findFeedEntityWithUserEntityBy(Long feedId) {
+        return feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 
     private UserEntity findUserEntityBy(Long userId) {
