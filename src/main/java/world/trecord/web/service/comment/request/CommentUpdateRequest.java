@@ -1,7 +1,6 @@
 package world.trecord.web.service.comment.request;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,16 +13,12 @@ import world.trecord.domain.comment.CommentEntity;
 @Setter
 public class CommentUpdateRequest {
 
-    @NotNull
-    private Long commentId;
-
     @Size(max = 255)
     @NotEmpty
     private String content;
 
     @Builder
-    private CommentUpdateRequest(Long commentId, String content) {
-        this.commentId = commentId;
+    private CommentUpdateRequest(String content) {
         this.content = content;
     }
 

@@ -19,7 +19,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
-import world.trecord.web.service.comment.request.CommentDeleteRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -132,7 +131,6 @@ class CommentControllerTest {
 
         String changeContent = "change content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .commentId(commentEntity.getId())
                 .content(changeContent)
                 .build();
 
@@ -140,7 +138,7 @@ class CommentControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/comments")
+                        put("/api/v1/comments/{commentId}", commentEntity.getId())
                                 .header("Authorization", token)
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -162,7 +160,6 @@ class CommentControllerTest {
 
         String invalidContent = "";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .commentId(commentEntity.getId())
                 .content(invalidContent)
                 .build();
 
@@ -170,7 +167,7 @@ class CommentControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/comments")
+                        put("/api/v1/comments/{commentId}", commentEntity.getId())
                                 .header("Authorization", token)
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -190,17 +187,10 @@ class CommentControllerTest {
 
         String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
-        CommentDeleteRequest request = CommentDeleteRequest.builder()
-                .commentId(commentEntity.getId())
-                .build();
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
-                        delete("/api/v1/comments")
+                        delete("/api/v1/comments/{commentId}", commentEntity.getId())
                                 .header("Authorization", token)
-                                .content(body)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
@@ -209,7 +199,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 아이디가 null이면 602 에러 응답 코드를 반환한다")
+    @DisplayName("댓글 아이디가 숫자가 아니면 602 에러 응답 코드를 반환한다")
     void deleteCommentWithCommentIdNullTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -218,17 +208,12 @@ class CommentControllerTest {
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
         String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
-
-        CommentDeleteRequest request = CommentDeleteRequest.builder()
-                .build();
-
-        String body = objectMapper.writeValueAsString(request);
+        String pathVariable = "Invalid path variable";
 
         //when //then
         mockMvc.perform(
-                        delete("/api/v1/comments")
+                        delete("/api/v1/comments/{commentId}", pathVariable)
                                 .header("Authorization", token)
-                                .content(body)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest())

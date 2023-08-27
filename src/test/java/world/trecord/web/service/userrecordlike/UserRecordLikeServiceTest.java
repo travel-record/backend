@@ -14,7 +14,6 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.time.LocalDateTime;
@@ -57,12 +56,8 @@ class UserRecordLikeServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
         //when
-        UserRecordLikeResponse response = userRecordLikeService.toggleLike(request, userEntity.getId());
+        UserRecordLikeResponse response = userRecordLikeService.toggleLike(recordEntity.getId(), userEntity.getId());
 
         //then
         Assertions.assertThat(response.isLiked()).isFalse();
@@ -80,12 +75,8 @@ class UserRecordLikeServiceTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
         //when
-        UserRecordLikeResponse response = userRecordLikeService.toggleLike(request, userEntity.getId());
+        UserRecordLikeResponse response = userRecordLikeService.toggleLike(recordEntity.getId(), userEntity.getId());
 
         //then
         Assertions.assertThat(response.isLiked()).isTrue();
@@ -107,12 +98,8 @@ class UserRecordLikeServiceTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
         //when
-        userRecordLikeService.toggleLike(request, viewer.getId());
+        userRecordLikeService.toggleLike(recordEntity.getId(), viewer.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll())
@@ -132,12 +119,8 @@ class UserRecordLikeServiceTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
         //when
-        userRecordLikeService.toggleLike(request, writer.getId());
+        userRecordLikeService.toggleLike(recordEntity.getId(), writer.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();

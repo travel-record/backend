@@ -22,8 +22,6 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordDeleteRequest;
-import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -265,8 +263,6 @@ class RecordControllerTest {
         String changedImageUrl = "changed image url";
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(recordEntity.getId())
                 .title(changedTitle)
                 .date(changedDate)
                 .place(changedPlace)
@@ -282,7 +278,7 @@ class RecordControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/records")
+                        put("/api/v1/records/{recordId}", recordEntity.getId())
                                 .header("Authorization", token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body)
@@ -309,7 +305,7 @@ class RecordControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/records")
+                        put("/api/v1/records/{recordId}", 0L)
                                 .header("Authorization", token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body)
@@ -328,16 +324,12 @@ class RecordControllerTest {
 
         String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
 
-        RecordDeleteRequest request = RecordDeleteRequest.builder().build();
-
-        String body = objectMapper.writeValueAsString(request);
+        String invalidPathVariable = "invalid";
 
         //when //then
         mockMvc.perform(
-                        delete("/api/v1/records")
+                        delete("/api/v1/records/{recordId}", invalidPathVariable)
                                 .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
@@ -370,19 +362,10 @@ class RecordControllerTest {
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        RecordDeleteRequest request = RecordDeleteRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(recordEntity.getId())
-                .build();
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
-                        delete("/api/v1/records")
+                        delete("/api/v1/records/{recordId}", recordEntity.getId())
                                 .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.recordId").value(recordEntity.getId()));
@@ -405,18 +388,10 @@ class RecordControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/like")
+                        post("/api/v1/records/{recordId}/like", recordEntity.getId())
                                 .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
                 )
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -437,18 +412,10 @@ class RecordControllerTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/like")
+                        post("/api/v1/records/{recordId}/like", recordEntity.getId())
                                 .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.liked").value(true));

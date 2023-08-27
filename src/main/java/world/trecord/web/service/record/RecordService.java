@@ -14,7 +14,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordDeleteRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
@@ -65,15 +64,15 @@ public class RecordService {
     }
 
     @Transactional
-    public RecordInfoResponse updateRecord(Long userId, RecordUpdateRequest request) {
+    public RecordInfoResponse updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityBy(request.getFeedId());
+        RecordEntity recordEntity = findRecordEntityBy(recordId);
+
+        FeedEntity feedEntity = findFeedEntityBy(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
-
-        RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
-
+        
         updateRecordEntity(request, recordEntity);
 
         return RecordInfoResponse.builder()
@@ -83,14 +82,14 @@ public class RecordService {
     }
 
     @Transactional
-    public RecordDeleteResponse deleteRecord(Long userId, RecordDeleteRequest request) {
+    public RecordDeleteResponse deleteRecord(Long userId, Long recordId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityBy(request.getFeedId());
+        RecordEntity recordEntity = findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId);
+
+        FeedEntity feedEntity = findFeedEntityBy(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
-
-        RecordEntity recordEntity = findRecordEntityWithCommentEntitiesBy(request.getRecordId());
 
         recordEntity.getCommentEntities().clear();
 
@@ -116,8 +115,8 @@ public class RecordService {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
-    private RecordEntity findRecordEntityWithCommentEntitiesBy(Long recordId) {
-        return recordRepository.findRecordEntityWithCommentEntitiesById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+    private RecordEntity findRecordEntityWithFeedEntityAndCommentEntitiesBy(Long recordId) {
+        return recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
     private FeedEntity findFeedEntityBy(Long feedId) {

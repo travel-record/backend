@@ -15,9 +15,6 @@ import java.time.LocalDateTime;
 @Getter
 public class FeedUpdateRequest {
 
-    @NotNull
-    private Long id;
-
     @NotEmpty
     private String name;
 
@@ -38,8 +35,7 @@ public class FeedUpdateRequest {
     private String imageUrl;
 
     @Builder
-    private FeedUpdateRequest(Long id, String name, String satisfaction, String place, LocalDateTime startAt, LocalDateTime endAt, String companion, String description, String imageUrl) {
-        this.id = id;
+    private FeedUpdateRequest(String name, String satisfaction, String place, LocalDateTime startAt, LocalDateTime endAt, String companion, String description, String imageUrl) {
         this.name = name;
         this.satisfaction = satisfaction;
         this.place = place;

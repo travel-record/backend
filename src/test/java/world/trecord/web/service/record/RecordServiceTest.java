@@ -17,7 +17,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordDeleteRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
@@ -284,8 +283,6 @@ class RecordServiceTest {
         String changedTransportation = "changed transportation";
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(recordEntity.getId())
                 .title(changedTitle)
                 .date(changedDate)
                 .place(changedPlace)
@@ -297,7 +294,7 @@ class RecordServiceTest {
                 .build();
 
         //when
-        RecordInfoResponse response = recordService.updateRecord(writer.getId(), request);
+        RecordInfoResponse response = recordService.updateRecord(writer.getId(), recordEntity.getId(), request);
 
         //then
         RecordEntity changedRecord = recordRepository.findById(recordEntity.getId()).get();
@@ -312,34 +309,15 @@ class RecordServiceTest {
     void updateRecordWithNotExistingUserIdTest() throws Exception {
         //given
         Long notExistingUserId = 0L;
+        Long notExistingRecordId = 0L;
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.updateRecord(notExistingUserId, request))
+        Assertions.assertThatThrownBy(() -> recordService.updateRecord(notExistingUserId, notExistingRecordId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(NOT_EXISTING_USER);
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 피드 아이디로 기록을 수정하려고 하면 예외가 발생한다")
-    void updateRecordWithNotExistingFeedIdTest() throws Exception {
-        //given
-        Long notExistingFeedId = 0L;
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .feedId(notExistingFeedId)
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.updateRecord(writer.getId(), request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_FEED);
     }
 
     @Test
@@ -356,12 +334,13 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .feedId(feedEntity.getId())
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.updateRecord(other.getId(), request))
+        Assertions.assertThatThrownBy(() -> recordService.updateRecord(other.getId(), recordEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(FORBIDDEN);
@@ -384,12 +363,10 @@ class RecordServiceTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(notExistingRecordId)
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.updateRecord(writer.getId(), request))
+        Assertions.assertThatThrownBy(() -> recordService.updateRecord(writer.getId(), notExistingRecordId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(NOT_EXISTING_RECORD);
@@ -420,13 +397,8 @@ class RecordServiceTest {
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        RecordDeleteRequest request = RecordDeleteRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(recordEntity.getId())
-                .build();
-
         //when
-        RecordDeleteResponse response = recordService.deleteRecord(writer.getId(), request);
+        RecordDeleteResponse response = recordService.deleteRecord(writer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordRepository.findById(recordEntity.getId())).isEmpty();
@@ -438,40 +410,18 @@ class RecordServiceTest {
     void deleteRecordWithNotExistingUserIdTest() throws Exception {
         //given
         Long notExistingUserId = 0L;
-        RecordDeleteRequest request = RecordDeleteRequest.builder()
-                .build();
+        Long notExistingRecordId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(notExistingUserId, request))
+        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(notExistingUserId, notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(NOT_EXISTING_USER);
     }
 
     @Test
-    @DisplayName("존재하지 않는 피드 아이디로 기록을 삭제하려고 하면 예외가 발생한다")
+    @DisplayName("존재하지 않는 기록 아이디로 기록을 삭제하려고 하면 예외가 발생한다")
     void deleteRecordWithNotExistingFeedIdTest() throws Exception {
-        //given
-        Long notExistingFeedId = 0L;
-
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        RecordDeleteRequest request = RecordDeleteRequest.builder()
-                .feedId(notExistingFeedId)
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(writer.getId(), request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_FEED);
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 레코드 아이디로 기록을 삭제하려고 하면 예외가 발생한다")
-    void deleteRecordWithNotExistingRecordIdTest() throws Exception {
         //given
         Long notExistingRecordId = 0L;
 
@@ -479,15 +429,8 @@ class RecordServiceTest {
                 .email("test@email.com")
                 .build());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
-        RecordDeleteRequest request = RecordDeleteRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(notExistingRecordId)
-                .build();
-
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(writer.getId(), request))
+        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(writer.getId(), notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(NOT_EXISTING_RECORD);
@@ -508,13 +451,8 @@ class RecordServiceTest {
 
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        RecordDeleteRequest request = RecordDeleteRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(recordEntity.getId())
-                .build();
-
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(viewer.getId(), request))
+        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(viewer.getId(), recordEntity.getId()))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(FORBIDDEN);

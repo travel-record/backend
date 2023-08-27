@@ -11,7 +11,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.notification.NotificationService;
-import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
 import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_RECORD;
@@ -28,9 +27,10 @@ public class UserRecordLikeService {
     private final NotificationService notificationService;
 
     @Transactional
-    public UserRecordLikeResponse toggleLike(RecordLikeRequest recordLikeRequest, Long userId) {
+    public UserRecordLikeResponse toggleLike(Long recordId, Long userId) {
         UserEntity userEntity = findUserEntityById(userId);
-        RecordEntity recordEntity = findRecordEntityById(recordLikeRequest.getRecordId());
+
+        RecordEntity recordEntity = findRecordEntityById(recordId);
 
         return userRecordLikeRepository.findUserRecordLikeEntityByUserEntityAndRecordEntity(userEntity, recordEntity)
                 .map(this::unlike)

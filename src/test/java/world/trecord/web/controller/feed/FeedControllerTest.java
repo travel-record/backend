@@ -17,7 +17,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
-import world.trecord.web.service.feed.request.FeedDeleteRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -186,15 +185,13 @@ class FeedControllerTest {
     @DisplayName("사용자가 작성한 피드를 수정하면 수정된 피드 정보를 반환한다")
     void updateFeedTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
                 .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
+                .build());
 
-        FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        String token = jwtTokenHandler.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -203,7 +200,6 @@ class FeedControllerTest {
         LocalDateTime updatedEndAt = LocalDateTime.of(2022, 9, 30, 0, 0);
 
         FeedUpdateRequest request = FeedUpdateRequest.builder()
-                .id(savedFeedEntity.getId())
                 .name(updateFeedName)
                 .imageUrl(updatedFeedImage)
                 .description(updatedFeedDescription)
@@ -215,20 +211,18 @@ class FeedControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/feeds", savedFeedEntity.getId())
+                        put("/api/v1/feeds/{feedId}", feedEntity.getId())
                                 .header("Authorization", token)
                                 .content(content)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
 
-        FeedEntity updatedFeedEntity = feedRepository.findById(savedFeedEntity.getId()).get();
+        FeedEntity updatedFeedEntity = feedRepository.findById(feedEntity.getId()).get();
 
-        Assertions.assertThat(updatedFeedEntity.getName()).isEqualTo(updateFeedName);
-        Assertions.assertThat(updatedFeedEntity.getImageUrl()).isEqualTo(updatedFeedImage);
-        Assertions.assertThat(updatedFeedEntity.getDescription()).isEqualTo(updatedFeedDescription);
-        Assertions.assertThat(updatedFeedEntity.getStartAt()).isEqualTo(updatedStartAt);
-        Assertions.assertThat(updatedFeedEntity.getEndAt()).isEqualTo(updatedEndAt);
+        Assertions.assertThat(updatedFeedEntity)
+                .extracting("name", "imageUrl", "description", "startAt", "endAt")
+                .containsExactly(updateFeedName, updatedFeedImage, updatedFeedDescription, updatedStartAt, updatedEndAt);
     }
 
     @Test
@@ -242,30 +236,21 @@ class FeedControllerTest {
 
         String token = jwtTokenHandler.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
 
-        FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
         RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
         RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
-        FeedDeleteRequest request = FeedDeleteRequest.builder()
-                .id(savedFeedEntity.getId())
-                .build();
-
-        String content = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
-                        delete("/api/v1/feeds", savedFeedEntity.getId())
+                        delete("/api/v1/feeds/{feedId}", feedEntity.getId())
                                 .header("Authorization", token)
-                                .content(content)
-                                .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(feedRepository.findById(savedFeedEntity.getId())).isEmpty();
+        Assertions.assertThat(feedRepository.findById(feedEntity.getId())).isEmpty();
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 

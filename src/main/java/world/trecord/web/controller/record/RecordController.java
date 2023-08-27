@@ -8,8 +8,6 @@ import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.LoginUserId;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordDeleteRequest;
-import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
@@ -43,19 +41,19 @@ public class RecordController {
         return ApiResponse.ok(recordService.createRecord(Long.valueOf(userId), recordCreateRequest));
     }
 
-    @PutMapping
-    public ApiResponse<RecordInfoResponse> updateRecord(@RequestBody @Valid RecordUpdateRequest recordUpdateRequest, @LoginUserId String userId) throws BindException {
-        recordValidator.verify(recordUpdateRequest);
-        return ApiResponse.ok(recordService.updateRecord(Long.valueOf(userId), recordUpdateRequest));
+    @PutMapping("/{recordId}")
+    public ApiResponse<RecordInfoResponse> updateRecord(@PathVariable("recordId") Long recordId, @RequestBody @Valid RecordUpdateRequest recordUpdateRequest, @LoginUserId String userId) throws BindException {
+        recordValidator.verify(recordId, recordUpdateRequest);
+        return ApiResponse.ok(recordService.updateRecord(Long.valueOf(userId), recordId, recordUpdateRequest));
     }
 
-    @DeleteMapping
-    public ApiResponse<RecordDeleteResponse> deleteRecord(@RequestBody @Valid RecordDeleteRequest recordDeleteRequest, @LoginUserId String userId) {
-        return ApiResponse.ok(recordService.deleteRecord(Long.valueOf(userId), recordDeleteRequest));
+    @DeleteMapping("/{recordId}")
+    public ApiResponse<RecordDeleteResponse> deleteRecord(@PathVariable("recordId") Long recordId, @LoginUserId String userId) {
+        return ApiResponse.ok(recordService.deleteRecord(Long.valueOf(userId), recordId));
     }
 
-    @PostMapping("/like")
-    public ApiResponse<UserRecordLikeResponse> toggleLike(@RequestBody @Valid RecordLikeRequest recordLikeRequest, @LoginUserId String userId) {
-        return ApiResponse.ok(userRecordLikeService.toggleLike(recordLikeRequest, Long.valueOf(userId)));
+    @PostMapping("/{recordId}/like")
+    public ApiResponse<UserRecordLikeResponse> toggleLike(@PathVariable("recordId") Long recordId, @LoginUserId String userId) {
+        return ApiResponse.ok(userRecordLikeService.toggleLike(recordId, Long.valueOf(userId)));
     }
 }
