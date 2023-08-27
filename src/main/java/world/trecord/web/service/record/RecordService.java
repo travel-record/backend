@@ -53,7 +53,11 @@ public class RecordService {
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest recordCreateRequest) {
         UserEntity userEntity = findUserEntityBy(userId);
 
+        log.info("Request User Entity : {}", userEntity.getId());
+
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(recordCreateRequest.getFeedId());
+
+        log.info("Feed User Entity : {}", feedEntity.getUserEntity() != null ? feedEntity.getUserEntity().getId() : "null");
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
