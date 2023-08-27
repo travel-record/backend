@@ -8,7 +8,6 @@ import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.LoginUserId;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordDeleteRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
@@ -48,9 +47,9 @@ public class RecordController {
         return ApiResponse.ok(recordService.updateRecord(Long.valueOf(userId), recordUpdateRequest));
     }
 
-    @DeleteMapping
-    public ApiResponse<RecordDeleteResponse> deleteRecord(@RequestBody @Valid RecordDeleteRequest recordDeleteRequest, @LoginUserId String userId) {
-        return ApiResponse.ok(recordService.deleteRecord(Long.valueOf(userId), recordDeleteRequest));
+    @DeleteMapping("/{recordId}")
+    public ApiResponse<RecordDeleteResponse> deleteRecord(@PathVariable("recordId") Long recordId, @LoginUserId String userId) {
+        return ApiResponse.ok(recordService.deleteRecord(Long.valueOf(userId), recordId));
     }
 
     @PostMapping("/{recordId}/like")

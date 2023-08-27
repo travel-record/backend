@@ -79,7 +79,7 @@ class RecordRepositoryTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordEntity foundRecordEntity = recordRepository.findRecordEntityWithCommentEntitiesById(recordEntity.getId()).get();
+        RecordEntity foundRecordEntity = recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesById(recordEntity.getId()).get();
 
         //then
         Assertions.assertThat(foundRecordEntity.getCommentEntities())
