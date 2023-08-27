@@ -239,6 +239,58 @@ class RecordControllerTest {
     }
 
     @Test
+    @DisplayName("피드 관리자가 아닌 사용자가 기록을 생성하려고 하면 403 에러 응답을 한다")
+    void createRecordTestWhenUserIsNotManager() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        UserEntity viewer = userRepository.save(UserEntity.builder()
+                .email("test2@email.com")
+                .build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        String title = "title";
+        String place = "jeju";
+        String feeling = "feeling";
+        String weather = "weather";
+        String satisfaction = "best";
+        String content = "content";
+        String companion = "companion";
+        String imageUrl = "https://www.image.com";
+        LocalDateTime localDateTime = LocalDateTime.of(2021, 10, 1, 0, 0);
+
+        RecordCreateRequest request = RecordCreateRequest.builder()
+                .feedId(feedEntity.getId())
+                .title(title)
+                .date(localDateTime)
+                .place(place)
+                .feeling(feeling)
+                .weather(weather)
+                .transportation(satisfaction)
+                .content(content)
+                .companion(companion)
+                .imageUrl(imageUrl)
+                .build();
+
+        String token = jwtTokenHandler.generateToken(viewer.getId(), secretKey, expiredTimeMs);
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/records")
+                                .header("Authorization", token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+    }
+
+    @Test
     @DisplayName("피드 작성자가 올바른 데이터로 기록 수정 요청을 하면 수정된 기록 정보를 반환한다")
     void updateRecordTest() throws Exception {
         //given

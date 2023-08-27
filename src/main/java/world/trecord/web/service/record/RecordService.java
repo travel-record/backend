@@ -1,6 +1,7 @@
 package world.trecord.web.service.record;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import static world.trecord.web.exception.CustomExceptionError.*;
 
+@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
@@ -51,7 +53,7 @@ public class RecordService {
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest recordCreateRequest) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityBy(recordCreateRequest.getFeedId());
+        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(recordCreateRequest.getFeedId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
@@ -69,10 +71,10 @@ public class RecordService {
 
         RecordEntity recordEntity = findRecordEntityBy(recordId);
 
-        FeedEntity feedEntity = findFeedEntityBy(recordEntity.getFeedEntity().getId());
+        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
-        
+
         updateRecordEntity(request, recordEntity);
 
         return RecordInfoResponse.builder()
@@ -87,7 +89,7 @@ public class RecordService {
 
         RecordEntity recordEntity = findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId);
 
-        FeedEntity feedEntity = findFeedEntityBy(recordEntity.getFeedEntity().getId());
+        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
@@ -119,8 +121,8 @@ public class RecordService {
         return recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
-    private FeedEntity findFeedEntityBy(Long feedId) {
-        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+    private FeedEntity findFeedEntityWithUserEntityBy(Long feedId) {
+        return feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 
     private UserEntity findUserEntityBy(Long userId) {
