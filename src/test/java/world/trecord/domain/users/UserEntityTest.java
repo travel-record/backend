@@ -42,6 +42,7 @@ class UserEntityTest {
     void isManagerOfFeedWhenUserIsManagerOfFeedTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
+                .id(1L)
                 .build();
 
         FeedEntity feedEntity = FeedEntity.builder()
@@ -60,9 +61,11 @@ class UserEntityTest {
     void isManagerOfFeedWhenUserIsNotManagerOfFeedTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
+                .id(1L)
                 .build();
 
         UserEntity otherEntity = UserEntity.builder()
+                .id(2L)
                 .build();
 
         FeedEntity feedEntity = FeedEntity.builder()
@@ -99,9 +102,11 @@ class UserEntityTest {
     void isCommenterOfCommentWhenUserNotCommentsTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
+                .id(1L)
                 .build();
 
         UserEntity otherEntity = UserEntity.builder()
+                .id(2L)
                 .build();
 
         CommentEntity commentEntity = CommentEntity.builder()
