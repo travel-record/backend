@@ -14,6 +14,7 @@ import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationStatus;
+import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -30,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
+import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
 
 @MockMvcTestSupport
 class NotificationControllerTest {
@@ -65,7 +68,7 @@ class NotificationControllerTest {
     private Long expiredTimeMs;
 
     @Test
-    @DisplayName("사용자가 읽지 않은 알림이 있으면 새로운 알림이 있음을 반환한다")
+    @DisplayName("GET /api/v1/notifications/check - 성공")
     void checkExistingNewNotificationTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -86,7 +89,7 @@ class NotificationControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 읽지 않은 알림이 없으면 새로운 알림이 없음을 반환한다")
+    @DisplayName("GET /api/v1/notifications/check - 새로운 알림이 없을때 성공")
     void checkNotExistingNewNotificationTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -107,7 +110,7 @@ class NotificationControllerTest {
     }
 
     @Test
-    @DisplayName("사용자의 알림 리스트를 생성된 시간 내림차순으로 반환한다")
+    @DisplayName("GET /api/v1/notifications - 성공")
     void getNotificationsTest() throws Exception {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -124,13 +127,12 @@ class NotificationControllerTest {
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity1, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity2, "content2");
-        CommentEntity commentEntity3 = createCommentEntity(commenter3, recordEntity2, "content3");
 
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, commentEntity1, READ);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, commentEntity2, READ);
-        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, commentEntity3, READ);
+        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, recordEntity1, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, recordEntity2, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, recordEntity2, null, UNREAD, RECORD_LIKE);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
@@ -141,8 +143,63 @@ class NotificationControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.notifications.size()").value(3))
-                .andExpect(jsonPath("$.data.notifications[0].content").value(commentEntity3.getContent()))
+                .andExpect(jsonPath("$.data.notifications[0].content").value(notificationEntity3.getNotificationContent()))
                 .andExpect(jsonPath("$.data.notifications[0].date", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$")));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/notifications/{type} - 성공")
+    void getNotificationsByTypeTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        String token = jwtTokenHandler.generateToken(author.getId(), secretKey, expiredTimeMs);
+
+        UserEntity viewer1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
+        UserEntity viewer2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
+        UserEntity viewer3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity1 = createCommentEntity(viewer1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(viewer2, recordEntity, "content2");
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
+
+        NotificationEntity notificationEntity1 = createNotificationEntity(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotificationEntity(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity3 = createNotificationEntity(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity4 = createNotificationEntity(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
+
+        notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/notifications/{type}", RECORD_LIKE)
+                                .header("Authorization", token)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.notifications.size()").value(2));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/notifications/{type} - 실패(존재하지 않는 타입)")
+    void getNotificationsByNotExistingTypeTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        String token = jwtTokenHandler.generateToken(author.getId(), secretKey, expiredTimeMs);
+
+        String notExistingType = "NOT_EXISTING_TYPE";
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/notifications/{type}", notExistingType)
+                                .header("Authorization", token)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
     }
 
     private NotificationEntity createNotificationEntity(UserEntity userEntity, NotificationStatus notificationStatus) {
@@ -183,13 +240,14 @@ class NotificationControllerTest {
                 .build();
     }
 
-    private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, CommentEntity commentEntity, NotificationStatus notificationStatus) {
+    private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus status, NotificationType type) {
         return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
                 .usersFromEntity(userFromEntity)
+                .recordEntity(recordEntity)
                 .commentEntity(commentEntity)
-                .type(COMMENT)
-                .status(notificationStatus)
+                .type(type)
+                .status(status)
                 .build();
     }
 
