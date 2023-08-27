@@ -1,7 +1,6 @@
 package world.trecord.web.service.record;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
@@ -25,7 +24,6 @@ import java.util.List;
 
 import static world.trecord.web.exception.CustomExceptionError.*;
 
-@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service

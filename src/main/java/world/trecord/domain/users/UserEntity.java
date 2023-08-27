@@ -31,8 +31,7 @@ public class UserEntity extends BaseEntity {
     private String introduction;
 
     @Builder
-    private UserEntity(Long id, String email, String nickname, String imageUrl, String introduction) {
-        this.id = id;
+    private UserEntity(String email, String nickname, String imageUrl, String introduction) {
         this.email = email;
         this.nickname = nickname;
         this.imageUrl = imageUrl;

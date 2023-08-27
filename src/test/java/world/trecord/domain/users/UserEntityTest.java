@@ -3,6 +3,7 @@ package world.trecord.domain.users;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
 
@@ -42,8 +43,9 @@ class UserEntityTest {
     void isManagerOfFeedWhenUserIsManagerOfFeedTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
-                .id(1L)
                 .build();
+
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
 
         FeedEntity feedEntity = FeedEntity.builder()
                 .userEntity(userEntity)
@@ -61,12 +63,14 @@ class UserEntityTest {
     void isManagerOfFeedWhenUserIsNotManagerOfFeedTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
-                .id(1L)
                 .build();
 
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
+
         UserEntity otherEntity = UserEntity.builder()
-                .id(2L)
                 .build();
+
+        ReflectionTestUtils.setField(otherEntity, "id", 2L);
 
         FeedEntity feedEntity = FeedEntity.builder()
                 .userEntity(otherEntity)
@@ -102,12 +106,14 @@ class UserEntityTest {
     void isCommenterOfCommentWhenUserNotCommentsTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
-                .id(1L)
                 .build();
 
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
+
         UserEntity otherEntity = UserEntity.builder()
-                .id(2L)
                 .build();
+
+        ReflectionTestUtils.setField(otherEntity, "id", 2L);
 
         CommentEntity commentEntity = CommentEntity.builder()
                 .userEntity(otherEntity)
