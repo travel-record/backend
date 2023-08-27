@@ -110,12 +110,11 @@ class CommentServiceTest {
 
         String changedContent = "changed content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .commentId(commentEntity.getId())
                 .content(changedContent)
                 .build();
 
         //when
-        CommentUpdateResponse response = commentService.updateComment(userEntity.getId(), request);
+        CommentUpdateResponse response = commentService.updateComment(userEntity.getId(), commentEntity.getId(), request);
 
         //then
         Assertions.assertThat(response)
@@ -128,6 +127,7 @@ class CommentServiceTest {
     void updateCommentWithNotExistingUserIdTest() throws Exception {
         //given
         Long notExistingUserId = 0L;
+        Long notExistingCommentId = 0L;
 
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
@@ -135,7 +135,7 @@ class CommentServiceTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.updateComment(notExistingUserId, request))
+        Assertions.assertThatThrownBy(() -> commentService.updateComment(notExistingUserId, notExistingCommentId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
@@ -151,11 +151,10 @@ class CommentServiceTest {
         UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .commentId(notExistingCommentId)
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.updateComment(other.getId(), request))
+        Assertions.assertThatThrownBy(() -> commentService.updateComment(other.getId(), notExistingCommentId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_COMMENT);
@@ -172,12 +171,11 @@ class CommentServiceTest {
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
         CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .commentId(commentEntity.getId())
                 .content("change content")
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.updateComment(otherEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> commentService.updateComment(otherEntity.getId(), commentEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);

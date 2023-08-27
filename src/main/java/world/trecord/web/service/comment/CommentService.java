@@ -48,11 +48,11 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentUpdateResponse updateComment(Long userId, CommentUpdateRequest request) {
+    public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
 
         UserEntity userEntity = findUserEntityBy(userId);
 
-        CommentEntity commentEntity = findCommentEntityWithUserEntityBy(request.getCommentId());
+        CommentEntity commentEntity = findCommentEntityWithUserEntityBy(commentId);
 
         checkPermissionOverComment(userEntity, commentEntity);
 

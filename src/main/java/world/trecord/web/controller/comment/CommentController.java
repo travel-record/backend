@@ -23,9 +23,9 @@ public class CommentController {
         return ApiResponse.ok(commentService.createComment(Long.parseLong(userId), request));
     }
 
-    @PutMapping
-    public ApiResponse<CommentUpdateResponse> updateComment(@RequestBody @Valid CommentUpdateRequest request, @LoginUserId String userId) {
-        return ApiResponse.ok(commentService.updateComment(Long.parseLong(userId), request));
+    @PutMapping("/{commentId}")
+    public ApiResponse<CommentUpdateResponse> updateComment(@PathVariable("commentId") Long commentId, @RequestBody @Valid CommentUpdateRequest request, @LoginUserId String userId) {
+        return ApiResponse.ok(commentService.updateComment(Long.parseLong(userId), commentId, request));
     }
 
     @DeleteMapping("/{commentId}")

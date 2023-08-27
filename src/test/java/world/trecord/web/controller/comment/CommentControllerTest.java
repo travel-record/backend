@@ -131,7 +131,6 @@ class CommentControllerTest {
 
         String changeContent = "change content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .commentId(commentEntity.getId())
                 .content(changeContent)
                 .build();
 
@@ -139,7 +138,7 @@ class CommentControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/comments")
+                        put("/api/v1/comments/{commentId}", commentEntity.getId())
                                 .header("Authorization", token)
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -161,7 +160,6 @@ class CommentControllerTest {
 
         String invalidContent = "";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .commentId(commentEntity.getId())
                 .content(invalidContent)
                 .build();
 
@@ -169,7 +167,7 @@ class CommentControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/comments")
+                        put("/api/v1/comments/{commentId}", commentEntity.getId())
                                 .header("Authorization", token)
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON)
