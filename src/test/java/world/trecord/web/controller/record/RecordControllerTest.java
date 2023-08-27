@@ -23,7 +23,6 @@ import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordDeleteRequest;
-import world.trecord.web.service.record.request.RecordLikeRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -405,18 +404,10 @@ class RecordControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/like")
+                        post("/api/v1/records/{recordId}/like", recordEntity.getId())
                                 .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
                 )
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -437,18 +428,10 @@ class RecordControllerTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        RecordLikeRequest request = RecordLikeRequest.builder()
-                .recordId(recordEntity.getId())
-                .build();
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/like")
+                        post("/api/v1/records/{recordId}/like", recordEntity.getId())
                                 .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.liked").value(true));
