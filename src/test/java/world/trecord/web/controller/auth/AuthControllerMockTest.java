@@ -24,7 +24,7 @@ class AuthControllerMockTest {
     AuthController authController;
 
     @Test
-    @DisplayName("유효한 구글 인가 코드로 사용자 정보와 토큰을 반환한다")
+    @DisplayName("POST /google-login - 성공")
     void googleLoginWithValidAccessTokenTest() throws Exception {
         //given
         String redirectionUri = "redirection uri";
@@ -60,7 +60,7 @@ class AuthControllerMockTest {
     }
 
     @Test
-    @DisplayName("유효하지 않는 구글 인가 코드는 예외가 발생한다")
+    @DisplayName("POST /google-login - 실패 (유효하지 않는 구글 인가 코드로 요청)")
     void googleLoginWithInvalidAccessTokenTest() throws Exception {
         //given
         String redirectionUri = "redirection uri";

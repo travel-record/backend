@@ -70,7 +70,7 @@ class RecordControllerTest {
     private Long expiredTimeMs;
 
     @Test
-    @DisplayName("기록 작성자가 기록을 조회하면 기록 상세 정보와 댓글 리스트를 반환한다")
+    @DisplayName("GET /api/v1/records/{recordId} - 성공")
     void getRecordInfoByWriterTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -92,7 +92,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("인증되지 않은 사용자가 기록을 조회할 수 있다")
+    @DisplayName("GET /api/v1/records/{recordId} - 성공 (인증되지 않은 사용자)")
     void getRecordInfoByWhoNotAuthenticatedTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -111,29 +111,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("익명 사용자가 기록을 조회하면 기록 상세 정보와 댓글 리스트를 반환한다")
-    void getRecordInfoByStrangerTest() throws Exception {
-        //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-
-        //when //then
-        mockMvc.perform(
-                        get("/api/v1/records/{recordId}", recordEntity.getId())
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
-                .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
-                .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
-                .andExpect(jsonPath("$.data.isUpdatable").value(false));
-    }
-
-    @Test
-    @DisplayName("유효하지 않은 인증 코드로 기록 아이디를 조회하면 601 에러 응답 코드를 반환한다")
+    @DisplayName("GET /api/v1/records/{recordId} - 실패 (인증 토큰 검증 실패)")
     void getRecordInfoWithInvalidTokenTest() throws Exception {
         // when // then
         mockMvc.perform(
@@ -146,11 +124,12 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않은 기록 아이디로 조회하면 703 에러 응답 코드를 반환한다")
+    @DisplayName("GET /api/v1/records/{recordId} - 실패 (존재하지 않는 기록 아이디로 조회)")
     void getRecordInfoByNotExistingRecordIdTest() throws Exception {
         // when // then
+        long notExistingRecordId = 0L;
         mockMvc.perform(
-                        get("/api/v1/records/{recordId}", 0L)
+                        get("/api/v1/records/{recordId}", notExistingRecordId)
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(NOT_EXISTING_RECORD.getErrorCode()))
@@ -158,7 +137,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("올바르지 않은 요청 데이터로 전송하면 602 에러 응답 코드를 반환한다")
+    @DisplayName("POST /api/v1/records - 실패 (올바르지 않은 요청 파라미터)")
     void createRecordWithInvalidParameterTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()
@@ -185,7 +164,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("피드 작성자가 올바른 요청 데이터로 기록 생성 요청을 하면 생성된 기록 정보를 반환한다")
+    @DisplayName("POST /api/v1/records - 성공")
     void createRecordWithValidParameterTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()
@@ -239,7 +218,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("피드 관리자가 아닌 사용자가 기록을 생성하려고 하면 403 에러 응답을 한다")
+    @DisplayName("POST /api/v1/records - 실패 (피드 관리자가 아닌 사용자가 요청)")
     void createRecordTestWhenUserIsNotManager() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()
@@ -291,7 +270,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("피드 작성자가 올바른 데이터로 기록 수정 요청을 하면 수정된 기록 정보를 반환한다")
+    @DisplayName("PUT /api/v1/records/{recordId} - 성공")
     void updateRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()
@@ -342,7 +321,46 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("피드 작성자가 올바르지 않은 데이터로 기록 수정 요청을 하면 602 에러 응답 코드로 반환한다")
+    @DisplayName("PUT /api/v1/records/{recordId} - 실패 (피드 관리자가 아닌 사용자가 요청)")
+    void updateRecordByNotManagerTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        String token = jwtTokenHandler.generateToken(other.getId(), secretKey, expiredTimeMs);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        RecordUpdateRequest request = RecordUpdateRequest.builder()
+                .title("change title")
+                .date(LocalDateTime.of(2021, 10, 2, 0, 0))
+                .place("changed place")
+                .content("changed content")
+                .feeling("changed feeling")
+                .weather("changed weather")
+                .companion("changed changedCompanion")
+                .transportation("changed satisfaction")
+                .imageUrl("changed image url")
+                .build();
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        put("/api/v1/records/{recordId}", recordEntity.getId())
+                                .header("Authorization", token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/records - 실패 (올바르지 않은 요청 파라미터)")
     void updateRecordWithInvalidDataTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()
@@ -367,7 +385,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("올바르지 않은 요청 파라미터로 기록을 삭제하려고 하면 602 에러 응답 코드로 반환한다")
+    @DisplayName("DELETE /api/v1/records/{recordId} - 실패 (올바르지 않은 경로 변수)")
     void deleteRecordWithInvalidDataTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()
@@ -388,7 +406,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("올바른 요청 파라미터로 기록을 삭제하면 댓글들과 함께 삭제한다")
+    @DisplayName("DELETE /api/v1/records/{recordId} - 성공")
     void deleteRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()
@@ -427,7 +445,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 좋아요한 기록에 좋아요를 요청하면 liked=false 응답을 한다")
+    @DisplayName("POST /api/v1/records/{recordId}/like - 성공 (false 리턴)")
     void toggleLikeTestWhenUserLikeRecord() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -452,7 +470,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 좋아요 하지 않은 기록에 좋아요를 요청하면 liked=true 응답을 한다")
+    @DisplayName("POST /api/v1/records/{recordId}/like - 성공 (true 리턴)")
     void toggleLikeTestWhenUserNotLikeRecord() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -474,7 +492,7 @@ class RecordControllerTest {
     }
 
     @Test
-    @DisplayName("기록에 등록된 댓글 리스트를 조회하여 반환한다")
+    @DisplayName("GET /api/v1/records/{recordId}/comments - 성공")
     void getRecordCommentsTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder()

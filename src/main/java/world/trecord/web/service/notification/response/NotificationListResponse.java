@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.notification.NotificationEntity;
+import world.trecord.domain.notification.NotificationStatus;
 import world.trecord.domain.notification.NotificationType;
 
 import java.time.LocalDateTime;
@@ -33,8 +34,11 @@ public class NotificationListResponse {
     public static class Notification {
 
         private NotificationType type;
+        private NotificationStatus status;
         private Long recordId;
-        private String nickname;
+        private Long commentId;
+        private Long senderId;
+        private String senderNickname;
         private String content;
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
@@ -42,10 +46,12 @@ public class NotificationListResponse {
 
         @Builder
         private Notification(NotificationEntity notificationEntity) {
-            // TODO type에 따라서 null 처리
             this.type = notificationEntity.getType();
-            this.recordId = notificationEntity.getCommentEntity().getRecordEntity().getId();
-            this.nickname = notificationEntity.getUsersFromEntity().getNickname();
+            this.status = notificationEntity.getStatus();
+            this.recordId = notificationEntity.getRecordEntity() != null ? notificationEntity.getRecordEntity().getId() : null;
+            this.commentId = notificationEntity.getCommentEntity() != null ? notificationEntity.getCommentEntity().getId() : null;
+            this.senderId = notificationEntity.getUsersFromEntity() != null ? notificationEntity.getUsersFromEntity().getId() : null;
+            this.senderNickname = notificationEntity.getUsersFromEntity() != null ? notificationEntity.getUsersFromEntity().getNickname() : null;
             this.content = notificationEntity.getNotificationContent();
             this.date = notificationEntity.getCreatedDateTime();
         }

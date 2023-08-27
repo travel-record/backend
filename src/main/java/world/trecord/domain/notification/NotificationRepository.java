@@ -24,4 +24,6 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
     int updateNotificationStatusByUserId(@Param("userId") Long userId,
                                          @Param("oldStatus") NotificationStatus oldStatus,
                                          @Param("newStatus") NotificationStatus newStatus);
+
+    List<NotificationEntity> findByUsersToEntityAndTypeOrderByCreatedDateTimeDesc(UserEntity userToEntity, NotificationType type);
 }

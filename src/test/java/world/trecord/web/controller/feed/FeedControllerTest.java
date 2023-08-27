@@ -55,7 +55,7 @@ class FeedControllerTest {
     private Long expiredTimeMs;
 
     @Test
-    @DisplayName("사용자가 등록한 피드가 없다면 feeds 필드에 빈 배열을 반환한다")
+    @DisplayName("GET /api/v1/feeds - 성공 (빈 배열로 리턴)")
     void getEmptyFeedListByUserIdTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -77,7 +77,7 @@ class FeedControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 등록한 feed가 있다면 여행 시작 시간 내림차순으로 정렬하여 feed 배열을 반환한다")
+    @DisplayName("GET /api/v1/feeds - 성공")
     void getFeedListByUserIdTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -112,7 +112,7 @@ class FeedControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 존재하지 않으면 601 에러 응답 코드를 반환한다")
+    @DisplayName("GET /api/v1/feeds - 실패 (사용자가 존재하지 않음)")
     void getFeedListNotExistingUserTest() throws Exception {
         //given
         String token = jwtTokenHandler.generateToken(0L, secretKey, expiredTimeMs);
@@ -128,17 +128,8 @@ class FeedControllerTest {
     }
 
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
-                .startAt(startAt)
-                .endAt(endAt)
-                .build();
-    }
-
     @Test
-    @DisplayName("사용자가 피드를 생성하면 생성된 피드 정보를 반환한다")
+    @DisplayName("POST /api/v1/feeds - 성공")
     void createFeedTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -182,7 +173,7 @@ class FeedControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 작성한 피드를 수정하면 수정된 피드 정보를 반환한다")
+    @DisplayName("PUT /api/v1/feeds/{feedId} - 성공")
     void updateFeedTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -226,7 +217,7 @@ class FeedControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 피드를 삭제하면 삭제된 피드 아이디를 반환한다")
+    @DisplayName("DELETE /api/v1/feeds/{feedId} - 성공")
     void deleteFeedTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -252,6 +243,15 @@ class FeedControllerTest {
 
         Assertions.assertThat(feedRepository.findById(feedEntity.getId())).isEmpty();
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
+    }
+
+    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
+        return FeedEntity.builder()
+                .userEntity(saveUserEntity)
+                .name(name)
+                .startAt(startAt)
+                .endAt(endAt)
+                .build();
     }
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String record, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {

@@ -17,7 +17,7 @@ class PingControllerTest {
     MockMvc mockMvc;
 
     @Test
-    @DisplayName("ping 테스트")
+    @DisplayName("GET / - 성공")
     void pingTest() throws Exception {
 
         //when //then

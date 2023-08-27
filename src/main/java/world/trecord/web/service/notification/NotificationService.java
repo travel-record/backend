@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
+import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -70,7 +71,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationListResponse getNotificationsBy(Long userId) {
+    public NotificationListResponse getNotifications(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityOrderByCreatedDateTimeDesc(userEntity);
@@ -83,6 +84,16 @@ public class NotificationService {
         notificationRepository.updateNotificationStatusByUserId(userEntity.getId(), UNREAD, READ);
 
         return response;
+    }
+
+    public NotificationListResponse getNotifications(Long userId, NotificationType type) {
+        UserEntity userEntity = findUserEntityBy(userId);
+
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityAndTypeOrderByCreatedDateTimeDesc(userEntity, type);
+
+        return NotificationListResponse.builder()
+                .notificationEntities(notificationList)
+                .build();
     }
 
     private UserEntity findUserEntityBy(Long userId) {
