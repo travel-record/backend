@@ -61,11 +61,11 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedUpdateResponse updateFeed(Long userId, FeedUpdateRequest request) {
+    public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         // TODO find feedEntity with record entity specific field
-        FeedEntity feedEntity = findFeedEntityBy(request.getId());
+        FeedEntity feedEntity = findFeedEntityBy(feedId);
 
         checkPermissionOverFeed(userEntity, feedEntity);
 

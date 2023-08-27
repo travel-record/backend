@@ -10,9 +10,6 @@ import world.trecord.web.service.feed.request.FeedUpdateRequest;
 public class FeedValidator {
 
     public void verify(FeedCreateRequest request) throws BindException {
-        if (request.getStartAt() == null || request.getEndAt() == null) {
-            return;
-        }
 
         if (request.getStartAt().isAfter(request.getEndAt())) {
             BindException bindException = new BindException(request, "feedCreateRequest");
@@ -22,9 +19,6 @@ public class FeedValidator {
     }
 
     public void verify(FeedUpdateRequest request) throws BindException {
-        if (request.getStartAt() == null || request.getEndAt() == null) {
-            return;
-        }
 
         if (request.getStartAt().isAfter(request.getEndAt())) {
             BindException bindException = new BindException(request, "feedUpdateRequest");

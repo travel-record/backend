@@ -8,7 +8,6 @@ import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.LoginUserId;
 import world.trecord.web.service.feed.FeedService;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
-import world.trecord.web.service.feed.request.FeedDeleteRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
 import world.trecord.web.service.feed.response.*;
 
@@ -36,14 +35,14 @@ public class FeedController {
         return ApiResponse.ok(feedService.createFeed(Long.valueOf(userId), feedCreateRequest));
     }
 
-    @PutMapping
-    public ApiResponse<FeedUpdateResponse> updateFeed(@RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @LoginUserId String userId) throws BindException {
+    @PutMapping("/{feedId}")
+    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId, @RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @LoginUserId String userId) throws BindException {
         feedValidator.verify(feedUpdateRequest);
-        return ApiResponse.ok(feedService.updateFeed(Long.valueOf(userId), feedUpdateRequest));
+        return ApiResponse.ok(feedService.updateFeed(Long.valueOf(userId), feedId, feedUpdateRequest));
     }
 
-    @DeleteMapping
-    public ApiResponse<FeedDeleteResponse> deleteFeed(@RequestBody @Valid FeedDeleteRequest feedDeleteRequest, @LoginUserId String userId) {
-        return ApiResponse.ok(feedService.deleteFeed(Long.valueOf(userId), feedDeleteRequest.getId()));
+    @DeleteMapping("/{feedId}")
+    public ApiResponse<FeedDeleteResponse> deleteFeed(@PathVariable("feedId") Long feedId, @LoginUserId String userId) {
+        return ApiResponse.ok(feedService.deleteFeed(Long.valueOf(userId), feedId));
     }
 }

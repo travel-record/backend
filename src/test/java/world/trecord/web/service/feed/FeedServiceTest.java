@@ -179,11 +179,12 @@ class FeedServiceTest {
     void updateFeedWithNotExistingUserIdTest() throws Exception {
         //given
         Long notExistingUserId = 0L;
+        Long notExistingFeedId = 0L;
         FeedUpdateRequest request = FeedUpdateRequest.builder()
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.updateFeed(notExistingUserId, request))
+        Assertions.assertThatThrownBy(() -> feedService.updateFeed(notExistingUserId, notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
@@ -193,13 +194,14 @@ class FeedServiceTest {
     @DisplayName("존재하지 않는 피드 아이디로 피드를 수정하려고 하면 예외가 발생한다")
     void updateFeedWithNotExistingFeedIdTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
+
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
                 .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
+                .build());
+
+        Long notExistingFeedId = 0L;
 
         FeedUpdateRequest request = FeedUpdateRequest.builder()
-                .id(0L)
                 .name("updateFeedName")
                 .imageUrl("updatedFeedImage")
                 .description("updatedFeedDescription")
@@ -208,7 +210,7 @@ class FeedServiceTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.updateFeed(savedUserEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedService.updateFeed(userEntity.getId(), notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
@@ -228,11 +230,9 @@ class FeedServiceTest {
                 .build();
         UserEntity strangerUser = userRepository.save(userEntity2);
 
-        FeedEntity feedEntity = createFeedEntity(writerUser, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writerUser, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         FeedUpdateRequest request = FeedUpdateRequest.builder()
-                .id(savedFeedEntity.getId())
                 .name("updateFeedName")
                 .imageUrl("updatedFeedImage")
                 .description("updatedFeedDescription")
@@ -242,23 +242,21 @@ class FeedServiceTest {
 
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.updateFeed(strangerUser.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedService.updateFeed(strangerUser.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
     }
 
     @Test
-    @DisplayName("사용자가 피드를 수정하면 수정 응답으로 반환한다")
+    @DisplayName("사용자가 피드를 수정하면 수정된 내용으로 응답한다")
     void updateFeedTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
                 .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
+                .build());
 
-        FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
         RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
@@ -272,7 +270,6 @@ class FeedServiceTest {
         LocalDateTime updatedEndAt = LocalDateTime.of(2022, 9, 30, 0, 0);
 
         FeedUpdateRequest request = FeedUpdateRequest.builder()
-                .id(feedEntity.getId())
                 .name(updateFeedName)
                 .imageUrl(updatedFeedImage)
                 .description(updatedFeedDescription)
@@ -281,13 +278,13 @@ class FeedServiceTest {
                 .build();
 
         //when
-        FeedUpdateResponse response = feedService.updateFeed(savedUserEntity.getId(), request);
+        FeedUpdateResponse response = feedService.updateFeed(userEntity.getId(), feedEntity.getId(), request);
 
         //then
         Assertions.assertThat(response)
                 .extracting("writerId", "feedId", "name", "description", "startAt", "endAt")
-                .containsExactly(savedUserEntity.getId(), savedFeedEntity.getId(), updateFeedName, updatedFeedDescription,
-                        savedFeedEntity.convertStartAtToLocalDate(), savedFeedEntity.convertEndAtToLocalDate());
+                .containsExactly(userEntity.getId(), feedEntity.getId(), updateFeedName, updatedFeedDescription,
+                        feedEntity.convertStartAtToLocalDate(), feedEntity.convertEndAtToLocalDate());
 
         Assertions.assertThat(response.getRecords().stream().map(FeedUpdateResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
     }
