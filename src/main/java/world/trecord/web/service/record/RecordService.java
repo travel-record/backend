@@ -64,15 +64,15 @@ public class RecordService {
     }
 
     @Transactional
-    public RecordInfoResponse updateRecord(Long userId, RecordUpdateRequest request) {
+    public RecordInfoResponse updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        FeedEntity feedEntity = findFeedEntityBy(request.getFeedId());
+        RecordEntity recordEntity = findRecordEntityBy(recordId);
+
+        FeedEntity feedEntity = findFeedEntityBy(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
-
-        RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
-
+        
         updateRecordEntity(request, recordEntity);
 
         return RecordInfoResponse.builder()

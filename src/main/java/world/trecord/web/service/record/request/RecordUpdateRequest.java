@@ -15,12 +15,6 @@ import java.time.LocalDateTime;
 @Setter
 public class RecordUpdateRequest {
 
-    @NotNull
-    private Long feedId;
-
-    @NotNull
-    private Long recordId;
-
     @NotEmpty
     private String title;
 
@@ -47,9 +41,7 @@ public class RecordUpdateRequest {
     private String companion;
 
     @Builder
-    private RecordUpdateRequest(Long feedId, Long recordId, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl) {
-        this.feedId = feedId;
-        this.recordId = recordId;
+    private RecordUpdateRequest(String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl) {
         this.title = title;
         this.date = date;
         this.place = place;

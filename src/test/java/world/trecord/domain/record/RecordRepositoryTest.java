@@ -15,6 +15,7 @@ import world.trecord.domain.users.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @IntegrationTestSupport
 class RecordRepositoryTest {
@@ -85,6 +86,28 @@ class RecordRepositoryTest {
         Assertions.assertThat(foundRecordEntity.getCommentEntities())
                 .hasSize(2)
                 .containsOnly(commentEntity1, commentEntity2);
+    }
+
+    @Test
+    @DisplayName("기록을 조회할 때 피드와 함께 조회한다")
+    void findRecordEntityWithFeedEntityTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
+        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling"));
+
+        //when
+        Optional<RecordEntity> optionalRecord = recordRepository.findRecordEntityWithFeedEntityById(recordEntity.getId());
+
+        //then
+        RecordEntity record = optionalRecord.get();
+        Assertions.assertThat(record.getFeedEntity()).isNotNull();
     }
 
     private CommentEntity createCommentEntity(UserEntity savedUserEntity, RecordEntity savedRecordEntity) {

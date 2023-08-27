@@ -263,8 +263,6 @@ class RecordControllerTest {
         String changedImageUrl = "changed image url";
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .feedId(feedEntity.getId())
-                .recordId(recordEntity.getId())
                 .title(changedTitle)
                 .date(changedDate)
                 .place(changedPlace)
@@ -280,7 +278,7 @@ class RecordControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/records")
+                        put("/api/v1/records/{recordId}", recordEntity.getId())
                                 .header("Authorization", token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body)
@@ -307,7 +305,7 @@ class RecordControllerTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/records")
+                        put("/api/v1/records/{recordId}", 0L)
                                 .header("Authorization", token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body)

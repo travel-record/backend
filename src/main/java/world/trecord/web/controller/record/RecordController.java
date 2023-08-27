@@ -41,10 +41,10 @@ public class RecordController {
         return ApiResponse.ok(recordService.createRecord(Long.valueOf(userId), recordCreateRequest));
     }
 
-    @PutMapping
-    public ApiResponse<RecordInfoResponse> updateRecord(@RequestBody @Valid RecordUpdateRequest recordUpdateRequest, @LoginUserId String userId) throws BindException {
-        recordValidator.verify(recordUpdateRequest);
-        return ApiResponse.ok(recordService.updateRecord(Long.valueOf(userId), recordUpdateRequest));
+    @PutMapping("/{recordId}")
+    public ApiResponse<RecordInfoResponse> updateRecord(@PathVariable("recordId") Long recordId, @RequestBody @Valid RecordUpdateRequest recordUpdateRequest, @LoginUserId String userId) throws BindException {
+        recordValidator.verify(recordId, recordUpdateRequest);
+        return ApiResponse.ok(recordService.updateRecord(Long.valueOf(userId), recordId, recordUpdateRequest));
     }
 
     @DeleteMapping("/{recordId}")
