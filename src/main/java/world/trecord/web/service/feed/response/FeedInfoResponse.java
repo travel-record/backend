@@ -65,7 +65,7 @@ public class FeedInfoResponse {
         @Builder
         public Record(RecordWithFeedProjection projection, LocalDateTime feedStartAt) {
             this.id = projection.getId();
-            this.dayNumber = Duration.between(feedStartAt, projection.getDate()).toDays();
+            this.dayNumber = Duration.between(feedStartAt, projection.getDate()).toDays() + 1;
             this.title = projection.getTitle();
             this.place = projection.getPlace();
             this.imageUrl = projection.getImageUrl();
