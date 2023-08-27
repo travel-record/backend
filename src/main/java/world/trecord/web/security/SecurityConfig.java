@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,6 +19,10 @@ import world.trecord.web.service.users.UserService;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -48,8 +53,16 @@ public class SecurityConfig {
 
     @Bean
     public JwtTokenFilter jwtAuthFilter() {
-        List<String> whitelist = List.of("/", "/api/v1/auth/google-login", "/api/v1/auth/token", "/api/v1/users/{userId}", "/api/v1/feeds/{feedId}", "/api/v1/records/{recordId}", "/api/v1/records/{recordId}/comments");
-        return new JwtTokenFilter(jwtTokenHandler, userService, whitelist);
+        Map<String, List<HttpMethod>> whitelistMap = Map.of(
+                "/", List.of(GET),
+                "/api/v1/auth/google-login", List.of(POST),
+                "/api/v1/auth/token", List.of(POST),
+                "/api/v1/users/{userId}", List.of(GET),
+                "/api/v1/feeds/{feedId}", List.of(GET),
+                "/api/v1/records/{recordId}", List.of(GET),
+                "/api/v1/records/{recordId}/comments", List.of(GET)
+        );
+        return new JwtTokenFilter(jwtTokenHandler, userService, whitelistMap);
     }
 
     @Bean

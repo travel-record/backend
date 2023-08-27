@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,8 +20,9 @@ import world.trecord.web.service.users.UserService;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
@@ -36,12 +38,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
-    private final List<RequestMatcher> whitelist = new ArrayList<>();
+    private final Map<RequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
 
-    public JwtTokenFilter(JwtTokenHandler jwtTokenHandler, UserService userService, List<String> whiteListUrlList) {
+    public JwtTokenFilter(JwtTokenHandler jwtTokenHandler, UserService userService, Map<String, List<HttpMethod>> whitelistMap) {
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
-        whiteListUrlList.forEach(url -> whitelist.add(new AntPathRequestMatcher(url)));
+        whitelistMap.forEach((url, methods) -> this.whitelistMap.put(new AntPathRequestMatcher(url), methods));
     }
 
     @Override
@@ -49,7 +51,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             String token = request.getHeader(AUTHORIZATION);
 
-            if (token == null && whitelist.stream().anyMatch(requestMatcher -> requestMatcher.matches(request))) {
+            if (token == null && isRequestInWhitelist(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -71,6 +73,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             out.print(new ObjectMapper().writeValueAsString(body));
             out.flush();
         }
+    }
+
+    private boolean isRequestInWhitelist(HttpServletRequest request) {
+        return whitelistMap.entrySet().stream().anyMatch(entry -> {
+            RequestMatcher matcher = entry.getKey();
+            List<HttpMethod> allowedMethods = entry.getValue();
+            return matcher.matches(request) && allowedMethods.contains(HttpMethod.valueOf(request.getMethod()));
+        });
     }
 
     private void setAuthenticationWith(String userId) {
