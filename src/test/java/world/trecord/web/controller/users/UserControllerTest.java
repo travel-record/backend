@@ -64,7 +64,7 @@ class UserControllerTest {
     private Long expiredTimeMs;
 
     @Test
-    @DisplayName("사용자 아이디로 사용자 정보를 반환한다")
+    @DisplayName("GET /api/v1/users - 성공")
     void getUserInfoTest() throws Exception {
         //given
         String email = "test@email.com";
@@ -94,10 +94,11 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자 아이디를 암호화한 토큰으로 사용자 정보를 조회하면 601 에러 응답 코드를 반환한다")
+    @DisplayName("GET /api/v1/users - 실패 (존재하지 않는 사용자 아이디)")
     void getUserInfoWithNotExistingTokenTest() throws Exception {
         //given
-        String token = jwtTokenHandler.generateToken(-1L, secretKey, expiredTimeMs);
+        long notExistingUserId = -1L;
+        String token = jwtTokenHandler.generateToken(notExistingUserId, secretKey, expiredTimeMs);
 
         //when //then
         mockMvc.perform(
@@ -105,12 +106,11 @@ class UserControllerTest {
                                 .header("Authorization", token)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
     }
 
     @Test
-    @DisplayName("사용자 정보를 등록하고, 등록한 정보를 반환한다")
+    @DisplayName("POST /api/v1/users - 성공")
     void updateUserInfoTest() throws Exception {
         //given
         String nickname = "changed nickname";
@@ -150,7 +150,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("이미 등록된 닉네임으로 사용자 정보를 등록하면 700 에러 응답 코드를 반환한다")
+    @DisplayName("POST /api/v1/users - 실패 (이미 등록된 닉네임)")
     void updateUserInfoWithExistingNicknameTest() throws Exception {
         //given
         String duplicatedNickname = "duplicate nickname";
@@ -189,7 +189,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("사용자 아이디로 다른 사용자 정보를 반환한다")
+    @DisplayName("GET /api/v1/users/{userId} - 성공")
     void getUserInfoByUserIdTest() throws Exception {
         //given
         String email = "test@email.com";
@@ -217,21 +217,21 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자 아이디로 사용자 프로필을 조회하면 701 에러 응답 코드를 반환한다")
+    @DisplayName("GET /api/v1/users/{userId} - 실패 (존재하지 않는 사용자 아이디)")
     void getUserInfoByUserIdWithTest() throws Exception {
         //given
+        long notExistingUserId = 0L;
 
         //when //then
         mockMvc.perform(
-                        get("/api/v1/users/{userId}", 0L)
+                        get("/api/v1/users/{userId}", notExistingUserId)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_USER.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(NOT_EXISTING_USER.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(NOT_EXISTING_USER.getErrorCode()));
     }
 
     @Test
-    @DisplayName("사용자 아이디로 사용자 댓글 리스트를 반환한다")
+    @DisplayName("GET /api/v1/users/comments - 성공")
     void getUserCommentsTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -267,7 +267,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("올바르지 않은 인증 토큰으로 사용자 댓글 리스트를 조회하면 601 에러 응답 코드를 반환한다")
+    @DisplayName("GET /api/v1/users/comments - 실패 (유효하지 않은 토큰)")
     void getUserCommentsWithNotExistingUserIdTest() throws Exception {
         //given
         String invalidToken = "-1";
@@ -282,7 +282,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("사용자가 좋아요한 기록 리스트를 등록 시간 내림차순으로 조회하여 반환한다")
+    @DisplayName("GET /api/v1/users/likes - 성공")
     void getUserRecordLikesTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()

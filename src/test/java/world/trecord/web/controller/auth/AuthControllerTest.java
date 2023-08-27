@@ -42,7 +42,7 @@ public class AuthControllerTest {
     private Long expiredTimeMs;
 
     @Test
-    @DisplayName("인가 코드를 전송하지 않으면 602 에러 코드로 반환한다")
+    @DisplayName("POST /api/v1/auth/google-login - 실패 (파라미터 보내지 않음)")
     void googleLoginWithEmptyAccessTokenTest() throws Exception {
         //given
         GoogleLoginRequest request = GoogleLoginRequest.builder()
@@ -62,7 +62,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("유효한 토큰으로 토큰을 재발급한다")
+    @DisplayName("POST /api/v1/auth/token - 성공")
     void refreshTokenWithValidTokenTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -89,7 +89,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("유효하지 않은 토큰으로 재발급을 받으려고 하면 601 에러 응답 코드를 반환한다")
+    @DisplayName("POST /api/v1/auth/token - 실패 (유효하지 않은 토큰)")
     void refreshTokenWithInvalidTokenTest() throws Exception {
         //given
         String refreshToken = "dummy";
@@ -111,7 +111,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("리프레시 토큰을 전송하지 않으면 602 에러 응답 코드를 반환한다")
+    @DisplayName("POST /api/v1/auth/token - 실패 (파라미터 보내지 않음)")
     void refreshTokenWithEmptyTokenTest() throws Exception {
         //given
         RefreshTokenRequest request = RefreshTokenRequest.builder()

@@ -60,7 +60,7 @@ class CommentControllerTest {
     private Long expiredTimeMs;
 
     @Test
-    @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 상세 정보를 반환한다")
+    @DisplayName("POST /api/v1/comments - 성공")
     void createCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -89,7 +89,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("올바르지 못한 댓글로 기록에 댓글을 작성하려고 하면 602 에러 응답 코드를 반환한다")
+    @DisplayName("POST /api/v1/comments - 실패 (올바르지 못한 댓글)")
     void createCommentWithInvalidDataTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -119,7 +119,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 작성자가 댓글을 수정하면 수정된 댓글 내용을 반환한다")
+    @DisplayName("PUT /api/v1/comments/{commentId} - 성공")
     void updateCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -148,7 +148,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("올바르지 못한 댓글 내용으로 수정을 요청하면 602 에러 응답 코드를 반환한다")
+    @DisplayName("PUT /api/v1/comments/{commentId} - 실패 (올바르지 못한 댓글 내용)")
     void updateCommentWithInvalidDataTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -177,7 +177,7 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 작성자가 댓글을 삭제하면 삭제된 댓글 아이디를 반환한다")
+    @DisplayName("DELETE /api/v1/comments/{commentId} - 성공")
     void deleteCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -199,13 +199,12 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 아이디가 숫자가 아니면 602 에러 응답 코드를 반환한다")
+    @DisplayName("DELETE /api/v1/comments/{commentId} - 실패 (올바르지 않은 경로 변수)")
     void deleteCommentWithCommentIdNullTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
         String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
         String pathVariable = "Invalid path variable";
