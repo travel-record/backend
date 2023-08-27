@@ -16,7 +16,6 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
-import world.trecord.web.service.comment.request.CommentDeleteRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentCreateResponse;
 import world.trecord.web.service.comment.response.CommentDeleteResponse;
@@ -193,12 +192,8 @@ class CommentServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        CommentDeleteRequest request = CommentDeleteRequest.builder()
-                .commentId(commentEntity.getId())
-                .build();
-
         //when
-        CommentDeleteResponse response = commentService.deleteComment(userEntity.getId(), request);
+        CommentDeleteResponse response = commentService.deleteComment(userEntity.getId(), commentEntity.getId());
 
         //then
         Assertions.assertThat(response.getCommentId()).isEqualTo(commentEntity.getId());
@@ -215,12 +210,8 @@ class CommentServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        CommentDeleteRequest request = CommentDeleteRequest.builder()
-                .commentId(commentEntity.getId())
-                .build();
-
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.deleteComment(otherEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> commentService.deleteComment(otherEntity.getId(), commentEntity.getId()))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -233,12 +224,8 @@ class CommentServiceTest {
         Long notExistingCommentId = 0L;
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        CommentDeleteRequest request = CommentDeleteRequest.builder()
-                .commentId(notExistingCommentId)
-                .build();
-
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.deleteComment(userEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> commentService.deleteComment(userEntity.getId(), notExistingCommentId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_COMMENT);
@@ -249,12 +236,10 @@ class CommentServiceTest {
     void deleteCommentWithNotExistingUserIdTest() throws Exception {
         //given
         Long notExistingUserId = 0L;
-
-        CommentDeleteRequest request = CommentDeleteRequest.builder()
-                .build();
+        Long notExistingCommentId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.deleteComment(notExistingUserId, request))
+        Assertions.assertThatThrownBy(() -> commentService.deleteComment(notExistingUserId, notExistingCommentId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);

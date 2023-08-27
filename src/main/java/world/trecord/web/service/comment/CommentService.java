@@ -11,7 +11,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
-import world.trecord.web.service.comment.request.CommentDeleteRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentCreateResponse;
 import world.trecord.web.service.comment.response.CommentDeleteResponse;
@@ -56,7 +55,7 @@ public class CommentService {
         CommentEntity commentEntity = findCommentEntityWithUserEntityBy(request.getCommentId());
 
         checkPermissionOverComment(userEntity, commentEntity);
-        
+
         commentEntity.update(request.toUpdateEntity());
 
         return CommentUpdateResponse.builder()
@@ -65,11 +64,11 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDeleteResponse deleteComment(Long userId, CommentDeleteRequest request) {
+    public CommentDeleteResponse deleteComment(Long userId, Long commendId) {
 
         UserEntity userEntity = findUserEntityBy(userId);
 
-        CommentEntity commentEntity = findCommentEntityWithUserEntityBy(request.getCommentId());
+        CommentEntity commentEntity = findCommentEntityWithUserEntityBy(commendId);
 
         checkPermissionOverComment(userEntity, commentEntity);
 
