@@ -7,6 +7,7 @@ import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,8 +43,12 @@ public class FeedInfoResponse {
         this.startAt = feedEntity.convertStartAtToLocalDate();
         this.endAt = feedEntity.convertEndAtToLocalDate();
         this.records = projectionList.stream()
-                .map(Record::new)
+                .map(projection -> Record.builder()
+                        .projection(projection)
+                        .feedStartAt(feedEntity.getStartAt())
+                        .build())
                 .toList();
+
     }
 
     @NoArgsConstructor
@@ -51,21 +56,20 @@ public class FeedInfoResponse {
     @Getter
     public static class Record {
         private Long id;
+        private Long dayNumber;
         private String title;
         private String place;
         private String imageUrl;
         private LocalDate date;
 
-        public Record(RecordWithFeedProjection projection) {
+        @Builder
+        public Record(RecordWithFeedProjection projection, LocalDateTime feedStartAt) {
             this.id = projection.getId();
+            this.dayNumber = Duration.between(feedStartAt, projection.getDate()).toDays();
             this.title = projection.getTitle();
             this.place = projection.getPlace();
             this.imageUrl = projection.getImageUrl();
-            this.date = covertLocalDate(projection.getDate());
-        }
-
-        private LocalDate covertLocalDate(LocalDateTime localDateTime) {
-            return localDateTime != null ? localDateTime.toLocalDate() : null;
+            this.date = projection.getDate().toLocalDate();
         }
     }
 }
