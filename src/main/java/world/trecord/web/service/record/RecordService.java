@@ -100,7 +100,7 @@ public class RecordService {
 
         return RecordSequenceSwapResponse.builder()
                 .originalRecordId(targetRecord.getId())
-                .originalRecordId(originalRecord.getId())
+                .targetRecordId(originalRecord.getId())
                 .build();
     }
 
