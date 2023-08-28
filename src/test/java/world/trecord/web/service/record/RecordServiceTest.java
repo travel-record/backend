@@ -69,7 +69,7 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
         RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), writer.getId());
@@ -99,7 +99,7 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
@@ -134,7 +134,7 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
@@ -165,10 +165,7 @@ class RecordServiceTest {
     @DisplayName("피드 작성자가 기록을 생성한다")
     void createRecordTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String title = "title";
@@ -201,6 +198,47 @@ class RecordServiceTest {
         Assertions.assertThat(response)
                 .extracting("date", "place", "feeling", "weather", "transportation", "content", "companion")
                 .containsExactly(LocalDate.of(2021, 10, 1), place, feeling, weather, satisfaction, content, companion);
+    }
+
+    @Test
+    @DisplayName("기록을 생성할 때 같은 날짜에 작성된 기록이 있으면 마지막 순서 번호 + 1 번호를 가진다")
+    void createRecordSequenceNumberTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        LocalDateTime recordDate = LocalDateTime.of(2021, 10, 1, 0, 0);
+        int sequence = 1;
+        recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", recordDate, "content1", "weather1", "satisfaction1", "feeling1", sequence));
+
+        String title = "title";
+        String place = "jeju";
+        String feeling = "feeling";
+        String weather = "weather";
+        String satisfaction = "best";
+        String content = "content";
+        String companion = "companion";
+
+        RecordCreateRequest request = RecordCreateRequest.builder()
+                .feedId(feedEntity.getId())
+                .title(title)
+                .date(recordDate)
+                .place(place)
+                .feeling(feeling)
+                .weather(weather)
+                .transportation(satisfaction)
+                .content(content)
+                .companion(companion)
+                .build();
+
+        //when
+        RecordCreateResponse response = recordService.createRecord(writer.getId(), request);
+
+        //then
+        Assertions.assertThat(recordRepository.findById(response.getRecordId()))
+                .isPresent()
+                .hasValueSatisfying(record -> {
+                    Assertions.assertThat(record.getSequence()).isEqualTo(sequence + 1);
+                });
     }
 
     @Test
@@ -265,13 +303,9 @@ class RecordServiceTest {
     @DisplayName("피드 작성자가 본인의 기록을 수정 요청하면 수정된 기록 정보를 반환한다")
     void updateRecordTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         String changedTitle = "change title";
         LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
@@ -297,11 +331,13 @@ class RecordServiceTest {
         RecordInfoResponse response = recordService.updateRecord(writer.getId(), recordEntity.getId(), request);
 
         //then
-        RecordEntity changedRecord = recordRepository.findById(recordEntity.getId()).get();
-
-        Assertions.assertThat(changedRecord)
-                .extracting("title", "date", "place", "content", "feeling", "weather", "companion", "transportation")
-                .containsExactly(changedTitle, changedDate, changedPlace, changedContent, changedFeeling, changedWeather, changedCompanion, changedTransportation);
+        Assertions.assertThat(recordRepository.findById(recordEntity.getId()))
+                .isPresent()
+                .hasValueSatisfying(record -> {
+                    Assertions.assertThat(record)
+                            .extracting("title", "date", "place", "content", "feeling", "weather", "companion", "transportation")
+                            .containsExactly(changedTitle, changedDate, changedPlace, changedContent, changedFeeling, changedWeather, changedCompanion, changedTransportation);
+                });
     }
 
     @Test
@@ -334,7 +370,7 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .build();
@@ -390,7 +426,7 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
@@ -449,7 +485,7 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when //then
         Assertions.assertThatThrownBy(() -> recordService.deleteRecord(viewer.getId(), recordEntity.getId()))
@@ -472,7 +508,7 @@ class RecordServiceTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         userRecordLikeRepository.save(createUserRecordLikeEntity(viewer, recordEntity));
 
@@ -496,7 +532,7 @@ class RecordServiceTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
         RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), viewer.getId());
@@ -514,7 +550,7 @@ class RecordServiceTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
         RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), null);
@@ -544,7 +580,7 @@ class RecordServiceTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
@@ -573,7 +609,7 @@ class RecordServiceTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
         RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), writer.getId());
@@ -592,7 +628,7 @@ class RecordServiceTest {
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling, int sequence) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
                 .title(title)
@@ -602,6 +638,7 @@ class RecordServiceTest {
                 .weather(weather)
                 .transportation(satisfaction)
                 .feeling(feeling)
+                .sequence(sequence)
                 .build();
     }
 

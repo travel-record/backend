@@ -55,7 +55,10 @@ public class RecordService {
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
-        RecordEntity recordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity));
+        // TODO 동시성 처리
+        int nextSequence = getNextSequence(recordCreateRequest, feedEntity);
+
+        RecordEntity recordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity, nextSequence));
 
         return RecordCreateResponse.builder()
                 .writerEntity(userEntity)
@@ -109,6 +112,10 @@ public class RecordService {
                 .commentEntities(commentEntities)
                 .viewerId(viewerId)
                 .build();
+    }
+
+    private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
+        return recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
     }
 
     private RecordEntity findRecordEntityBy(Long recordId) {

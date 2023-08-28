@@ -44,9 +44,9 @@ class RecordRepositoryTest {
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
-        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling");
-        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling");
-        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling");
+        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
+        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
 
         recordRepository.saveAll(List.of(record1, record2, record3));
 
@@ -72,7 +72,7 @@ class RecordRepositoryTest {
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity);
         CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity);
@@ -92,15 +92,13 @@ class RecordRepositoryTest {
     @DisplayName("기록을 조회할 때 피드와 함께 조회한다")
     void findRecordEntityWithFeedEntityTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
 
         //when
         Optional<RecordEntity> optionalRecord = recordRepository.findRecordEntityWithFeedEntityById(recordEntity.getId());
@@ -108,6 +106,40 @@ class RecordRepositoryTest {
         //then
         RecordEntity record = optionalRecord.get();
         Assertions.assertThat(record.getFeedEntity()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("피드에 등록된 같은 날짜에 있는 기록 중 가장 큰 순서 번호를 조회한다")
+    void findMaxSequenceByFeedAndDateTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
+
+        LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
+        int sequence = 100;
+        recordRepository.save(createRecordEntity(feedEntity, "title", "place", date, "content", "weather", "satisfaction", "feeling", sequence));
+
+        //when
+        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), date);
+
+        //then
+        Assertions.assertThat(maxSequence.orElse(0)).isEqualTo(sequence);
+    }
+
+    @Test
+    @DisplayName("피드에 등록된 같은 날짜에 있는 기록이 없으면 0을 반환한다")
+    void findMaxSequenceByFeedAndDateWhenSameDateIsEmptyTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
+
+        LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
+
+        //when
+        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), date);
+
+        //then
+        Assertions.assertThat(maxSequence).isEmpty();
     }
 
     private CommentEntity createCommentEntity(UserEntity savedUserEntity, RecordEntity savedRecordEntity) {
@@ -128,16 +160,17 @@ class RecordRepositoryTest {
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String record, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling, int sequence) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
-                .title(record)
+                .title(title)
                 .place(place)
                 .date(date)
                 .content(content)
                 .weather(weather)
                 .transportation(satisfaction)
                 .feeling(feeling)
+                .sequence(sequence)
                 .build();
     }
 }
