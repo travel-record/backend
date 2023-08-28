@@ -44,21 +44,6 @@ public class RecordCreateRequest {
 
     private String companion;
 
-    public RecordEntity toEntity(FeedEntity feedEntity) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .title(this.title)
-                .date(this.date)
-                .place(this.place)
-                .feeling(this.feeling)
-                .weather(this.weather)
-                .transportation(this.transportation)
-                .content(this.content)
-                .companion(this.companion)
-                .imageUrl(this.imageUrl)
-                .build();
-    }
-
     @Builder
     private RecordCreateRequest(Long feedId, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl) {
         this.feedId = feedId;
@@ -71,5 +56,21 @@ public class RecordCreateRequest {
         this.content = content;
         this.companion = companion;
         this.imageUrl = imageUrl;
+    }
+
+    public RecordEntity toEntity(FeedEntity feedEntity, int sequence) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .title(this.title)
+                .date(this.date)
+                .place(this.place)
+                .feeling(this.feeling)
+                .weather(this.weather)
+                .transportation(this.transportation)
+                .content(this.content)
+                .sequence(sequence)
+                .companion(this.companion)
+                .imageUrl(this.imageUrl)
+                .build();
     }
 }
