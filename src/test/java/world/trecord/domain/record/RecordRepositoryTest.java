@@ -33,12 +33,10 @@ class RecordRepositoryTest {
     CommentRepository commentRepository;
 
     @Test
-    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜,기록 등록 날짜 오름차순으로 projection으로 조회한다")
+    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜 오름차순으로 projection으로 조회한다")
     void findRecordEntityByFeedIdTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
@@ -46,7 +44,7 @@ class RecordRepositoryTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
         RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
         RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
-        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
+        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
 
         recordRepository.saveAll(List.of(record1, record2, record3));
 
@@ -56,8 +54,60 @@ class RecordRepositoryTest {
         //then
         Assertions.assertThat(projectionList)
                 .hasSize(3)
-                .extracting("title")
-                .containsExactly(record1.getTitle(), record3.getTitle(), record2.getTitle());
+                .extracting("id")
+                .containsExactly(record1.getId(), record2.getId(), record3.getId());
+    }
+
+    @Test
+    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜가 동일하면 기록 순서 오름차순으로 projection으로 조회한다")
+    void findRecordEntityByFeedIdOrderBySequenceTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
+        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
+        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
+        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+
+        recordRepository.saveAll(List.of(record1, record2, record3));
+
+        //when
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedEntity.getId());
+
+        //then
+        Assertions.assertThat(projectionList)
+                .hasSize(3)
+                .extracting("id")
+                .containsExactly(record3.getId(), record2.getId(), record1.getId());
+    }
+
+    @Test
+    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜, 기록 순서가 동일하면 기록 등록 시간 오름차순으로 projection으로 조회한다")
+    void findRecordEntityByFeedIdOrderByCreatedTimeTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
+        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+
+        recordRepository.saveAll(List.of(record1, record2, record3));
+
+        //when
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedEntity.getId());
+
+        //then
+        Assertions.assertThat(projectionList)
+                .hasSize(3)
+                .extracting("id")
+                .containsExactly(record1.getId(), record2.getId(), record3.getId());
     }
 
     @Test
