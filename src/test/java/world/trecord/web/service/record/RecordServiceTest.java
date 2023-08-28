@@ -17,6 +17,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
+import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
@@ -604,9 +605,7 @@ class RecordServiceTest {
     @DisplayName("기록에 등록된 댓글들이 없을때 댓글 리스트가 빈 배열인 RecordCommentsResponse로 반환한다")
     void getRecordCommentsReturnsCommentsEmptyTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
@@ -616,6 +615,90 @@ class RecordServiceTest {
 
         //then
         Assertions.assertThat(response.getComments()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("같은 피드를 가지는 두 개의 기록 순서를 스왑한다")
+    void updateRecordSequenceTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        int recordEntitySeq1 = 1;
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", recordEntitySeq1));
+
+        int recordEntitySeq2 = 2;
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", recordEntitySeq2));
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+
+        //when
+        recordService.swapRecordSequence(writer.getId(), request);
+
+        //then
+        Assertions.assertThat(recordRepository.findById(recordEntity1.getId()))
+                .isPresent()
+                .hasValueSatisfying(recordEntity -> {
+                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(recordEntitySeq2);
+                });
+
+        Assertions.assertThat(recordRepository.findById(recordEntity2.getId()))
+                .isPresent()
+                .hasValueSatisfying(recordEntity -> {
+                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(recordEntitySeq1);
+                });
+    }
+
+    @Test
+    @DisplayName("다른 피드를 가지는 기록들을 스왑 요청하면 INVALID_ARGUMENT 예외가 발생한다")
+    void updateRecordSequenceWhenNotSameFeedTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        FeedEntity feedEntity1 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity1, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
+        FeedEntity feedEntity2 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity2, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> recordService.swapRecordSequence(writer.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(INVALID_ARGUMENT);
+    }
+
+    @Test
+    @DisplayName("피드 수정 권한이 없는 사용자가 기록 순서 스왑 요청하면 FORBIDDEN 예외가 발생한다")
+    void updateRecordSequenceWhenUserForbiddenTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> recordService.swapRecordSequence(other.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(FORBIDDEN);
     }
 
 

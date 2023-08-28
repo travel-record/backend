@@ -126,7 +126,6 @@ class RecordValidatorTest {
                 .isInstanceOf(BindException.class);
     }
 
-
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()
                 .userEntity(saveUserEntity)

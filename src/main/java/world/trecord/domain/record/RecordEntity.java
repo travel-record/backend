@@ -1,10 +1,7 @@
 package world.trecord.domain.record;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@EqualsAndHashCode(of = "id")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "record")
@@ -102,5 +100,15 @@ public class RecordEntity extends BaseEntity {
 
     public LocalDate convertDateToLocalDate() {
         return this.date != null ? getDate().toLocalDate() : null;
+    }
+
+    public boolean hasSameFeedEntity(RecordEntity otherRecord) {
+        return this.feedEntity.equals(otherRecord.getFeedEntity());
+    }
+
+    public void swapSequenceWith(RecordEntity otherRecord) {
+        int tmpSequence = otherRecord.getSequence();
+        otherRecord.sequence = this.sequence;
+        this.sequence = tmpSequence;
     }
 }

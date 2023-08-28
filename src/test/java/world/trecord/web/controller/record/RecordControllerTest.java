@@ -22,6 +22,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
+import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
@@ -75,7 +76,7 @@ class RecordControllerTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
 
@@ -97,7 +98,7 @@ class RecordControllerTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when //then
         mockMvc.perform(
@@ -273,15 +274,13 @@ class RecordControllerTest {
     @DisplayName("PUT /api/v1/records/{recordId} - 성공")
     void updateRecordTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         String changedTitle = "change title";
         LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
@@ -332,7 +331,7 @@ class RecordControllerTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .title("change title")
@@ -357,6 +356,144 @@ class RecordControllerTest {
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/records/swap - 성공")
+    void swapRecordSequenceTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        int seq1 = 1;
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", seq1));
+
+        int seq2 = 2;
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", seq2));
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/records/swap")
+                                .header("Authorization", token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                )
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(recordRepository.findById(recordEntity1.getId()))
+                .isPresent()
+                .hasValueSatisfying(recordEntity -> {
+                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(seq2);
+                });
+
+        Assertions.assertThat(recordRepository.findById(recordEntity2.getId()))
+                .isPresent()
+                .hasValueSatisfying(recordEntity -> {
+                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(seq1);
+                });
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/records/swap - 실패 (같은 피드 아이디가 아닌 경우)")
+    void swapRecordSequenceWhenRecordNotSameFeedTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+
+        FeedEntity feedEntity1 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity1, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
+        FeedEntity feedEntity2 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity2, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 1));
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/records/swap")
+                                .header("Authorization", token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/records/swap - 실패 (피드 관리자가 아닌 경우)")
+    void swapRecordSequenceByNotFeedManagerTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        String token = jwtTokenHandler.generateToken(other.getId(), secretKey, expiredTimeMs);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 1));
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/records/swap")
+                                .header("Authorization", token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/records/swap - 실패 (존재하지 않는 기록 아이디로 요청)")
+    void swapRecordSequenceWhenRecordNotExistingTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        long notExistingRecordId = 0L;
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(notExistingRecordId)
+                .targetRecordId(notExistingRecordId)
+                .build();
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/records/swap")
+                                .header("Authorization", token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(NOT_EXISTING_RECORD.getErrorCode()));
     }
 
     @Test
@@ -425,7 +562,7 @@ class RecordControllerTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
@@ -455,7 +592,7 @@ class RecordControllerTest {
         String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
 
         //when //then
@@ -480,7 +617,7 @@ class RecordControllerTest {
         String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when //then
         mockMvc.perform(
@@ -508,7 +645,7 @@ class RecordControllerTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
@@ -534,7 +671,7 @@ class RecordControllerTest {
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling, int sequence) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
                 .title(title)
@@ -544,6 +681,7 @@ class RecordControllerTest {
                 .weather(weather)
                 .transportation(satisfaction)
                 .feeling(feeling)
+                .sequence(sequence)
                 .build();
     }
 

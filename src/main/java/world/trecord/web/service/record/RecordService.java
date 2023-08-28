@@ -14,11 +14,9 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
+import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
-import world.trecord.web.service.record.response.RecordCommentsResponse;
-import world.trecord.web.service.record.response.RecordCreateResponse;
-import world.trecord.web.service.record.response.RecordDeleteResponse;
-import world.trecord.web.service.record.response.RecordInfoResponse;
+import world.trecord.web.service.record.response.*;
 
 import java.util.List;
 
@@ -85,6 +83,28 @@ public class RecordService {
     }
 
     @Transactional
+    public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
+        UserEntity userEntity = findUserEntityBy(userId);
+
+        RecordEntity originalRecord = findRecordEntityBy(request.getOriginalRecordId());
+
+        RecordEntity targetRecord = findRecordEntityBy(request.getTargetRecordId());
+
+        checkHasSameFeed(originalRecord, targetRecord);
+
+        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(originalRecord.getFeedEntity().getId());
+
+        checkPermissionOverFeed(userEntity, feedEntity);
+
+        originalRecord.swapSequenceWith(targetRecord);
+
+        return RecordSequenceSwapResponse.builder()
+                .originalRecordId(targetRecord.getId())
+                .originalRecordId(originalRecord.getId())
+                .build();
+    }
+
+    @Transactional
     public RecordDeleteResponse deleteRecord(Long userId, Long recordId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
@@ -116,6 +136,12 @@ public class RecordService {
 
     private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
         return recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
+    }
+
+    private void checkHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
+        if (!originalRecord.hasSameFeedEntity(targetRecord)) {
+            throw new CustomException(INVALID_ARGUMENT);
+        }
     }
 
     private RecordEntity findRecordEntityBy(Long recordId) {

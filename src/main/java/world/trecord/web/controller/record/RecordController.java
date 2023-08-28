@@ -8,11 +8,9 @@ import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.LoginUserId;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
+import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
-import world.trecord.web.service.record.response.RecordCommentsResponse;
-import world.trecord.web.service.record.response.RecordCreateResponse;
-import world.trecord.web.service.record.response.RecordDeleteResponse;
-import world.trecord.web.service.record.response.RecordInfoResponse;
+import world.trecord.web.service.record.response.*;
 import world.trecord.web.service.userrecordlike.UserRecordLikeService;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -39,6 +37,11 @@ public class RecordController {
     public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Valid RecordCreateRequest recordCreateRequest, @LoginUserId String userId) throws BindException {
         recordValidator.verify(recordCreateRequest);
         return ApiResponse.ok(recordService.createRecord(Long.valueOf(userId), recordCreateRequest));
+    }
+
+    @PostMapping("/swap")
+    public ApiResponse<RecordSequenceSwapResponse> swapRecordSequence(@RequestBody @Valid RecordSequenceSwapRequest recordSequenceSwapRequest, @LoginUserId String userId) throws BindException {
+        return ApiResponse.ok(recordService.swapRecordSequence(Long.valueOf(userId), recordSequenceSwapRequest));
     }
 
     @PutMapping("/{recordId}")
