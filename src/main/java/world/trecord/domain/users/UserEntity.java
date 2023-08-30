@@ -1,12 +1,16 @@
 package world.trecord.domain.users;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
 
-@EqualsAndHashCode(of = "id")
+import java.util.Objects;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "users")
@@ -45,10 +49,10 @@ public class UserEntity extends BaseEntity {
     }
 
     public boolean isManagerOf(FeedEntity feedEntity) {
-        return this.equals(feedEntity.getUserEntity());
+        return Objects.equals(this.id, feedEntity.getUserEntity().getId());
     }
 
     public boolean isCommenterOf(CommentEntity commentEntity) {
-        return this.equals(commentEntity.getUserEntity());
+        return Objects.equals(this.id, commentEntity.getUserEntity().getId());
     }
 }

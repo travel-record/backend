@@ -1,7 +1,10 @@
 package world.trecord.domain.record;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
@@ -11,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@EqualsAndHashCode(of = "id")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "record")
@@ -60,7 +62,7 @@ public class RecordEntity extends BaseEntity {
     private FeedEntity feedEntity;
 
     @OneToMany(mappedBy = "recordEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommentEntity> commentEntities;
+    private List<CommentEntity> commentEntities = new ArrayList<>();
 
     @Builder
     private RecordEntity(FeedEntity feedEntity, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl, int sequence) {
@@ -79,7 +81,6 @@ public class RecordEntity extends BaseEntity {
         this.companion = companion;
         this.imageUrl = imageUrl;
         this.sequence = sequence;
-        this.commentEntities = new ArrayList<>();
     }
 
     public void update(RecordEntity updateEntity) {
@@ -102,8 +103,8 @@ public class RecordEntity extends BaseEntity {
         return this.date != null ? getDate().toLocalDate() : null;
     }
 
-    public boolean hasSameFeedEntity(RecordEntity otherRecord) {
-        return this.feedEntity.equals(otherRecord.getFeedEntity());
+    public boolean hasSameFeed(RecordEntity otherRecord) {
+        return this.feedEntity.isEqualTo(otherRecord.getFeedEntity());
     }
 
     public void swapSequenceWith(RecordEntity otherRecord) {

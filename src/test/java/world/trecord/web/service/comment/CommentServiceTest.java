@@ -22,6 +22,7 @@ import world.trecord.web.service.comment.response.CommentDeleteResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @IntegrationTestSupport
 class CommentServiceTest {
@@ -62,6 +63,32 @@ class CommentServiceTest {
         Assertions.assertThat(response)
                 .extracting("recordId", "commentId", "content")
                 .containsExactly(recordEntity.getId(), commentEntity.getId(), commentEntity.getContent());
+    }
+
+    @Test
+    @DisplayName("대댓글을 작성하여 생성된 댓글 상세 정보를 반환한다")
+    void createChildCommentTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .parentId(parentCommentEntity.getId())
+                .content("content")
+                .build();
+
+        //when
+        CommentCreateResponse response = commentService.createComment(userEntity.getId(), request);
+
+        //then
+        Assertions.assertThat(commentRepository.findById(response.getCommentId()))
+                .isPresent()
+                .hasValueSatisfying(comment -> {
+                    Assertions.assertThat(comment.getParentCommentEntity()).isEqualTo(parentCommentEntity);
+                });
     }
 
     @Test
@@ -106,7 +133,7 @@ class CommentServiceTest {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
 
         String changedContent = "changed content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -168,7 +195,7 @@ class CommentServiceTest {
         UserEntity otherEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
 
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .content("change content")
@@ -188,7 +215,7 @@ class CommentServiceTest {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
 
         //when
         CommentDeleteResponse response = commentService.deleteComment(userEntity.getId(), commentEntity.getId());
@@ -199,6 +226,31 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("댓글 작성자가 댓글을 삭제하면 원댓글을 삭제하면 자식 댓글들도 함께 삭제된다")
+    void deleteParentCommentTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity commenter = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(commenter, recordEntity, null, "content"));
+
+        CommentEntity childCommentEntity1 = createCommentEntity(writer, recordEntity, parentCommentEntity, "content");
+        CommentEntity childCommentEntity2 = createCommentEntity(writer, recordEntity, parentCommentEntity, "content");
+        CommentEntity childCommentEntity3 = createCommentEntity(writer, recordEntity, parentCommentEntity, "content");
+
+        commentRepository.saveAll(List.of(childCommentEntity1, childCommentEntity2, childCommentEntity3));
+
+        //when
+        CommentDeleteResponse response = commentService.deleteComment(commenter.getId(), parentCommentEntity.getId());
+
+        //then
+        Assertions.assertThat(commentRepository.findById(response.getCommentId())).isEmpty();
+    }
+
+    @Test
     @DisplayName("댓글 작성자가 아닌 사용자가 댓글을 삭제하려고 하면 예외가 발생한다")
     void deleteCommentWithNotCommenterTest() throws Exception {
         //given
@@ -206,7 +258,7 @@ class CommentServiceTest {
         UserEntity otherEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
 
         //when //then
         Assertions.assertThatThrownBy(() -> commentService.deleteComment(otherEntity.getId(), commentEntity.getId()))
@@ -266,10 +318,11 @@ class CommentServiceTest {
                 .build();
     }
 
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
+    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity, String content) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
+                .parentCommentEntity(parentCommentEntity)
                 .content(content)
                 .build();
     }

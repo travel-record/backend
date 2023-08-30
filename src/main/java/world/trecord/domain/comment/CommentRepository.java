@@ -17,6 +17,9 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     @EntityGraph(attributePaths = "userEntity")
     Optional<CommentEntity> findCommentEntityWithUserEntityById(@Param("id") Long commentId);
 
+    @EntityGraph(attributePaths = "childCommentEntities")
+    Optional<CommentEntity> findCommentEntityWithChildCommentEntitiesById(@Param("id") Long commentId);
+
     // TODO query slice
     @Query("SELECT re.id as recordId, re.title as recordTitle, ce.id as commentId, ce.content as content " +
             "FROM CommentEntity ce " +

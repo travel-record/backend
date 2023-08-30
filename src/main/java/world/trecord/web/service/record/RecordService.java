@@ -139,7 +139,7 @@ public class RecordService {
     }
 
     private void checkHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
-        if (!originalRecord.hasSameFeedEntity(targetRecord)) {
+        if (!originalRecord.hasSameFeed(targetRecord)) {
             throw new CustomException(INVALID_ARGUMENT);
         }
     }

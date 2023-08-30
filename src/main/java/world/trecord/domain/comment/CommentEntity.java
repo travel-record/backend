@@ -9,6 +9,9 @@ import world.trecord.domain.BaseEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "comment")
@@ -31,14 +34,29 @@ public class CommentEntity extends BaseEntity {
     @JoinColumn(name = "id_record", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_record"))
     private RecordEntity recordEntity;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_parent", foreignKey = @ForeignKey(name = "fk_comment_comment"))
+    private CommentEntity parentCommentEntity;
+
+    @OneToMany(mappedBy = "parentCommentEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentEntity> childCommentEntities = new ArrayList<>();
+
     @Builder
-    private CommentEntity(String content, UserEntity userEntity, RecordEntity recordEntity) {
+    private CommentEntity(String content, UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         this.content = content;
         this.userEntity = userEntity;
         if (recordEntity != null) {
             this.recordEntity = recordEntity;
             recordEntity.addCommentEntity(this);
         }
+        if (parentCommentEntity != null) {
+            this.parentCommentEntity = parentCommentEntity;
+            parentCommentEntity.addChildCommentEntity(this);
+        }
+    }
+
+    public void addChildCommentEntity(CommentEntity childCommentEntity) {
+        this.childCommentEntities.add(childCommentEntity);
     }
 
     public void update(CommentEntity updateEntity) {

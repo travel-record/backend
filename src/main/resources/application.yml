@@ -31,6 +31,10 @@ google:
     endpoint: "https://oauth2.googleapis.com"
   api:
     baseUrl: "https://www.googleapis.com"
+
+logging:
+  level:
+    world.trecord.web.client.feign.client: DEBUG
 ---
 spring:
   config:

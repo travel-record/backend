@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
+import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_COMMENT;
 
 @MockMvcTestSupport
 class CommentControllerTest {
@@ -86,6 +87,67 @@ class CommentControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content").value("content"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/comments - 성공 (대댓글 생성)")
+    void createChildCommentTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+
+        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+
+        String content = "content";
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .parentId(parentCommentEntity.getId())
+                .content(content)
+                .build();
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/comments")
+                                .header("Authorization", token)
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/comments - 실패 (원댓글 존재하지 않음)")
+    void createChildCommentWhenOriginCommentNotExistingTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        long notExistingCommentId = 0L;
+        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+
+        String content = "content";
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .parentId(notExistingCommentId)
+                .content(content)
+                .build();
+
+        String body = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/comments")
+                                .header("Authorization", token)
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(NOT_EXISTING_COMMENT.getErrorCode()));
     }
 
     @Test
