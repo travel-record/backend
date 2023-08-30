@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -104,8 +103,8 @@ public class RecordEntity extends BaseEntity {
         return this.date != null ? getDate().toLocalDate() : null;
     }
 
-    public boolean hasSameFeedEntity(RecordEntity otherRecord) {
-        return Objects.equals(this.feedEntity.getId(), otherRecord.getFeedEntity().getId());
+    public boolean hasSameFeed(RecordEntity otherRecord) {
+        return this.feedEntity.isEqualTo(otherRecord.getFeedEntity());
     }
 
     public void swapSequenceWith(RecordEntity otherRecord) {

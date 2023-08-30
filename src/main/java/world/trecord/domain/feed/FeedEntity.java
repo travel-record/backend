@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -91,6 +92,10 @@ public class FeedEntity extends BaseEntity {
         return this.recordEntities.stream()
                 .sorted(Comparator.comparing(RecordEntity::getDate)
                         .thenComparing(RecordEntity::getCreatedDateTime));
+    }
+    
+    public boolean isEqualTo(FeedEntity otherFeed) {
+        return Objects.equals(this.id, otherFeed.getId());
     }
 
     public LocalDate convertStartAtToLocalDate() {

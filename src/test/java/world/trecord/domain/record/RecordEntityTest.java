@@ -63,7 +63,7 @@ class RecordEntityTest {
                 .build();
 
         //when
-        boolean result = recordEntity1.hasSameFeedEntity(recordEntity2);
+        boolean result = recordEntity1.hasSameFeed(recordEntity2);
 
         //then
         Assertions.assertThat(result).isTrue();
@@ -88,7 +88,7 @@ class RecordEntityTest {
                 .build();
 
         //when
-        boolean result = recordEntity1.hasSameFeedEntity(recordEntity2);
+        boolean result = recordEntity1.hasSameFeed(recordEntity2);
 
         //then
         Assertions.assertThat(result).isFalse();
