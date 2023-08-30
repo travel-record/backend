@@ -574,9 +574,8 @@ class RecordControllerTest {
                         delete("/api/v1/records/{recordId}", recordEntity.getId())
                                 .header("Authorization", token)
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.recordId").value(recordEntity.getId()));
-        
+                .andExpect(status().isOk());
+
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
     }
 

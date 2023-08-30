@@ -21,7 +21,6 @@ import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
-import world.trecord.web.service.record.response.RecordDeleteResponse;
 import world.trecord.web.service.record.response.RecordInfoResponse;
 
 import java.time.LocalDate;
@@ -420,7 +419,7 @@ class RecordServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
-        RecordDeleteResponse response = recordService.deleteRecord(writer.getId(), recordEntity.getId());
+        recordService.deleteRecord(writer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
