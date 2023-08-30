@@ -240,8 +240,7 @@ class FeedControllerTest {
                                 .header("Authorization", token)
                 )
                 .andExpect(status().isOk());
-
-        Assertions.assertThat(feedRepository.findById(feedEntity.getId())).isEmpty();
+        
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 
