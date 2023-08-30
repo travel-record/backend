@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.IntegrationTestSupport;
-import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
@@ -111,34 +110,6 @@ class RecordRepositoryTest {
     }
 
     @Test
-    @DisplayName("기록과 기록 하위 댓글들을 함께 조회한다")
-    void findRecordEntityWithCommentEntitiesByIdTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
-        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
-
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
-
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity);
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity);
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
-
-        //when
-        RecordEntity foundRecordEntity = recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesById(recordEntity.getId()).get();
-
-        //then
-        Assertions.assertThat(foundRecordEntity.getCommentEntities())
-                .hasSize(2)
-                .containsOnly(commentEntity1, commentEntity2);
-    }
-
-    @Test
     @DisplayName("기록을 조회할 때 피드와 함께 조회한다")
     void findRecordEntityWithFeedEntityTest() throws Exception {
         //given
@@ -192,14 +163,40 @@ class RecordRepositoryTest {
         Assertions.assertThat(maxSequence).isEmpty();
     }
 
-    private CommentEntity createCommentEntity(UserEntity savedUserEntity, RecordEntity savedRecordEntity) {
-        return CommentEntity.builder()
-                .recordEntity(savedRecordEntity)
-                .content("content1")
-                .userEntity(savedUserEntity)
-                .build();
+    @Test
+    @DisplayName("피드에 등록된 기록을 모두 soft delete한다")
+    void deleteAllByFeedEntityTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
+
+        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
+        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
+
+        recordRepository.saveAll(List.of(record1, record2, record3));
+
+        //when
+        recordRepository.deleteAllByFeedEntity(feedEntity);
+
+        //then
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 
+    @Test
+    @DisplayName("기록을 soft delete한다")
+    void deleteTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
+
+        //when
+        recordRepository.softDelete(recordEntity);
+
+        //then
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
+    }
 
     private FeedEntity createFeedEntity(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt, String name) {
         return FeedEntity.builder()

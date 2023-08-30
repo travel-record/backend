@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "user_record_like")
+@SQLDelete(sql = "UPDATE user_record_like SET deleted_date_time = NOW() WHERE id_like = ?")
+@Where(clause = "deleted_date_time is NULL")
 @Entity
 public class UserRecordLikeEntity extends BaseEntity {
 
