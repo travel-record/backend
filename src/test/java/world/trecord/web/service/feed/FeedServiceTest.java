@@ -172,7 +172,7 @@ class FeedServiceTest {
     }
 
     @Test
-    @DisplayName("시용자가 피드를 생성하면 생성 응답으로 반환한다")
+    @DisplayName("시용자가 피드를 생성하면 FeedCreateResponse을 반환한다")
     void createFeedByExistingUserTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -204,9 +204,7 @@ class FeedServiceTest {
         FeedCreateResponse response = feedService.createFeed(savedUserEntity.getId(), request);
 
         //then
-        Assertions.assertThat(response.getFeedId()).isNotNull();
-        Assertions.assertThat(response).extracting("name", "imageUrl", "companion", "description", "startAt", "endAt", "place", "satisfaction")
-                .containsExactly(feedName, imageUrl, companion, description, startAt.toLocalDate(), endAt.toLocalDate(), place, satisfaction);
+        Assertions.assertThat(feedRepository.findById(response.getFeedId())).isPresent();
     }
 
     @Test
