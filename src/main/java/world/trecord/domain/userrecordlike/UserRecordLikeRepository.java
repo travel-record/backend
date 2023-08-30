@@ -1,9 +1,11 @@
 package world.trecord.domain.userrecordlike;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
@@ -25,4 +27,9 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
     List<UserRecordProjection> findLikedRecordsByUserEntity(@Param("userEntity") UserEntity userEntity);
 
     boolean existsByUserEntityAndRecordEntity(UserEntity userEntity, RecordEntity recordEntity);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE UserRecordLikeEntity le SET le.deletedDateTime = NOW() where le.recordEntity = :recordEntity")
+    void deleteAllByRecordEntity(@Param("recordEntity") RecordEntity recordEntity);
 }

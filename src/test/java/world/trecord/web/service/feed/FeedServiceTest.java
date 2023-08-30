@@ -290,7 +290,7 @@ class FeedServiceTest {
     }
 
     @Test
-    @DisplayName("피드와 하위 기록를 삭제하고 삭제된 피드 아이디를 반환한다")
+    @DisplayName("피드를 soft delete한다")
     void deleteFeedTest() throws Exception {
         //given
         UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
