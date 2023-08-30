@@ -290,20 +290,17 @@ class FeedServiceTest {
     }
 
     @Test
-    @DisplayName("피드를 삭제하면 하위 기록과 함께 삭제되고 삭제된 피드 아이디를 반환한다")
+    @DisplayName("피드와 하위 기록를 삭제하고 삭제된 피드 아이디를 반환한다")
     void deleteFeedTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+        FeedEntity savedFeedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity1 = createRecordEntity(savedFeedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(savedFeedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity3 = createRecordEntity(savedFeedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
@@ -311,7 +308,7 @@ class FeedServiceTest {
 
         //then
         Assertions.assertThat(response.getId()).isEqualTo(savedFeedEntity.getId());
-        Assertions.assertThat(feedRepository.findById(savedFeedEntity.getId())).isEmpty();
+        Assertions.assertThat(feedRepository.findAll()).isEmpty();
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 

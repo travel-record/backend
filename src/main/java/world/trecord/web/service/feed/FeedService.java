@@ -84,6 +84,7 @@ public class FeedService {
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
+        recordRepository.deleteAllByFeedEntity(feedEntity);
         feedRepository.delete(feedEntity);
 
         return FeedDeleteResponse.builder()
