@@ -13,7 +13,6 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentCreateResponse;
-import world.trecord.web.service.comment.response.CommentDeleteResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 import world.trecord.web.service.notification.NotificationService;
 
@@ -68,7 +67,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDeleteResponse deleteComment(Long userId, Long commentId) {
+    public void deleteComment(Long userId, Long commentId) {
 
         UserEntity userEntity = findUserEntityBy(userId);
 
@@ -78,10 +77,6 @@ public class CommentService {
 
         commentRepository.deleteAllByCommentEntity(commentEntity);
         commentRepository.softDelete(commentEntity);
-
-        return CommentDeleteResponse.builder()
-                .commentEntity(commentEntity)
-                .build();
     }
 
     private CommentEntity findParentCommentEntity(Long parentId) {

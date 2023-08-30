@@ -255,8 +255,7 @@ class CommentControllerTest {
                                 .header("Authorization", token)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.commentId").value(commentEntity.getId()));
+                .andExpect(status().isOk());
 
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
     }

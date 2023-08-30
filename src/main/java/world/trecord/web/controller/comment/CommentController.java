@@ -9,7 +9,6 @@ import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentCreateResponse;
-import world.trecord.web.service.comment.response.CommentDeleteResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 
 @RequiredArgsConstructor
@@ -29,7 +28,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ApiResponse<CommentDeleteResponse> deleteComment(@PathVariable("commentId") Long commentId, @LoginUserId String userId) {
-        return ApiResponse.ok(commentService.deleteComment(Long.parseLong(userId), commentId));
+    public ApiResponse<Void> deleteComment(@PathVariable("commentId") Long commentId, @LoginUserId String userId) {
+        commentService.deleteComment(Long.parseLong(userId), commentId);
+        return ApiResponse.ok();
     }
 }
