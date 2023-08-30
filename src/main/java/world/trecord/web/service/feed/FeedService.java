@@ -30,7 +30,7 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
 
-    public FeedListResponse getFeedListBy(Long userId) {
+    public FeedListResponse getFeedList(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         List<FeedEntity> feedEntities = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity);
@@ -40,7 +40,7 @@ public class FeedService {
                 .build();
     }
 
-    public FeedInfoResponse getFeedBy(Long feedId, Long viewerId) {
+    public FeedInfoResponse getFeed(Long feedId, Long viewerId) {
         FeedEntity feedEntity = feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
 
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedId);
@@ -67,7 +67,6 @@ public class FeedService {
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        // TODO find feedEntity with record entity specific field
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
 
         checkPermissionOverFeed(userEntity, feedEntity);

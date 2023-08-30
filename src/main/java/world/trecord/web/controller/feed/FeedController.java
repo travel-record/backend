@@ -24,12 +24,12 @@ public class FeedController {
 
     @GetMapping
     public ApiResponse<FeedListResponse> getFeedList(@LoginUserId String userId) {
-        return ApiResponse.ok(feedService.getFeedListBy(Long.valueOf(userId)));
+        return ApiResponse.ok(feedService.getFeedList(Long.valueOf(userId)));
     }
 
     @GetMapping("/{feedId}")
     public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @LoginUserId String viewerId) {
-        return ApiResponse.ok(feedService.getFeedBy(feedId, viewerId != null ? Long.parseLong(viewerId) : null));
+        return ApiResponse.ok(feedService.getFeed(feedId, viewerId != null ? Long.parseLong(viewerId) : null));
     }
 
     @PostMapping

@@ -22,7 +22,7 @@ public class NotificationController {
 
     @GetMapping("/check")
     public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@LoginUserId String userId) {
-        return ApiResponse.ok(notificationService.checkNewNotificationBy(Long.parseLong(userId)));
+        return ApiResponse.ok(notificationService.checkNewNotification(Long.parseLong(userId)));
     }
 
     @GetMapping

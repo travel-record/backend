@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
@@ -29,14 +28,12 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "WHERE r.feedEntity.id = :feedId AND r.date = :date")
     Optional<Integer> findMaxSequenceByFeedAndDate(@Param("feedId") Long feedId, @Param("date") LocalDateTime date);
 
-    @Transactional
     @Modifying
     @Query("UPDATE RecordEntity re " +
             "SET re.deletedDateTime = NOW() " +
             "where re.feedEntity = :feedEntity")
     void deleteAllByFeedEntity(@Param("feedEntity") FeedEntity feedEntity);
 
-    @Transactional
     @Modifying
     @Query("UPDATE RecordEntity re " +
             "SET re.deletedDateTime = NOW() " +

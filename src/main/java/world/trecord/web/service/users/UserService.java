@@ -44,7 +44,7 @@ public class UserService implements UserDetailsService {
         return userRepository.save(userEntity);
     }
 
-    public UserInfoResponse getUserInfoBy(Long userId) {
+    public UserInfoResponse getUserInfo(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         return UserInfoResponse.builder()

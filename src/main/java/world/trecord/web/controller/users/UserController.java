@@ -20,7 +20,7 @@ public class UserController {
 
     @GetMapping
     public ApiResponse<UserInfoResponse> getUserInfo(@LoginUserId String userId) {
-        return ApiResponse.ok(userService.getUserInfoBy(Long.valueOf(userId)));
+        return ApiResponse.ok(userService.getUserInfo(Long.valueOf(userId)));
     }
 
     @PostMapping
@@ -30,7 +30,7 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ApiResponse<UserInfoResponse> getUserInfoByPath(@PathVariable("userId") String userId) {
-        return ApiResponse.ok(userService.getUserInfoBy(Long.valueOf(userId)));
+        return ApiResponse.ok(userService.getUserInfo(Long.valueOf(userId)));
     }
 
     @GetMapping("/comments")

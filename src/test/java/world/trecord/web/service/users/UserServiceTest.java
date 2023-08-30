@@ -79,7 +79,7 @@ class UserServiceTest {
         UserEntity saveUser = userRepository.save(userEntity);
 
         //when
-        UserInfoResponse response = userService.getUserInfoBy(saveUser.getId());
+        UserInfoResponse response = userService.getUserInfo(saveUser.getId());
 
         //then
         Assertions.assertThat(response.getNickname()).isEqualTo(nickname);
@@ -94,7 +94,7 @@ class UserServiceTest {
         Long notExistingUserId = 0L;
 
         //when // then
-        Assertions.assertThatThrownBy(() -> userService.getUserInfoBy(notExistingUserId))
+        Assertions.assertThatThrownBy(() -> userService.getUserInfo(notExistingUserId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);

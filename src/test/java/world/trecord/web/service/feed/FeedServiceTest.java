@@ -58,7 +58,7 @@ class FeedServiceTest {
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
         //when
-        FeedListResponse feedListResponse = feedService.getFeedListBy(savedUserEntity.getId());
+        FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
 
         //then
         Assertions.assertThat(feedListResponse.getFeeds()).extracting("name", "startAt")
@@ -77,7 +77,7 @@ class FeedServiceTest {
         UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
-        FeedListResponse feedListResponse = feedService.getFeedListBy(savedUserEntity.getId());
+        FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
 
         //then
         Assertions.assertThat(feedListResponse.getFeeds()).isEmpty();
@@ -97,7 +97,7 @@ class FeedServiceTest {
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedInfoResponse response = feedService.getFeedBy(savedFeedEntity.getId(), savedUserEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(savedFeedEntity.getId(), savedUserEntity.getId());
 
         //then
         Assertions.assertThat(response)
@@ -122,7 +122,7 @@ class FeedServiceTest {
         feedRepository.softDelete(feedEntity3);
 
         //when
-        FeedListResponse feedListResponse = feedService.getFeedListBy(savedUserEntity.getId());
+        FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
 
         //then
         Assertions.assertThat(feedListResponse.getFeeds())
@@ -148,7 +148,7 @@ class FeedServiceTest {
         recordRepository.softDelete(recordEntity2);
 
         //when
-        FeedInfoResponse response = feedService.getFeedBy(feedEntity.getId(), userEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(feedEntity.getId(), userEntity.getId());
 
         //then
         Assertions.assertThat(response.getRecords())
@@ -165,7 +165,7 @@ class FeedServiceTest {
         Long notExistingUserId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.getFeedBy(notExistingFeedId, notExistingUserId))
+        Assertions.assertThatThrownBy(() -> feedService.getFeed(notExistingFeedId, notExistingUserId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
