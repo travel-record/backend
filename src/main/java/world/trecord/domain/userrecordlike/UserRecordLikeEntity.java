@@ -9,6 +9,8 @@ import world.trecord.domain.BaseEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "user_record_like")
@@ -19,6 +21,9 @@ public class UserRecordLikeEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_like")
     private Long id;
+
+    @Column(name = "deleted_date_time", nullable = true)
+    private LocalDateTime deletedDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_user_record_like_users"))
@@ -32,5 +37,6 @@ public class UserRecordLikeEntity extends BaseEntity {
     private UserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
         this.userEntity = userEntity;
         this.recordEntity = recordEntity;
+        this.deletedDateTime = null;
     }
 }

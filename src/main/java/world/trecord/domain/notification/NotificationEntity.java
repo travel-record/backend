@@ -10,6 +10,8 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "notification")
@@ -28,6 +30,9 @@ public class NotificationEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "varchar(20) default 'UNREAD'")
     private NotificationStatus status;
+
+    @Column(name = "deleted_date_time", nullable = true)
+    private LocalDateTime deletedDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users_to", nullable = true, foreignKey = @ForeignKey(name = "fk_notification_users_to"))
@@ -53,6 +58,7 @@ public class NotificationEntity extends BaseEntity {
         this.usersFromEntity = usersFromEntity;
         this.commentEntity = commentEntity;
         this.recordEntity = recordEntity;
+        this.deletedDateTime = null;
     }
 
     public String getNotificationContent() {

@@ -9,6 +9,7 @@ import world.trecord.domain.BaseEntity;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -34,12 +35,16 @@ public class UserEntity extends BaseEntity {
     @Column(name = "introduction", nullable = true, length = 255)
     private String introduction;
 
+    @Column(name = "deleted_date_time", nullable = true)
+    private LocalDateTime deletedDateTime;
+
     @Builder
     private UserEntity(String email, String nickname, String imageUrl, String introduction) {
         this.email = email;
         this.nickname = nickname;
         this.imageUrl = imageUrl;
         this.introduction = introduction;
+        this.deletedDateTime = null;
     }
 
     public void update(UserEntity updateEntity) {

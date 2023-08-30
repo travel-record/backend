@@ -57,6 +57,9 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "sequence", nullable = false)
     private int sequence;
 
+    @Column(name = "deleted_date_time", nullable = true)
+    private LocalDateTime deletedDateTime;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_record_feed"))
     private FeedEntity feedEntity;
@@ -81,6 +84,7 @@ public class RecordEntity extends BaseEntity {
         this.companion = companion;
         this.imageUrl = imageUrl;
         this.sequence = sequence;
+        this.deletedDateTime = null;
     }
 
     public void update(RecordEntity updateEntity) {
