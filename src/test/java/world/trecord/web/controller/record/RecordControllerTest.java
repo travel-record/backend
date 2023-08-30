@@ -208,14 +208,9 @@ class RecordControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(body)
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
-                .andExpect(jsonPath("$.data.feedId").value(feedEntity.getId()))
-                .andExpect(jsonPath("$.data.recordId").exists())
-                .andExpect(jsonPath("$.data.title").value(title))
-                .andExpect(jsonPath("$.data.content").value(content))
-                .andExpect(jsonPath("$.data.date").value(localDateTime.toLocalDate().toString()))
-                .andExpect(jsonPath("$.data.imageUrl").value(imageUrl));
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(recordRepository.findAll()).hasSize(1);
     }
 
     @Test

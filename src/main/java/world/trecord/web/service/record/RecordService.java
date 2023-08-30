@@ -61,11 +61,11 @@ public class RecordService {
         // TODO 동시성 처리
         int nextSequence = getNextSequence(recordCreateRequest, feedEntity);
 
-        RecordEntity recordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity, nextSequence));
+        RecordEntity savedRecordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity, nextSequence));
 
         return RecordCreateResponse.builder()
                 .writerEntity(userEntity)
-                .recordEntity(recordEntity)
+                .recordEntity(savedRecordEntity)
                 .build();
     }
 

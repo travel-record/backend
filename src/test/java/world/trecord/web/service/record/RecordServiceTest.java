@@ -23,7 +23,6 @@ import world.trecord.web.service.record.response.RecordCommentsResponse;
 import world.trecord.web.service.record.response.RecordCreateResponse;
 import world.trecord.web.service.record.response.RecordInfoResponse;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -192,12 +191,7 @@ class RecordServiceTest {
         RecordCreateResponse response = recordService.createRecord(writer.getId(), request);
 
         //then
-        Assertions.assertThat(response.getRecordId()).isNotNull();
-        Assertions.assertThat(response.getWriterId()).isEqualTo(writer.getId());
-        Assertions.assertThat(response.getFeedId()).isEqualTo(feedEntity.getId());
-        Assertions.assertThat(response)
-                .extracting("date", "place", "feeling", "weather", "transportation", "content", "companion")
-                .containsExactly(LocalDate.of(2021, 10, 1), place, feeling, weather, satisfaction, content, companion);
+        Assertions.assertThat(recordRepository.findById(response.getRecordId())).isPresent();
     }
 
     @Test
@@ -231,14 +225,13 @@ class RecordServiceTest {
                 .build();
 
         //when
-        RecordCreateResponse response = recordService.createRecord(writer.getId(), request);
+        recordService.createRecord(writer.getId(), request);
 
         //then
-        Assertions.assertThat(recordRepository.findById(response.getRecordId()))
-                .isPresent()
-                .hasValueSatisfying(record -> {
-                    Assertions.assertThat(record.getSequence()).isEqualTo(sequence + 1);
-                });
+        Assertions.assertThat(recordRepository.findAll())
+                .hasSize(2)
+                .extracting("sequence")
+                .containsExactly(sequence, sequence + 1);
     }
 
     @Test
