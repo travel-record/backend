@@ -6,9 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.IntegrationTestSupport;
+import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.record.RecordEntity;
+import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -26,15 +31,19 @@ class NotificationRepositoryTest {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    FeedRepository feedRepository;
+
+    @Autowired
+    RecordRepository recordRepository;
+
     @Test
     @DisplayName("사용자에게 읽지 않은 알림이 있으면 새로운 알림이 있음을 반환한다")
     void existsByUsersToEntityIdAndUnreadStatusTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, COMMENT, UNREAD);
+        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, COMMENT, UNREAD);
 
         notificationRepository.save(notificationEntity);
 
@@ -53,7 +62,7 @@ class NotificationRepositoryTest {
                 .email("test@email.com")
                 .build());
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, COMMENT, READ);
+        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, COMMENT, READ);
 
         notificationRepository.save(notificationEntity);
 
@@ -72,9 +81,9 @@ class NotificationRepositoryTest {
                 .email("test@email.com")
                 .build());
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, COMMENT, READ);
-        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, COMMENT, READ);
-        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, COMMENT, READ);
+        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, null, COMMENT, READ);
+        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, null, COMMENT, READ);
+        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, null, COMMENT, READ);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
@@ -96,9 +105,9 @@ class NotificationRepositoryTest {
                 .email("test@email.com")
                 .build());
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, COMMENT, UNREAD);
-        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, COMMENT, READ);
-        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, COMMENT, UNREAD);
+        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, null, COMMENT, UNREAD);
+        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, null, COMMENT, READ);
+        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, null, COMMENT, UNREAD);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
@@ -118,9 +127,9 @@ class NotificationRepositoryTest {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, COMMENT, UNREAD);
-        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, null, COMMENT, UNREAD);
+        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, null, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, null, RECORD_LIKE, UNREAD);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
@@ -143,9 +152,9 @@ class NotificationRepositoryTest {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, null, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, null, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, null, RECORD_LIKE, UNREAD);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
@@ -156,12 +165,57 @@ class NotificationRepositoryTest {
         Assertions.assertThat(notificationEntities).isEmpty();
     }
 
-    private NotificationEntity createNotificationEntity(UserEntity userEntity, NotificationType type, NotificationStatus status) {
+    @Test
+    @DisplayName("기록으로 알림 리스트를 soft delete 한다")
+    void deleteAllByRecordEntityTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        NotificationEntity notificationEntity1 = createNotificationEntity(userEntity, recordEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity2 = createNotificationEntity(userEntity, recordEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity3 = createNotificationEntity(userEntity, recordEntity, RECORD_LIKE, UNREAD);
+
+        notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
+
+        //when
+        notificationRepository.deleteAllByRecordEntity(recordEntity);
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    private NotificationEntity createNotificationEntity(UserEntity userEntity, RecordEntity recordEntity, NotificationType type, NotificationStatus status) {
         return NotificationEntity.builder()
                 .usersToEntity(userEntity)
+                .recordEntity(recordEntity)
                 .type(type)
                 .status(status)
                 .build();
     }
+
+    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
+        return FeedEntity.builder()
+                .userEntity(saveUserEntity)
+                .name(name)
+                .startAt(startAt)
+                .endAt(endAt)
+                .build();
+    }
+
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .title(title)
+                .place(place)
+                .date(date)
+                .content(content)
+                .weather(weather)
+                .transportation(satisfaction)
+                .feeling(feeling)
+                .build();
+    }
+
 
 }

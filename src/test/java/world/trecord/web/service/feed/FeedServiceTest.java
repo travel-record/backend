@@ -71,10 +71,7 @@ class FeedServiceTest {
     @DisplayName("사용자 등록한 피드가 없다면 빈 배열을 반환한다")
     void getEmptyFeedListByUserId() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
         FeedListResponse feedListResponse = feedService.getFeedListBy(savedUserEntity.getId());
@@ -87,21 +84,17 @@ class FeedServiceTest {
     @DisplayName("사용자가 등록한 특정 피드를 기록과 함께 반환한다")
     void getFeedByFeedIdTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+        FeedEntity savedFeedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity1 = createRecordEntity(savedFeedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(savedFeedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity3 = createRecordEntity(savedFeedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedInfoResponse response = feedService.getFeedBy(savedFeedEntity.getId(), userEntity.getId());
+        FeedInfoResponse response = feedService.getFeedBy(savedFeedEntity.getId(), savedUserEntity.getId());
 
         //then
         Assertions.assertThat(response)
@@ -109,6 +102,56 @@ class FeedServiceTest {
                 .containsExactly(savedUserEntity.getId(), savedFeedEntity.getId(),
                         savedFeedEntity.convertStartAtToLocalDate(), savedFeedEntity.convertEndAtToLocalDate());
         Assertions.assertThat(response.getRecords().stream().map(FeedInfoResponse.Record::getTitle)).containsExactly("record3", "record1", "record2");
+    }
+
+    @Test
+    @DisplayName("사용자가 soft delete한 피드는 반환하지 않는다")
+    void getFeedByFeedIdWhenFeedSoftDeletedTest() throws Exception {
+        //given
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        FeedEntity feedEntity1 = createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
+        FeedEntity feedEntity2 = createFeedEntity(savedUserEntity, "feed name2", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
+        FeedEntity feedEntity3 = createFeedEntity(savedUserEntity, "feed name3", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
+
+        feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
+
+        feedRepository.softDelete(feedEntity3);
+
+        //when
+        FeedListResponse feedListResponse = feedService.getFeedListBy(savedUserEntity.getId());
+
+        //then
+        Assertions.assertThat(feedListResponse.getFeeds())
+                .hasSize(2)
+                .extracting("name")
+                .containsExactly(feedEntity1.getName(), feedEntity2.getName());
+    }
+
+    @Test
+    @DisplayName("사용자가 soft delete한 기록은 반환하지 않는다")
+    void getFeedByWhenRecordSoftDeletedTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 4, 0, 0)));
+
+        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 10, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 10, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
+
+        recordRepository.softDelete(recordEntity2);
+
+        //when
+        FeedInfoResponse response = feedService.getFeedBy(feedEntity.getId(), userEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getRecords())
+                .hasSize(2)
+                .extracting("id")
+                .containsExactly(recordEntity1.getId(), recordEntity3.getId());
     }
 
     @Test
@@ -290,20 +333,17 @@ class FeedServiceTest {
     }
 
     @Test
-    @DisplayName("피드를 삭제하면 하위 기록과 함께 삭제되고 삭제된 피드 아이디를 반환한다")
+    @DisplayName("피드를 soft delete한다")
     void deleteFeedTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        FeedEntity feedEntity = createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity savedFeedEntity = feedRepository.save(feedEntity);
+        FeedEntity savedFeedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity1 = createRecordEntity(savedFeedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(savedFeedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity3 = createRecordEntity(savedFeedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
@@ -311,7 +351,7 @@ class FeedServiceTest {
 
         //then
         Assertions.assertThat(response.getId()).isEqualTo(savedFeedEntity.getId());
-        Assertions.assertThat(feedRepository.findById(savedFeedEntity.getId())).isEmpty();
+        Assertions.assertThat(feedRepository.findAll()).isEmpty();
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 

@@ -7,6 +7,7 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
@@ -31,6 +32,7 @@ public class RecordService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final UserRecordLikeRepository userRecordLikeRepository;
+    private final NotificationRepository notificationRepository;
     private final CommentRepository commentRepository;
 
     public RecordInfoResponse getRecordInfo(Long recordId, Long viewerId) {
@@ -108,15 +110,16 @@ public class RecordService {
     public RecordDeleteResponse deleteRecord(Long userId, Long recordId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        RecordEntity recordEntity = findRecordEntityWithFeedEntityAndCommentEntitiesBy(recordId);
+        RecordEntity recordEntity = findRecordEntityBy(recordId);
 
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(userEntity, feedEntity);
 
-        recordEntity.getCommentEntities().clear();
-
-        recordRepository.delete(recordEntity);
+        commentRepository.deleteAllByRecordEntity(recordEntity);
+        userRecordLikeRepository.deleteAllByRecordEntity(recordEntity);
+        notificationRepository.deleteAllByRecordEntity(recordEntity);
+        recordRepository.softDelete(recordEntity);
 
         return RecordDeleteResponse.builder()
                 .recordEntity(recordEntity)
@@ -146,10 +149,6 @@ public class RecordService {
 
     private RecordEntity findRecordEntityBy(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
-    }
-
-    private RecordEntity findRecordEntityWithFeedEntityAndCommentEntitiesBy(Long recordId) {
-        return recordRepository.findRecordEntityWithFeedEntityAndCommentEntitiesById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
     private FeedEntity findFeedEntityWithUserEntityBy(Long feedId) {

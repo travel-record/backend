@@ -76,7 +76,8 @@ public class CommentService {
 
         checkPermissionOverComment(userEntity, commentEntity);
 
-        commentRepository.delete(commentEntity);
+        commentRepository.deleteAllByCommentEntity(commentEntity);
+        commentRepository.softDelete(commentEntity);
 
         return CommentDeleteResponse.builder()
                 .commentEntity(commentEntity)

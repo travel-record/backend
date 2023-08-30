@@ -8,6 +8,7 @@ create table users
     email              varchar(255) not null comment '이메일',
     created_date_time  datetime     null comment '기록 생성 시간',
     modified_date_time datetime     null comment '기록 수정 시간',
+    deleted_date_time  datetime     null comment '사용자 삭제 시간',
     constraint uk_users_email
         unique (email),
     constraint uk_users_nickname
@@ -30,6 +31,7 @@ create table feed
     place              varchar(255)                          null comment '장소',
     created_date_time  datetime                              null comment '기록 생성 시간',
     modified_date_time datetime                              null comment '기록 수정 시간',
+    deleted_date_time  datetime                              null comment '피드 삭제 시간',
     constraint fk_feed_users
         foreign key (id_users) references users (id_users)
             on update cascade on delete cascade
@@ -53,6 +55,7 @@ create table record
     modified_date_time datetime      null comment '기록 수정 시간',
     image_url          text          null comment '썸네일 이미지 URL',
     sequence           int default 0 not null comment '순서',
+    deleted_date_time  datetime      null comment '기록 삭제 시간',
     constraint fk_record_feed
         foreign key (id_feed) references feed (id_feed)
             on update cascade on delete cascade
@@ -69,6 +72,7 @@ create table comment
     created_date_time  datetime     null comment '댓글 생성 시간',
     modified_date_time datetime     null comment '댓글 수정 시간',
     id_parent          int          null comment '원 댓글 PK',
+    deleted_date_time  datetime     null comment '댓글 삭제 시간',
     constraint fk_comment_comment
         foreign key (id_parent) references comment (id_comment)
             on delete cascade,
@@ -93,6 +97,7 @@ create table notification
     id_users_from      int                                     null comment '알림 보내는 사용자 FK',
     id_comment         int                                     null comment '관련 댓글 FK',
     id_record          int                                     null comment '기록 FK',
+    deleted_date_time  datetime                                null comment '알림 삭제 시간',
     constraint fk_notification_comment
         foreign key (id_comment) references comment (id_comment)
             on delete cascade,
@@ -116,6 +121,7 @@ create table user_record_like
     id_record          int                                  not null comment '기록 FK',
     created_date_time  datetime default current_timestamp() null comment '좋아요 생성 시간',
     modified_date_time datetime default current_timestamp() null comment '좋아요 수정 시간',
+    deleted_date_time  datetime                             null comment '기록 좋아요 삭제 시간',
     constraint idx_users_record
         unique (id_users, id_record) comment '유저 기록 인덱스',
     constraint fk_user_record_like_record
@@ -130,3 +136,4 @@ create table user_record_like
 create index idx_user_id
     on user_record_like (id_users)
     comment '유저 PK 인덱스';
+

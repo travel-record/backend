@@ -156,9 +156,7 @@ class UserServiceTest {
     @DisplayName("사용자가 좋아요한 기록 리스트를 조회하여 UserRecordLikeListResponse로 반환한다")
     void getUserRecordLikeListByTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -185,6 +183,37 @@ class UserServiceTest {
                         tuple(recordEntity4.getId(), recordEntity4.getTitle(), userEntity.getNickname(), recordEntity4.getImageUrl()),
                         tuple(recordEntity1.getId(), recordEntity1.getTitle(), userEntity.getNickname(), recordEntity1.getImageUrl())
                 );
+    }
+
+    @Test
+    @DisplayName("사용자가 좋아요한 기록 리스트에서 soft delete한 좋아요 리스트를 제외한 UserRecordLikeListResponse로 반환한다")
+    void getUserRecordLikeListByWhenUserLikedCancelTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
+
+        UserRecordLikeEntity userRecordLikeEntity1 = createUserRecordLikeEntity(other, recordEntity1);
+        UserRecordLikeEntity userRecordLikeEntity2 = createUserRecordLikeEntity(other, recordEntity2);
+
+        userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
+
+        userRecordLikeRepository.softDelete(userRecordLikeEntity2);
+
+        //when
+        UserRecordLikeListResponse response = userService.getUserRecordLikeListBy(other.getId());
+
+        //then
+        Assertions.assertThat(response.getRecords())
+                .hasSize(1)
+                .extracting("recordId")
+                .containsOnly(recordEntity1.getId());
     }
 
     @Test

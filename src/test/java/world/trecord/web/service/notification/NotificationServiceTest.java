@@ -23,6 +23,7 @@ import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
+import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.userrecordlike.UserRecordLikeService;
 
 import java.time.LocalDateTime;
@@ -51,6 +52,9 @@ class NotificationServiceTest {
 
     @Autowired
     CommentService commentService;
+
+    @Autowired
+    RecordService recordService;
 
     @Autowired
     UserRecordLikeService userRecordLikeService;
@@ -356,6 +360,41 @@ class NotificationServiceTest {
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("삭제된 기록에 대한 알림 리스트는 조회되지 않는다")
+    void getNotificationsWhenRecordSoftDeletedTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        UserEntity viewer1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
+        UserEntity viewer2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity1 = createCommentEntity(viewer1, recordEntity1, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(viewer2, recordEntity2, "content2");
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
+
+        NotificationEntity notificationEntity1 = createNotificationEntity(author, viewer1, recordEntity1, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotificationEntity(author, viewer2, recordEntity2, commentEntity2, UNREAD, COMMENT);
+
+        notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
+
+        recordService.deleteRecord(author.getId(), recordEntity2.getId());
+
+        //when
+        NotificationListResponse response = notificationService.getNotifications(author.getId());
+
+        //then
+        Assertions.assertThat(response.getNotifications())
+                .hasSize(1)
+                .extracting("recordId")
+                .containsOnly(recordEntity1.getId());
     }
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {

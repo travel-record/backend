@@ -5,15 +5,20 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET deleted_date_time = NOW() WHERE id_users = ?")
+@Where(clause = "deleted_date_time is NULL")
 @Entity
 public class UserEntity extends BaseEntity {
 
@@ -34,12 +39,16 @@ public class UserEntity extends BaseEntity {
     @Column(name = "introduction", nullable = true, length = 255)
     private String introduction;
 
+    @Column(name = "deleted_date_time", nullable = true)
+    private LocalDateTime deletedDateTime;
+
     @Builder
     private UserEntity(String email, String nickname, String imageUrl, String introduction) {
         this.email = email;
         this.nickname = nickname;
         this.imageUrl = imageUrl;
         this.introduction = introduction;
+        this.deletedDateTime = null;
     }
 
     public void update(UserEntity updateEntity) {

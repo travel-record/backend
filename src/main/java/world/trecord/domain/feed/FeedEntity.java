@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
@@ -20,6 +22,8 @@ import java.util.stream.Stream;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "feed")
+@SQLDelete(sql = "UPDATE feed SET deleted_date_time = NOW() WHERE id_feed = ?")
+@Where(clause = "deleted_date_time is NULL")
 @Entity
 public class FeedEntity extends BaseEntity {
 
@@ -52,12 +56,15 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "satisfaction", nullable = true)
     private String satisfaction;
 
+    @Column(name = "deleted_date_time", nullable = true)
+    private LocalDateTime deletedDateTime;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
     private UserEntity userEntity;
 
     @OneToMany(mappedBy = "feedEntity", cascade = CascadeType.ALL)
-    private List<RecordEntity> recordEntities;
+    private List<RecordEntity> recordEntities = new ArrayList<>();
 
     @Builder
     private FeedEntity(UserEntity userEntity, String name, String description, String imageUrl, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
@@ -70,7 +77,7 @@ public class FeedEntity extends BaseEntity {
         this.place = place;
         this.satisfaction = satisfaction;
         this.userEntity = userEntity;
-        this.recordEntities = new ArrayList<>();
+        this.deletedDateTime = null;
     }
 
     public void addRecordEntity(RecordEntity recordEntity) {
@@ -93,7 +100,7 @@ public class FeedEntity extends BaseEntity {
                 .sorted(Comparator.comparing(RecordEntity::getDate)
                         .thenComparing(RecordEntity::getCreatedDateTime));
     }
-    
+
     public boolean isEqualTo(FeedEntity otherFeed) {
         return Objects.equals(this.id, otherFeed.getId());
     }

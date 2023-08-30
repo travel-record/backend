@@ -410,36 +410,20 @@ class RecordServiceTest {
     }
 
     @Test
-    @DisplayName("피드 작성자가 기록을 삭제하면 댓글 리스트와 함께 삭제된다")
+    @DisplayName("피드 작성자가 기록을 soft delete 한다")
     void deleteRecordTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-
-        commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
-
         //when
         RecordDeleteResponse response = recordService.deleteRecord(writer.getId(), recordEntity.getId());
 
         //then
-        Assertions.assertThat(recordRepository.findById(recordEntity.getId())).isEmpty();
-        Assertions.assertThat(commentRepository.findAll()).isEmpty();
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 
     @Test
@@ -599,6 +583,34 @@ class RecordServiceTest {
                         tuple(commentEntity2.getId(), commenter2.getId(), commenter2.getImageUrl(), false, commentEntity2.getContent()),
                         tuple(commentEntity1.getId(), commenter1.getId(), commenter1.getImageUrl(), false, commentEntity1.getContent())
                 );
+    }
+
+    @Test
+    @DisplayName("댓글 작성자가 soft delete한 댓글은 댓글 리스트에 포함되지 않는다")
+    void getRecordCommentsWhenCommentSoftDeletedTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
+        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter1, recordEntity, "content2");
+        CommentEntity commentEntity3 = createCommentEntity(commenter1, recordEntity, "content2");
+
+        commentRepository.saveAll(List.of(commentEntity2, commentEntity1, commentEntity3));
+
+        commentRepository.softDelete(commentEntity2);
+
+        //when
+        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), commenter1.getId());
+
+        //then
+        Assertions.assertThat(response.getComments())
+                .hasSize(2)
+                .extracting("commentId")
+                .containsExactly(commentEntity1.getId(), commentEntity3.getId());
     }
 
     @Test

@@ -123,7 +123,7 @@ class UserRecordLikeRepositoryTest {
     }
 
     @Test
-    @DisplayName("사용자가 기록에 좋아요를 하였으면 조회 시 true를 반환한다")
+    @DisplayName("사용자가 기록에 좋아요 하였으면 조회 시 true를 반환한다")
     void existsByUserEntityAndRecordEntityWhenUserLikedRecordTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder()
@@ -149,9 +149,7 @@ class UserRecordLikeRepositoryTest {
     @DisplayName("사용자가 기록에 좋아요 하지 않았으면 조회 시 false를 반환한다")
     void existsByUserEntityAndRecordEntityWhenUserNotLikedRecordTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -168,9 +166,7 @@ class UserRecordLikeRepositoryTest {
     @DisplayName("사용자가 null이면 기록에 좋아요 하였는지 조회 시 false를 반환한다")
     void existsByUserEntityAndRecordEntityWhenNullUserEntityest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -178,6 +174,80 @@ class UserRecordLikeRepositoryTest {
 
         //when
         boolean result = userRecordLikeRepository.existsByUserEntityAndRecordEntity(null, recordEntity);
+
+        //then
+        Assertions.assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("기록으로 좋아요 리스트를 soft delete한다")
+    void deleteAllByRecordEntityTest() throws Exception {
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity other2 = userRepository.save(UserEntity.builder().email("test2@email.com").build());
+        UserEntity other3 = userRepository.save(UserEntity.builder().email("test3@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        UserRecordLikeEntity userRecordLikeEntity1 = createUserRecordLikeEntity(other1, recordEntity);
+        UserRecordLikeEntity userRecordLikeEntity2 = createUserRecordLikeEntity(other2, recordEntity);
+        UserRecordLikeEntity userRecordLikeEntity3 = createUserRecordLikeEntity(other3, recordEntity);
+
+        userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2, userRecordLikeEntity3));
+
+        //when
+        userRecordLikeRepository.deleteAllByRecordEntity(recordEntity);
+
+        //then
+        Assertions.assertThat(userRecordLikeRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("좋아요를 soft delete한다")
+    void softDeleteTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity other2 = userRepository.save(UserEntity.builder().email("test2@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        UserRecordLikeEntity userRecordLikeEntity1 = createUserRecordLikeEntity(other1, recordEntity);
+        UserRecordLikeEntity userRecordLikeEntity2 = createUserRecordLikeEntity(other2, recordEntity);
+
+        userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
+
+        //when
+        userRecordLikeRepository.softDelete(userRecordLikeEntity1);
+
+        //then
+        Assertions.assertThat(userRecordLikeRepository.findAll())
+                .hasSize(1)
+                .containsOnly(userRecordLikeEntity2);
+    }
+
+    @Test
+    @DisplayName("사용자가 좋아요 soft delete 한  기록에는 조회 시 true를 반환한다")
+    void existsByUserEntityAndRecordEntityWhenRecordSoftDeletedTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        UserRecordLikeEntity userRecordLikeEntity = userRecordLikeRepository.save(createUserRecordLikeEntity(other, recordEntity));
+
+        userRecordLikeRepository.softDelete(userRecordLikeEntity);
+
+        //when
+        boolean result = userRecordLikeRepository.existsByUserEntityAndRecordEntity(userEntity, recordEntity);
 
         //then
         Assertions.assertThat(result).isFalse();

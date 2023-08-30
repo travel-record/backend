@@ -576,8 +576,7 @@ class RecordControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.recordId").value(recordEntity.getId()));
-
-        Assertions.assertThat(recordRepository.findById(recordEntity.getId())).isEmpty();
+        
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
     }
 
