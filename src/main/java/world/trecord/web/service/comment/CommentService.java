@@ -17,6 +17,8 @@ import world.trecord.web.service.comment.response.CommentDeleteResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 import world.trecord.web.service.notification.NotificationService;
 
+import java.util.Optional;
+
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @Transactional(readOnly = true)
@@ -36,7 +38,9 @@ public class CommentService {
 
         RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
 
-        CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, request.getContent()));
+        CommentEntity parentCommentEntity = findParentCommentEntity(request.getParentId());
+
+        CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
 
         // TODO async 처리
         notificationService.createCommentNotification(commentEntity);
@@ -64,11 +68,11 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDeleteResponse deleteComment(Long userId, Long commendId) {
+    public CommentDeleteResponse deleteComment(Long userId, Long commentId) {
 
         UserEntity userEntity = findUserEntityBy(userId);
 
-        CommentEntity commentEntity = findCommentEntityWithUserEntityBy(commendId);
+        CommentEntity commentEntity = findCommentEntityWithChildCommentEntitiesWith(commentId);
 
         checkPermissionOverComment(userEntity, commentEntity);
 
@@ -77,6 +81,16 @@ public class CommentService {
         return CommentDeleteResponse.builder()
                 .commentEntity(commentEntity)
                 .build();
+    }
+
+    private CommentEntity findParentCommentEntity(Long parentId) {
+        return Optional.ofNullable(parentId)
+                .map(this::findCommentEntityWithUserEntityBy)
+                .orElse(null);
+    }
+
+    private CommentEntity findCommentEntityWithChildCommentEntitiesWith(Long commentId) {
+        return commentRepository.findCommentEntityWithChildCommentEntitiesById(commentId).orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
     }
 
     private CommentEntity findCommentEntityWithUserEntityBy(Long commentId) {

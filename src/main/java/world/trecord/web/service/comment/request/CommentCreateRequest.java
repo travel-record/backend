@@ -19,20 +19,24 @@ public class CommentCreateRequest {
     @NotNull
     private Long recordId;
 
+    private Long parentId;
+
     @Size(max = 255)
     @NotEmpty
     private String content;
 
     @Builder
-    private CommentCreateRequest(Long recordId, String content) {
+    private CommentCreateRequest(Long recordId, Long parentId, String content) {
         this.recordId = recordId;
+        this.parentId = parentId;
         this.content = content;
     }
 
-    public CommentEntity toEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
+    public CommentEntity toEntity(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity, String content) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
+                .parentCommentEntity(parentCommentEntity)
                 .content(content)
                 .build();
     }

@@ -68,6 +68,10 @@ create table comment
     id_users           int          not null comment '사용자 FK',
     created_date_time  datetime     null comment '댓글 생성 시간',
     modified_date_time datetime     null comment '댓글 수정 시간',
+    id_parent          int          null comment '원 댓글 PK',
+    constraint fk_comment_comment
+        foreign key (id_parent) references comment (id_comment)
+            on delete cascade,
     constraint fk_comment_record
         foreign key (id_record) references record (id_record)
             on delete cascade,
@@ -126,4 +130,3 @@ create table user_record_like
 create index idx_user_id
     on user_record_like (id_users)
     comment '유저 PK 인덱스';
-
