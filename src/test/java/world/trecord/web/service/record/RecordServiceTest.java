@@ -586,6 +586,34 @@ class RecordServiceTest {
     }
 
     @Test
+    @DisplayName("댓글 작성자가 soft delete한 댓글은 댓글 리스트에 포함되지 않는다")
+    void getRecordCommentsWhenCommentSoftDeletedTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
+        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter1, recordEntity, "content2");
+        CommentEntity commentEntity3 = createCommentEntity(commenter1, recordEntity, "content2");
+
+        commentRepository.saveAll(List.of(commentEntity2, commentEntity1, commentEntity3));
+
+        commentRepository.softDelete(commentEntity2);
+
+        //when
+        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), commenter1.getId());
+
+        //then
+        Assertions.assertThat(response.getComments())
+                .hasSize(2)
+                .extracting("commentId")
+                .containsExactly(commentEntity1.getId(), commentEntity3.getId());
+    }
+
+    @Test
     @DisplayName("기록에 등록된 댓글들이 없을때 댓글 리스트가 빈 배열인 RecordCommentsResponse로 반환한다")
     void getRecordCommentsReturnsCommentsEmptyTest() throws Exception {
         //given

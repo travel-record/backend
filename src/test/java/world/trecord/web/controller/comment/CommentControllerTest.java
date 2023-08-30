@@ -257,7 +257,8 @@ class CommentControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.commentId").value(commentEntity.getId()));
-        Assertions.assertThat(commentRepository.findById(commentEntity.getId())).isEmpty();
+
+        Assertions.assertThat(commentRepository.findAll()).isEmpty();
     }
 
     @Test
