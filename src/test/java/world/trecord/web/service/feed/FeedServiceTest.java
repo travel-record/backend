@@ -15,7 +15,10 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.*;
+import world.trecord.web.service.feed.response.FeedCreateResponse;
+import world.trecord.web.service.feed.response.FeedInfoResponse;
+import world.trecord.web.service.feed.response.FeedListResponse;
+import world.trecord.web.service.feed.response.FeedUpdateResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -347,10 +350,9 @@ class FeedServiceTest {
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedDeleteResponse response = feedService.deleteFeed(savedUserEntity.getId(), savedFeedEntity.getId());
+        feedService.deleteFeed(savedUserEntity.getId(), savedFeedEntity.getId());
 
         //then
-        Assertions.assertThat(response.getId()).isEqualTo(savedFeedEntity.getId());
         Assertions.assertThat(feedRepository.findAll()).isEmpty();
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }

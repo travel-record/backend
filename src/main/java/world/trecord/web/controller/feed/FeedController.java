@@ -9,7 +9,10 @@ import world.trecord.web.security.LoginUserId;
 import world.trecord.web.service.feed.FeedService;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.*;
+import world.trecord.web.service.feed.response.FeedCreateResponse;
+import world.trecord.web.service.feed.response.FeedInfoResponse;
+import world.trecord.web.service.feed.response.FeedListResponse;
+import world.trecord.web.service.feed.response.FeedUpdateResponse;
 
 @RequiredArgsConstructor
 @RestController
@@ -42,7 +45,8 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}")
-    public ApiResponse<FeedDeleteResponse> deleteFeed(@PathVariable("feedId") Long feedId, @LoginUserId String userId) {
-        return ApiResponse.ok(feedService.deleteFeed(Long.valueOf(userId), feedId));
+    public ApiResponse<Void> deleteFeed(@PathVariable("feedId") Long feedId, @LoginUserId String userId) {
+        feedService.deleteFeed(Long.valueOf(userId), feedId);
+        return ApiResponse.ok();
     }
 }
