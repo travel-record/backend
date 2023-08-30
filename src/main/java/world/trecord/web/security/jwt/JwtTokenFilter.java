@@ -21,7 +21,6 @@ import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.UserService;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -37,11 +36,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
     private final Map<RequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
 
-    public JwtTokenFilter(JwtTokenHandler jwtTokenHandler, UserService userService, Map<String, List<HttpMethod>> whitelistMap) {
+    public JwtTokenFilter(JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap) {
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
+        this.objectMapper = objectMapper;
         whitelistMap.forEach((url, methods) -> this.whitelistMap.put(new AntPathRequestMatcher(url), methods));
     }
 
@@ -71,12 +72,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-            // response.getWriter().write(new ObjectMapper().writeValueAsString(body));
-
-            PrintWriter out = response.getWriter();
-            out.print(new ObjectMapper().writeValueAsString(body));
-            out.flush();
+            response.getWriter().write(objectMapper.writeValueAsString(body));
         }
     }
 

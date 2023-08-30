@@ -70,7 +70,7 @@ class JwtTokenHandlerTest {
     }
 
     @Test
-    @DisplayName("null을 검증하면 IllegalArgumentException 예외가 발생한다")
+    @DisplayName("null을 검증하면 JwtException 예외가 발생한다")
     void verifyWithNullTest() throws Exception {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
@@ -79,7 +79,7 @@ class JwtTokenHandlerTest {
 
         //when //then
         Assertions.assertThatThrownBy(() -> jwtTokenHandler.verify(secretKey, nullToken))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(JwtException.class);
     }
 
     @Test

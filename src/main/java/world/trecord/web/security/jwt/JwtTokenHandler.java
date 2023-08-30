@@ -1,10 +1,12 @@
 package world.trecord.web.security.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
@@ -15,7 +17,11 @@ public class JwtTokenHandler {
     private static final String USER_ID = "user_id";
 
     public void verify(String secretKey, String token) {
-        getClaimsFromToken(secretKey, token);
+        try {
+            getClaimsFromToken(secretKey, token);
+        } catch (Exception e) {
+            throw new JwtException(e.getMessage());
+        }
     }
 
     public String generateToken(Long userId, String secretKey, long expiredTimeMs) {
@@ -28,7 +34,7 @@ public class JwtTokenHandler {
                 .setClaims(claims)
                 .setIssuedAt(issuedAt)
                 .setExpiration(new Date(issuedAt.getTime() + expiredTimeMs))
-                .signWith(hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
+                .signWith(getKey(secretKey))
                 .compact();
     }
 
@@ -38,9 +44,13 @@ public class JwtTokenHandler {
 
     private Claims getClaimsFromToken(String secretKey, String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
+                .setSigningKey(getKey(secretKey))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    private SecretKey getKey(String secretKey) {
+        return hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 }
