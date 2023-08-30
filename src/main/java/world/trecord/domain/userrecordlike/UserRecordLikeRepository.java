@@ -34,4 +34,11 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
             "SET le.deletedDateTime = NOW() " +
             "where le.recordEntity = :recordEntity")
     void deleteAllByRecordEntity(@Param("recordEntity") RecordEntity recordEntity);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE UserRecordLikeEntity le " +
+            "SET le.deletedDateTime = NOW() " +
+            "where le = :userRecordLikeEntity")
+    void softDelete(@Param("userRecordLikeEntity") UserRecordLikeEntity userRecordLikeEntity);
 }
