@@ -24,7 +24,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponse<Object>> customException(CustomException exception) {
-        ApiResponse<Object> apiResponse = ApiResponse.of(exception.getError().getErrorCode(), exception.getError().getErrorMsg(), null);
+        ApiResponse<Object> apiResponse = ApiResponse.of(exception.getError().getErrorCode(), exception.getMessage(), null);
         return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
     }
 
