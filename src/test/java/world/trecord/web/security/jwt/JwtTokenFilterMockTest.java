@@ -12,8 +12,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
+import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.UserService;
 
 import java.io.PrintWriter;
@@ -56,8 +56,8 @@ class JwtTokenFilterMockTest {
         ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
         when(request.getHeader("Authorization")).thenReturn(validToken);
-        when(jwtTokenHandler.extractUserId(secretKey, validToken)).thenReturn("1");
-        when(userService.loadUserByUsername("1")).thenReturn(mock(UserDetails.class));
+        when(jwtTokenHandler.extractUserId(secretKey, validToken)).thenReturn(1L);
+        when(userService.loadUserContextByUserId(1L)).thenReturn(mock(UserContext.class));
 
         //when
         jwtTokenFilter.doFilterInternal(request, response, filterChain);

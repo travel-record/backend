@@ -1,11 +1,7 @@
 package world.trecord.web.service.users;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +12,7 @@ import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
+import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
@@ -29,7 +26,7 @@ import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
@@ -87,11 +84,10 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findById(Long.parseLong(userId)).orElseThrow(() -> new UsernameNotFoundException("NOT_EXIST_USER"));
-        List<GrantedAuthority> grantedAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
-        return new User(userEntity.getId().toString(), "", grantedAuthorities);
+    public UserContext loadUserContextByUserId(Long userId) throws UsernameNotFoundException {
+        return userRepository.findById(userId)
+                .map(userEntity -> new UserContext(userEntity, AuthorityUtils.createAuthorityList("ROLE_USER")))
+                .orElseThrow(() -> new UsernameNotFoundException("NOT_EXIST_USER"));
     }
 
     private UserEntity findUserEntityBy(Long userId) {

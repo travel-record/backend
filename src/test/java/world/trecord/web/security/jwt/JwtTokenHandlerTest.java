@@ -20,10 +20,10 @@ class JwtTokenHandlerTest {
         String token = jwtTokenHandler.generateToken(originalUserId, secretKey, expiredTimeMs);
 
         //when
-        String userId = jwtTokenHandler.extractUserId(secretKey, token);
+        Long userId = jwtTokenHandler.extractUserId(secretKey, token);
 
         //then
-        Assertions.assertThat(userId).isEqualTo(String.valueOf(originalUserId));
+        Assertions.assertThat(userId).isEqualTo(originalUserId);
     }
 
     @Test
@@ -70,7 +70,7 @@ class JwtTokenHandlerTest {
     }
 
     @Test
-    @DisplayName("null을 검증하면 예외가 발생한다")
+    @DisplayName("null을 검증하면 IllegalArgumentException 예외가 발생한다")
     void verifyWithNullTest() throws Exception {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
@@ -79,7 +79,7 @@ class JwtTokenHandlerTest {
 
         //when //then
         Assertions.assertThatThrownBy(() -> jwtTokenHandler.verify(secretKey, nullToken))
-                .isInstanceOf(JwtException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
