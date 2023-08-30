@@ -12,7 +12,10 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.*;
+import world.trecord.web.service.feed.response.FeedCreateResponse;
+import world.trecord.web.service.feed.response.FeedInfoResponse;
+import world.trecord.web.service.feed.response.FeedListResponse;
+import world.trecord.web.service.feed.response.FeedUpdateResponse;
 
 import java.util.List;
 
@@ -77,7 +80,7 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedDeleteResponse deleteFeed(Long userId, Long feedId) {
+    public void deleteFeed(Long userId, Long feedId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
@@ -86,10 +89,6 @@ public class FeedService {
 
         recordRepository.deleteAllByFeedEntity(feedEntity);
         feedRepository.softDelete(feedEntity);
-
-        return FeedDeleteResponse.builder()
-                .feedEntity(feedEntity)
-                .build();
     }
 
     private void checkPermissionOverFeed(UserEntity userEntity, FeedEntity feedEntity) {

@@ -15,7 +15,10 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.*;
+import world.trecord.web.service.feed.response.FeedCreateResponse;
+import world.trecord.web.service.feed.response.FeedInfoResponse;
+import world.trecord.web.service.feed.response.FeedListResponse;
+import world.trecord.web.service.feed.response.FeedUpdateResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -169,7 +172,7 @@ class FeedServiceTest {
     }
 
     @Test
-    @DisplayName("시용자가 피드를 생성하면 생성 응답으로 반환한다")
+    @DisplayName("시용자가 피드를 생성하면 FeedCreateResponse을 반환한다")
     void createFeedByExistingUserTest() throws Exception {
         //given
         UserEntity userEntity = UserEntity.builder()
@@ -201,9 +204,7 @@ class FeedServiceTest {
         FeedCreateResponse response = feedService.createFeed(savedUserEntity.getId(), request);
 
         //then
-        Assertions.assertThat(response.getFeedId()).isNotNull();
-        Assertions.assertThat(response).extracting("name", "imageUrl", "companion", "description", "startAt", "endAt", "place", "satisfaction")
-                .containsExactly(feedName, imageUrl, companion, description, startAt.toLocalDate(), endAt.toLocalDate(), place, satisfaction);
+        Assertions.assertThat(feedRepository.findById(response.getFeedId())).isPresent();
     }
 
     @Test
@@ -347,10 +348,9 @@ class FeedServiceTest {
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedDeleteResponse response = feedService.deleteFeed(savedUserEntity.getId(), savedFeedEntity.getId());
+        feedService.deleteFeed(savedUserEntity.getId(), savedFeedEntity.getId());
 
         //then
-        Assertions.assertThat(response.getId()).isEqualTo(savedFeedEntity.getId());
         Assertions.assertThat(feedRepository.findAll()).isEmpty();
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }

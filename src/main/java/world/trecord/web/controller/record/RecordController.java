@@ -10,7 +10,10 @@ import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
-import world.trecord.web.service.record.response.*;
+import world.trecord.web.service.record.response.RecordCommentsResponse;
+import world.trecord.web.service.record.response.RecordCreateResponse;
+import world.trecord.web.service.record.response.RecordInfoResponse;
+import world.trecord.web.service.record.response.RecordSequenceSwapResponse;
 import world.trecord.web.service.userrecordlike.UserRecordLikeService;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -51,8 +54,9 @@ public class RecordController {
     }
 
     @DeleteMapping("/{recordId}")
-    public ApiResponse<RecordDeleteResponse> deleteRecord(@PathVariable("recordId") Long recordId, @LoginUserId String userId) {
-        return ApiResponse.ok(recordService.deleteRecord(Long.valueOf(userId), recordId));
+    public ApiResponse<Void> deleteRecord(@PathVariable("recordId") Long recordId, @LoginUserId String userId) {
+        recordService.deleteRecord(Long.valueOf(userId), recordId);
+        return ApiResponse.ok();
     }
 
     @PostMapping("/{recordId}/like")

@@ -17,7 +17,10 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
-import world.trecord.web.service.record.response.*;
+import world.trecord.web.service.record.response.RecordCommentsResponse;
+import world.trecord.web.service.record.response.RecordCreateResponse;
+import world.trecord.web.service.record.response.RecordInfoResponse;
+import world.trecord.web.service.record.response.RecordSequenceSwapResponse;
 
 import java.util.List;
 
@@ -58,11 +61,11 @@ public class RecordService {
         // TODO 동시성 처리
         int nextSequence = getNextSequence(recordCreateRequest, feedEntity);
 
-        RecordEntity recordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity, nextSequence));
+        RecordEntity savedRecordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity, nextSequence));
 
         return RecordCreateResponse.builder()
                 .writerEntity(userEntity)
-                .recordEntity(recordEntity)
+                .recordEntity(savedRecordEntity)
                 .build();
     }
 
@@ -107,7 +110,7 @@ public class RecordService {
     }
 
     @Transactional
-    public RecordDeleteResponse deleteRecord(Long userId, Long recordId) {
+    public void deleteRecord(Long userId, Long recordId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         RecordEntity recordEntity = findRecordEntityBy(recordId);
@@ -120,10 +123,6 @@ public class RecordService {
         userRecordLikeRepository.deleteAllByRecordEntity(recordEntity);
         notificationRepository.deleteAllByRecordEntity(recordEntity);
         recordRepository.softDelete(recordEntity);
-
-        return RecordDeleteResponse.builder()
-                .recordEntity(recordEntity)
-                .build();
     }
 
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
