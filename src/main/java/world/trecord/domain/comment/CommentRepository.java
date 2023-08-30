@@ -34,6 +34,22 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     @Transactional
     @Modifying
-    @Query("UPDATE CommentEntity ce SET ce.deletedDateTime = NOW() where ce.recordEntity = :recordEntity")
+    @Query("UPDATE CommentEntity ce " +
+            "SET ce.deletedDateTime = NOW() " +
+            "where ce.recordEntity = :recordEntity")
     void deleteAllByRecordEntity(@Param("recordEntity") RecordEntity recordEntity);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE CommentEntity ce " +
+            "SET ce.deletedDateTime = NOW() " +
+            "where ce.parentCommentEntity = :commentEntity")
+    void deleteAllByCommentEntity(@Param("commentEntity") CommentEntity commentEntity);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE CommentEntity ce " +
+            "SET ce.deletedDateTime = NOW() " +
+            "where ce = :commentEntity")
+    void softDelete(@Param("commentEntity") CommentEntity commentEntity);
 }

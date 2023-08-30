@@ -18,7 +18,6 @@ import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentCreateResponse;
-import world.trecord.web.service.comment.response.CommentDeleteResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 
 import java.time.LocalDateTime;
@@ -209,24 +208,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("댓글 작성자가 댓글을 삭제하면 삭제된 댓글 아이디를 반환한다")
-    void deleteCommentTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
-
-        //when
-        CommentDeleteResponse response = commentService.deleteComment(userEntity.getId(), commentEntity.getId());
-
-        //then
-        Assertions.assertThat(response.getCommentId()).isEqualTo(commentEntity.getId());
-        Assertions.assertThat(commentRepository.findById(commentEntity.getId())).isEmpty();
-    }
-
-    @Test
-    @DisplayName("댓글 작성자가 댓글을 삭제하면 원댓글을 삭제하면 자식 댓글들도 함께 삭제된다")
+    @DisplayName("원댓글 작성자가 원댓글을 삭제하면 하위 댓글들도 함께 삭제된다")
     void deleteParentCommentTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -244,10 +226,10 @@ class CommentServiceTest {
         commentRepository.saveAll(List.of(childCommentEntity1, childCommentEntity2, childCommentEntity3));
 
         //when
-        CommentDeleteResponse response = commentService.deleteComment(commenter.getId(), parentCommentEntity.getId());
+        commentService.deleteComment(commenter.getId(), parentCommentEntity.getId());
 
         //then
-        Assertions.assertThat(commentRepository.findById(response.getCommentId())).isEmpty();
+        Assertions.assertThat(commentRepository.findAll()).isEmpty();
     }
 
     @Test

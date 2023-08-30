@@ -50,10 +50,10 @@ class CommentRepositoryTest {
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, content1);
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, content2);
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, content3);
-        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, content4);
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, null, content1);
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, null, content2);
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, null, content3);
+        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, null, content4);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
@@ -102,10 +102,10 @@ class CommentRepositoryTest {
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, content1);
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, content2);
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, content3);
-        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity, content4);
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, null, content1);
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, null, content2);
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, null, content3);
+        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity, null, content4);
 
         commentRepository.saveAll(List.of(commentEntity4, commentEntity3, commentEntity2, commentEntity1));
 
@@ -143,15 +143,57 @@ class CommentRepositoryTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, "content2");
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, "content3");
-        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity, "content4");
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, null, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, null, "content2");
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, null, "content3");
+        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity, null, "content4");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
         commentRepository.deleteAllByRecordEntity(recordEntity);
+
+        //then
+        Assertions.assertThat(commentRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("원댓글로 대댓글 리스트를 soft delete한다")
+    void deleteAllByCommentEntityTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity parentComment = createCommentEntity(userEntity, recordEntity, null, "content1");
+        commentRepository.save(parentComment);
+
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, parentComment, "content2");
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, parentComment, "content3");
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, parentComment, "content4");
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
+
+        //when
+        commentRepository.deleteAllByCommentEntity(parentComment);
+
+        //then
+        Assertions.assertThat(commentRepository.findAll()).containsOnly(parentComment);
+    }
+
+    @Test
+    @DisplayName("댓글을 soft delete한다")
+    void softDeleteTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity = createCommentEntity(userEntity, recordEntity, null, "content1");
+        commentRepository.save(commentEntity);
+
+        //when
+        commentRepository.softDelete(commentEntity);
 
         //then
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
@@ -170,10 +212,11 @@ class CommentRepositoryTest {
                 .build();
     }
 
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
+    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity, String content) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
+                .parentCommentEntity(parentCommentEntity)
                 .content(content)
                 .build();
     }
