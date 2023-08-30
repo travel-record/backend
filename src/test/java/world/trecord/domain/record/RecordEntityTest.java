@@ -81,7 +81,7 @@ class RecordEntityTest {
                 .build();
 
         FeedEntity feedEntity2 = FeedEntity.builder().build();
-        ReflectionTestUtils.setField(feedEntity2, "id", 1L);
+        ReflectionTestUtils.setField(feedEntity2, "id", 2L);
 
         RecordEntity recordEntity2 = RecordEntity.builder()
                 .feedEntity(feedEntity2)
