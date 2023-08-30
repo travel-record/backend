@@ -8,7 +8,6 @@ import world.trecord.web.security.LoginUserId;
 import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
-import world.trecord.web.service.comment.response.CommentCreateResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 
 @RequiredArgsConstructor
@@ -18,8 +17,9 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ApiResponse<CommentCreateResponse> createComment(@RequestBody @Valid CommentCreateRequest request, @LoginUserId String userId) {
-        return ApiResponse.ok(commentService.createComment(Long.parseLong(userId), request));
+    public ApiResponse<Void> createComment(@RequestBody @Valid CommentCreateRequest request, @LoginUserId String userId) {
+        commentService.createComment(Long.parseLong(userId), request);
+        return ApiResponse.ok();
     }
 
     @PutMapping("/{commentId}")

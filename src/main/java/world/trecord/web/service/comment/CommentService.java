@@ -12,7 +12,6 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
-import world.trecord.web.service.comment.response.CommentCreateResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 import world.trecord.web.service.notification.NotificationService;
 
@@ -31,7 +30,7 @@ public class CommentService {
     private final NotificationService notificationService;
 
     @Transactional
-    public CommentCreateResponse createComment(Long userId, CommentCreateRequest request) {
+    public void createComment(Long userId, CommentCreateRequest request) {
 
         UserEntity userEntity = findUserEntityBy(userId);
 
@@ -43,11 +42,6 @@ public class CommentService {
 
         // TODO async 처리
         notificationService.createCommentNotification(commentEntity);
-
-        return CommentCreateResponse.builder()
-                .recordEntity(recordEntity)
-                .commentEntity(commentEntity)
-                .build();
     }
 
     @Transactional

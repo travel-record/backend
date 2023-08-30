@@ -85,8 +85,7 @@ class CommentControllerTest {
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content").value("content"));
+                .andExpect(status().isOk());
     }
 
     @Test

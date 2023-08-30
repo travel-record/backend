@@ -28,6 +28,6 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> ok() {
-        return of(OK.value(), OK.name(), null);
+        return ok(null);
     }
 }

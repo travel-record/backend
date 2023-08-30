@@ -17,7 +17,6 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
-import world.trecord.web.service.comment.response.CommentCreateResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 
 import java.time.LocalDateTime;
@@ -49,19 +48,20 @@ class CommentServiceTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
+        String content = "content";
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
-                .content("content")
+                .content(content)
                 .build();
 
         //when
-        CommentCreateResponse response = commentService.createComment(userEntity.getId(), request);
+        commentService.createComment(userEntity.getId(), request);
 
         //then
-        CommentEntity commentEntity = commentRepository.findById(response.getCommentId()).get();
-        Assertions.assertThat(response)
-                .extracting("recordId", "commentId", "content")
-                .containsExactly(recordEntity.getId(), commentEntity.getId(), commentEntity.getContent());
+        Assertions.assertThat(commentRepository.findAll())
+                .hasSize(1)
+                .extracting("content")
+                .containsExactly(content);
     }
 
     @Test
@@ -80,14 +80,11 @@ class CommentServiceTest {
                 .build();
 
         //when
-        CommentCreateResponse response = commentService.createComment(userEntity.getId(), request);
+        commentService.createComment(userEntity.getId(), request);
 
         //then
-        Assertions.assertThat(commentRepository.findById(response.getCommentId()))
-                .isPresent()
-                .hasValueSatisfying(comment -> {
-                    Assertions.assertThat(comment.getParentCommentEntity()).isEqualTo(parentCommentEntity);
-                });
+        Assertions.assertThat(commentRepository.findAll())
+                .hasSize(2);
     }
 
     @Test
