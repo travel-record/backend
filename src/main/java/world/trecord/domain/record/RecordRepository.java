@@ -31,11 +31,15 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
 
     @Transactional
     @Modifying
-    @Query("UPDATE RecordEntity re SET re.deletedDateTime = NOW() where re.feedEntity = :feedEntity")
+    @Query("UPDATE RecordEntity re " +
+            "SET re.deletedDateTime = NOW() " +
+            "where re.feedEntity = :feedEntity")
     void deleteAllByFeedEntity(@Param("feedEntity") FeedEntity feedEntity);
 
     @Transactional
     @Modifying
-    @Query("UPDATE RecordEntity re SET re.deletedDateTime = NOW() WHERE re = :recordEntity")
+    @Query("UPDATE RecordEntity re " +
+            "SET re.deletedDateTime = NOW() " +
+            "WHERE re = :recordEntity")
     void softDelete(@Param("recordEntity") RecordEntity recordEntity);
 }

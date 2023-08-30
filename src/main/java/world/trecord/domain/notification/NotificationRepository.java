@@ -31,6 +31,8 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
 
     @Transactional
     @Modifying
-    @Query("UPDATE NotificationEntity ne SET ne.deletedDateTime = NOW() where ne.recordEntity = :recordEntity")
+    @Query("UPDATE NotificationEntity ne " +
+            "SET ne.deletedDateTime = NOW() " +
+            "where ne.recordEntity = :recordEntity")
     void deleteAllByRecordEntity(@Param("recordEntity") RecordEntity recordEntity);
 }

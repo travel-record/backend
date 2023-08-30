@@ -119,7 +119,7 @@ class FeedRepositoryTest {
         FeedEntity savedFeedEntity = feedRepository.save(createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when
-        feedRepository.delete(savedFeedEntity);
+        feedRepository.softDelete(savedFeedEntity);
 
         //then
         Assertions.assertThat(feedRepository.findAll()).isEmpty();
