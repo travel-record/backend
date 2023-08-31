@@ -36,11 +36,11 @@ public class UserController {
 
     @GetMapping("/comments")
     public ApiResponse<UserCommentsResponse> getUserComments(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUserCommentsBy(userEntity.getId()));
+        return ApiResponse.ok(userService.getUserComments(userEntity.getId()));
     }
 
     @GetMapping("/likes")
     public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUserRecordLikeListBy(userEntity.getId()));
+        return ApiResponse.ok(userService.getUserRecordLikeList(userEntity.getId()));
     }
 }
