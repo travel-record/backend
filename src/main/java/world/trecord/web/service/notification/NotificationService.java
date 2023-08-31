@@ -65,7 +65,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationListResponse getNotifications(Long userId) {
+    public NotificationListResponse getNotificationsOrException(Long userId) {
         List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userId);
 
         NotificationListResponse response = NotificationListResponse.builder()
@@ -78,7 +78,7 @@ public class NotificationService {
         return response;
     }
 
-    public NotificationListResponse getNotifications(Long userId, NotificationType type) {
+    public NotificationListResponse getNotificationsOrException(Long userId, NotificationType type) {
         List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userId, type);
 
         return NotificationListResponse.builder()

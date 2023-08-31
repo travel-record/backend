@@ -23,6 +23,8 @@ public class FeedController {
     private final FeedService feedService;
     private final FeedValidator feedValidator;
 
+    // TODO add records api
+    // TODO add pageable
     @GetMapping
     public ApiResponse<FeedListResponse> getFeedList(@CurrentUser UserEntity userEntity) {
         return ApiResponse.ok(feedService.getFeedList(userEntity.getId()));

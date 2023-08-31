@@ -171,7 +171,7 @@ class NotificationServiceTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
-        NotificationListResponse response = notificationService.getNotifications(author.getId());
+        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId());
 
         //then
         Assertions.assertThat(response.getNotifications())
@@ -212,7 +212,7 @@ class NotificationServiceTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
-        notificationService.getNotifications(author.getId());
+        notificationService.getNotificationsOrException(author.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll())
@@ -227,7 +227,7 @@ class NotificationServiceTest {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
-        NotificationListResponse response = notificationService.getNotifications(userEntity.getId());
+        NotificationListResponse response = notificationService.getNotificationsOrException(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
@@ -294,7 +294,7 @@ class NotificationServiceTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
-        NotificationListResponse response = notificationService.getNotifications(author.getId(), RECORD_LIKE);
+        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId(), RECORD_LIKE);
 
         //then
         Assertions.assertThat(response.notifications)
@@ -329,7 +329,7 @@ class NotificationServiceTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
         //when
-        NotificationListResponse response = notificationService.getNotifications(author.getId(), RECORD_LIKE);
+        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId(), RECORD_LIKE);
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
@@ -361,7 +361,7 @@ class NotificationServiceTest {
         recordService.deleteRecord(author.getId(), recordEntity2.getId());
 
         //when
-        NotificationListResponse response = notificationService.getNotifications(author.getId());
+        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId());
 
         //then
         Assertions.assertThat(response.getNotifications())

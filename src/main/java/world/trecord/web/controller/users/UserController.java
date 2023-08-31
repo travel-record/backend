@@ -34,11 +34,13 @@ public class UserController {
         return ApiResponse.ok(userService.getUser(userId));
     }
 
+    // TODO add pageable
     @GetMapping("/comments")
     public ApiResponse<UserCommentsResponse> getUserComments(@CurrentUser UserEntity userEntity) {
         return ApiResponse.ok(userService.getUserComments(userEntity.getId()));
     }
 
+    // TODO add pageable
     @GetMapping("/likes")
     public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@CurrentUser UserEntity userEntity) {
         return ApiResponse.ok(userService.getUserRecordLikeList(userEntity.getId()));

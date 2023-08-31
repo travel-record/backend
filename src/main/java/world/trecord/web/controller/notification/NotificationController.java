@@ -26,13 +26,15 @@ public class NotificationController {
         return ApiResponse.ok(notificationService.checkNewNotification(userEntity.getId()));
     }
 
+    // TODO add pageable
     @GetMapping
     public ApiResponse<NotificationListResponse> getNotifications(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(notificationService.getNotifications(userEntity.getId()));
+        return ApiResponse.ok(notificationService.getNotificationsOrException(userEntity.getId()));
     }
 
+    // TODO add pageable
     @GetMapping("/{type}")
     public ApiResponse<NotificationListResponse> getNotificationsByType(@PathVariable("type") NotificationType type, @CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(notificationService.getNotifications(userEntity.getId(), type));
+        return ApiResponse.ok(notificationService.getNotificationsOrException(userEntity.getId(), type));
     }
 }

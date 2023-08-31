@@ -50,6 +50,7 @@ public class FeedInfoResponse {
                 .toList();
     }
 
+    // TODO feed와 분리
     @NoArgsConstructor
     @Setter
     @Getter
