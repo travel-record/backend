@@ -5,13 +5,13 @@ public enum NotificationType {
     COMMENT {
         @Override
         public String getContent(NotificationEntity notificationEntity) {
-            return notificationEntity.getCommentEntity().getContent();
+            return notificationEntity.getArgs().getCommentContent();
         }
     },
     RECORD_LIKE {
         @Override
         public String getContent(NotificationEntity notificationEntity) {
-            return notificationEntity.getUsersFromEntity().getNickname() + "님이 회원님의 기록을 좋아합니다.";
+            return notificationEntity.getArgs().getUserFromNickname() + "님이 회원님의 기록을 좋아합니다.";
         }
     },
     MENTION,

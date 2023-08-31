@@ -6,8 +6,8 @@ create table users
     image_url          text         null comment '프로필 이미지 URL',
     introduction       varchar(255) null comment '한 줄 소개글',
     email              varchar(255) not null comment '이메일',
-    created_date_time  datetime     null comment '기록 생성 시간',
-    modified_date_time datetime     null comment '기록 수정 시간',
+    created_date_time  datetime     null comment '사용자 생성 시간',
+    modified_date_time datetime     null comment '사용자 수정 시간',
     deleted_date_time  datetime     null comment '사용자 삭제 시간',
     constraint uk_users_email
         unique (email),
@@ -29,14 +29,32 @@ create table feed
     companion          varchar(255)                          null comment '동행자',
     satisfaction       varchar(255)                          null comment '만족도',
     place              varchar(255)                          null comment '장소',
-    created_date_time  datetime                              null comment '기록 생성 시간',
-    modified_date_time datetime                              null comment '기록 수정 시간',
+    created_date_time  datetime                              null comment '피드 생성 시간',
+    modified_date_time datetime                              null comment '피드 수정 시간',
     deleted_date_time  datetime                              null comment '피드 삭제 시간',
     constraint fk_feed_users
         foreign key (id_users) references users (id_users)
             on update cascade on delete cascade
 )
     comment '피드';
+
+create table notification
+(
+    id_notification    int auto_increment comment '알림 아이디'
+        primary key,
+    id_users_to        int                                     null comment '알림 받는 사용자 FK',
+    type               varchar(50)                             not null comment '알림 타입',
+    status             varchar(20) default 'UNREAD'            not null comment '알림 상태(읽음/읽지 않음)',
+    args               longtext collate utf8mb4_bin            null comment '인수'
+        check (json_valid(`args`)),
+    created_dated_time datetime    default current_timestamp() not null comment '알림 생성 시간',
+    modified_date_time datetime    default current_timestamp() not null comment '알림 수정 시간',
+    deleted_date_time  datetime                                null comment '알림 삭제 시간',
+    constraint fk_notification_users_to
+        foreign key (id_users_to) references users (id_users)
+            on delete cascade
+)
+    comment '알림';
 
 create table record
 (
@@ -85,34 +103,6 @@ create table comment
 )
     comment '댓글';
 
-create table notification
-(
-    id_notification    int auto_increment comment '알림 아이디'
-        primary key,
-    type               varchar(50)                             not null comment '알림 타입',
-    status             varchar(20) default 'UNREAD'            not null comment '알림 상태(읽음/읽지 않음)',
-    created_dated_time datetime    default current_timestamp() not null comment '알림 생성 시간',
-    modified_date_time datetime    default current_timestamp() not null comment '알림 수정 시간',
-    id_users_to        int                                     null comment '알림 받는 사용자 FK',
-    id_users_from      int                                     null comment '알림 보내는 사용자 FK',
-    id_comment         int                                     null comment '관련 댓글 FK',
-    id_record          int                                     null comment '기록 FK',
-    deleted_date_time  datetime                                null comment '알림 삭제 시간',
-    constraint fk_notification_comment
-        foreign key (id_comment) references comment (id_comment)
-            on delete cascade,
-    constraint fk_notification_record
-        foreign key (id_record) references record (id_record)
-            on delete cascade,
-    constraint fk_notification_users_from
-        foreign key (id_users_from) references users (id_users)
-            on delete cascade,
-    constraint fk_notification_users_to
-        foreign key (id_users_to) references users (id_users)
-            on delete cascade
-)
-    comment '알림';
-
 create table user_record_like
 (
     id_like            int auto_increment comment '좋아요 PK'
@@ -136,4 +126,3 @@ create table user_record_like
 create index idx_user_id
     on user_record_like (id_users)
     comment '유저 PK 인덱스';
-

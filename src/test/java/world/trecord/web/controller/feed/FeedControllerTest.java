@@ -7,15 +7,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import world.trecord.MockMvcTestSupport;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.MockMvcContainerBaseTest;
 import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.security.jwt.JwtTokenHandler;
+import world.trecord.web.security.JwtTokenHandler;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
 
@@ -27,8 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
-@MockMvcTestSupport
-class FeedControllerTest {
+class FeedControllerTest extends MockMvcContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -169,6 +168,8 @@ class FeedControllerTest {
                 .andExpect(status().isOk());
     }
 
+    // TODO POST /api/v1/feeds 실패
+
     @Test
     @DisplayName("PUT /api/v1/feeds/{feedId} - 성공")
     void updateFeedTest() throws Exception {
@@ -213,6 +214,8 @@ class FeedControllerTest {
                 .containsExactly(updateFeedName, updatedFeedImage, updatedFeedDescription, updatedStartAt, updatedEndAt);
     }
 
+    // TODO PUT /api/v1/feeds 실패
+
     @Test
     @DisplayName("DELETE /api/v1/feeds/{feedId} - 성공")
     void deleteFeedTest() throws Exception {
@@ -240,6 +243,8 @@ class FeedControllerTest {
 
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
+
+    // TODO DELETE /api/v1/feeds/{feedId} 실패
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()

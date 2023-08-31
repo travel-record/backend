@@ -37,8 +37,8 @@ public class RecordService {
     private final NotificationRepository notificationRepository;
     private final CommentRepository commentRepository;
 
-    public RecordInfoResponse getRecordInfo(Long viewerId, Long recordId) {
-        RecordEntity recordEntity = findRecordEntityBy(recordId);
+    public RecordInfoResponse getRecord(Long viewerId, Long recordId) {
+        RecordEntity recordEntity = getRecordOrException(recordId);
 
         boolean liked = userLiked(recordEntity, viewerId);
 
@@ -51,7 +51,7 @@ public class RecordService {
 
     @Transactional
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest recordCreateRequest) {
-        FeedEntity feedEntity = findFeedEntityBy(recordCreateRequest.getFeedId());
+        FeedEntity feedEntity = getFeedOrException(recordCreateRequest.getFeedId());
 
         checkPermissionOverFeed(feedEntity, userId);
 
@@ -67,13 +67,15 @@ public class RecordService {
 
     @Transactional
     public RecordInfoResponse updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
-        RecordEntity recordEntity = findRecordEntityBy(recordId);
+        RecordEntity recordEntity = getRecordOrException(recordId);
 
-        FeedEntity feedEntity = findFeedEntityBy(recordEntity.getFeedEntity().getId());
+        FeedEntity feedEntity = getFeedOrException(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(feedEntity, userId);
 
         recordEntity.update(request.toUpdateEntity());
+
+        recordRepository.saveAndFlush(recordEntity);
 
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
@@ -81,19 +83,22 @@ public class RecordService {
                 .build();
     }
 
+    // TODO 로직 변경
     @Transactional
     public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
-        RecordEntity originalRecord = findRecordEntityBy(request.getOriginalRecordId());
+        RecordEntity originalRecord = getRecordOrException(request.getOriginalRecordId());
 
-        RecordEntity targetRecord = findRecordEntityBy(request.getTargetRecordId());
+        RecordEntity targetRecord = getRecordOrException(request.getTargetRecordId());
 
         checkHasSameFeed(originalRecord, targetRecord);
 
-        FeedEntity feedEntity = findFeedEntityBy(originalRecord.getFeedEntity().getId());
+        FeedEntity feedEntity = getFeedOrException(originalRecord.getFeedEntity().getId());
 
         checkPermissionOverFeed(feedEntity, userId);
 
         originalRecord.swapSequenceWith(targetRecord);
+
+        recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
 
         return RecordSequenceSwapResponse.builder()
                 .originalRecordId(targetRecord.getId())
@@ -103,23 +108,23 @@ public class RecordService {
 
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
-        RecordEntity recordEntity = findRecordEntityBy(recordId);
+        RecordEntity recordEntity = getRecordOrException(recordId);
 
-        FeedEntity feedEntity = findFeedEntityBy(recordEntity.getFeedEntity().getId());
+        FeedEntity feedEntity = getFeedOrException(recordEntity.getFeedEntity().getId());
 
         checkPermissionOverFeed(feedEntity, userId);
 
-        commentRepository.deleteAllByRecordEntity(recordEntity);
-        userRecordLikeRepository.deleteAllByRecordEntity(recordEntity);
-        notificationRepository.deleteAllByRecordEntity(recordEntity);
+        commentRepository.deleteAllByRecordEntityId(recordId);
+        userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
+        notificationRepository.deleteAllByRecordEntityId(recordId);
 
-        recordRepository.softDelete(recordEntity);
+        recordRepository.softDeleteById(recordId);
     }
 
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
-        RecordEntity recordEntity = findRecordEntityBy(recordId);
+        RecordEntity recordEntity = getRecordOrException(recordId);
 
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(recordEntity);
+        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
                 .commentEntities(commentEntities)
@@ -127,13 +132,13 @@ public class RecordService {
                 .build();
     }
 
-    private FeedEntity findFeedEntityBy(Long feedId) {
+    private FeedEntity getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 
     private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
         // TODO 동시성 처리
-        return recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
+        return recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
     }
 
     private void checkHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
@@ -142,7 +147,7 @@ public class RecordService {
         }
     }
 
-    private RecordEntity findRecordEntityBy(Long recordId) {
+    private RecordEntity getRecordOrException(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
@@ -158,7 +163,7 @@ public class RecordService {
         }
 
         return userRepository.findById(viewerId)
-                .map(userEntity -> userRecordLikeRepository.existsByUserEntityAndRecordEntity(userEntity, recordEntity))
+                .map(userEntity -> userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId()))
                 .orElseGet(() -> false);
     }
 }

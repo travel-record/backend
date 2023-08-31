@@ -18,12 +18,6 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AU
 @Service
 public class GoogleAuthService {
 
-//    @Value("${google.client-id}")
-//    private String googleClientId;
-//
-//    @Value("${google.client-secret}")
-//    private String googleClientSecret;
-
     private final GoogleProperties googleProperties;
     private static final String BEARER = "Bearer ";
     private static final String GRANT_TYPE = "authorization_code";
@@ -32,11 +26,11 @@ public class GoogleAuthService {
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
     public String getUserEmail(String authorizationCode, String redirectionUri) {
-        String token = getToken(authorizationCode, redirectionUri);
-        return getEmail(token);
+        String token = getTokenOrException(authorizationCode, redirectionUri);
+        return getEmailOrException(token);
     }
 
-    private String getToken(String authorizationCode, String redirectionUri) throws CustomException {
+    private String getTokenOrException(String authorizationCode, String redirectionUri) {
         GoogleTokenRequest request = GoogleTokenRequest.builder()
                 .client_id(googleProperties.getClientId())
                 .client_secret(googleProperties.getClientSecret())
@@ -50,7 +44,7 @@ public class GoogleAuthService {
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
     }
 
-    private String getEmail(String accessToken) {
+    private String getEmailOrException(String accessToken) {
         return Optional.ofNullable(googleUserInfoFeignClient.fetchUserInfo(BEARER + accessToken))
                 .map(GoogleUserInfoResponse::getEmail)
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));

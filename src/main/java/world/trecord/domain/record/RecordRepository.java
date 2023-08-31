@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
 import java.time.LocalDateTime;
@@ -26,17 +25,17 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
     @Query("SELECT MAX(r.sequence) " +
             "FROM RecordEntity r " +
             "WHERE r.feedEntity.id = :feedId AND r.date = :date")
-    Optional<Integer> findMaxSequenceByFeedAndDate(@Param("feedId") Long feedId, @Param("date") LocalDateTime date);
+    Optional<Integer> findMaxSequenceByFeedIdAndDate(@Param("feedId") Long feedId, @Param("date") LocalDateTime date);
 
     @Modifying
     @Query("UPDATE RecordEntity re " +
             "SET re.deletedDateTime = NOW() " +
-            "where re.feedEntity = :feedEntity")
-    void deleteAllByFeedEntity(@Param("feedEntity") FeedEntity feedEntity);
+            "where re.feedEntity.id = :feedId")
+    void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
 
     @Modifying
     @Query("UPDATE RecordEntity re " +
             "SET re.deletedDateTime = NOW() " +
-            "WHERE re = :recordEntity")
-    void softDelete(@Param("recordEntity") RecordEntity recordEntity);
+            "WHERE re.id = :recordId")
+    void softDeleteById(@Param("recordId") Long recordId);
 }

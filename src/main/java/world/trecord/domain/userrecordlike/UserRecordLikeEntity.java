@@ -41,6 +41,5 @@ public class UserRecordLikeEntity extends BaseEntity {
     private UserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
         this.userEntity = userEntity;
         this.recordEntity = recordEntity;
-        this.deletedDateTime = null;
     }
 }

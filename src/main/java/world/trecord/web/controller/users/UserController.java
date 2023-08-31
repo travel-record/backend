@@ -20,27 +20,29 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ApiResponse<UserInfoResponse> getUserInfo(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUserInfo(userEntity.getId()));
+    public ApiResponse<UserInfoResponse> getUser(@CurrentUser UserEntity userEntity) {
+        return ApiResponse.ok(userService.getUser(userEntity.getId()));
     }
 
     @PostMapping
-    public ApiResponse<UserInfoResponse> updateUserInfo(@RequestBody @Valid UserUpdateRequest updateRequest, @CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.updateUserInfo(userEntity.getId(), updateRequest));
+    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest updateRequest, @CurrentUser UserEntity userEntity) {
+        return ApiResponse.ok(userService.updateUser(userEntity.getId(), updateRequest));
     }
 
     @GetMapping("/{userId}")
-    public ApiResponse<UserInfoResponse> getUserInfoByPath(@PathVariable("userId") Long userId) {
-        return ApiResponse.ok(userService.getUserInfo(userId));
+    public ApiResponse<UserInfoResponse> getUserByUserId(@PathVariable("userId") Long userId) {
+        return ApiResponse.ok(userService.getUser(userId));
     }
 
+    // TODO add pageable
     @GetMapping("/comments")
     public ApiResponse<UserCommentsResponse> getUserComments(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUserCommentsBy(userEntity.getId()));
+        return ApiResponse.ok(userService.getUserComments(userEntity.getId()));
     }
 
+    // TODO add pageable
     @GetMapping("/likes")
     public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUserRecordLikeListBy(userEntity.getId()));
+        return ApiResponse.ok(userService.getUserRecordLikeList(userEntity.getId()));
     }
 }

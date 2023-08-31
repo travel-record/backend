@@ -7,45 +7,44 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
-import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.users.UserEntity;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
+
     @EntityGraph(attributePaths = "userEntity")
-    Optional<CommentEntity> findCommentEntityWithUserEntityById(@Param("id") Long commentId);
+    Optional<CommentEntity> findCommentEntityWithUserEntityById(Long commentId);
 
     @EntityGraph(attributePaths = "childCommentEntities")
-    Optional<CommentEntity> findCommentEntityWithChildCommentEntitiesById(@Param("id") Long commentId);
+    Optional<CommentEntity> findCommentEntityWithChildCommentEntitiesById(Long commentId);
 
     @Query("SELECT re.id as recordId, re.title as recordTitle, ce.id as commentId, ce.content as content " +
             "FROM CommentEntity ce " +
             "JOIN ce.recordEntity re " +
-            "WHERE ce.userEntity = :userEntity " +
+            "WHERE ce.userEntity.id = :userId " +
             "ORDER BY ce.createdDateTime DESC")
-    List<CommentRecordProjection> findByUserEntityOrderByCreatedDateTimeDesc(@Param("userEntity") UserEntity userEntity);
+    List<CommentRecordProjection> findByUserEntityIdOrderByCreatedDateTimeDesc(@Param("userId") Long userId);
 
     @EntityGraph(attributePaths = "userEntity")
-    List<CommentEntity> findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(RecordEntity recordEntity);
+    List<CommentEntity> findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(Long recordId);
 
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
-            "where ce.recordEntity = :recordEntity")
-    void deleteAllByRecordEntity(@Param("recordEntity") RecordEntity recordEntity);
+            "where ce.recordEntity.id = :recordId")
+    void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
 
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
-            "where ce.parentCommentEntity = :commentEntity")
-    void deleteAllByCommentEntity(@Param("commentEntity") CommentEntity commentEntity);
+            "where ce.parentCommentEntity.id = :commentId")
+    void deleteAllByCommentEntityId(@Param("commentId") Long commentId);
 
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
-            "where ce = :commentEntity")
-    void softDelete(@Param("commentEntity") CommentEntity commentEntity);
+            "where ce.id = :commentId")
+    void softDeleteById(@Param("commentId") Long commentId);
 }

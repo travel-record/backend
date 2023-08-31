@@ -19,6 +19,7 @@ import world.trecord.web.service.users.response.UserInfoResponse;
 import world.trecord.web.service.users.response.UserRecordLikeListResponse;
 
 import java.util.List;
+import java.util.Objects;
 
 import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
 import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
@@ -41,8 +42,8 @@ public class UserService {
         return userRepository.save(userEntity);
     }
 
-    public UserInfoResponse getUserInfo(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+    public UserInfoResponse getUser(Long userId) {
+        UserEntity userEntity = getUserOrException(userId);
 
         return UserInfoResponse.builder()
                 .userEntity(userEntity)
@@ -50,8 +51,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserInfoResponse updateUserInfo(Long userId, UserUpdateRequest updateRequest) {
-        UserEntity userEntity = findUserEntityBy(userId);
+    public UserInfoResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
+        UserEntity userEntity = getUserOrException(userId);
 
         if (isNicknameUpdatedAndExists(userEntity.getNickname(), updateRequest.getNickname())) {
             throw new CustomException(EXISTING_NICKNAME);
@@ -64,37 +65,37 @@ public class UserService {
                 .build();
     }
 
-    public UserCommentsResponse getUserCommentsBy(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+    public UserCommentsResponse getUserComments(Long userId) {
+        UserEntity userEntity = getUserOrException(userId);
 
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
         return UserCommentsResponse.builder()
                 .projectionList(projectionList)
                 .build();
     }
 
-    public UserRecordLikeListResponse getUserRecordLikeListBy(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+    public UserRecordLikeListResponse getUserRecordLikeList(Long userId) {
+        UserEntity userEntity = getUserOrException(userId);
 
-        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikedRecordsByUserEntity(userEntity);
+        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
 
         return UserRecordLikeListResponse.builder()
                 .projectionList(projectionList)
                 .build();
     }
 
-    public UserContext loadUserContextByUserId(Long userId) throws UsernameNotFoundException {
+    public UserContext loadUserContext(Long userId) throws UsernameNotFoundException {
         return userRepository.findById(userId)
                 .map(userEntity -> new UserContext(userEntity, AuthorityUtils.createAuthorityList(userEntity.getRole())))
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_EXISTING_USER.name()));
     }
 
-    private UserEntity findUserEntityBy(Long userId) {
+    private UserEntity getUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
     }
 
     private boolean isNicknameUpdatedAndExists(String originNickname, String requestNickname) {
-        return (originNickname != null) && (!originNickname.equals(requestNickname)) && (userRepository.existsByNickname(requestNickname));
+        return !Objects.equals(originNickname, requestNickname) && (userRepository.existsByNickname(requestNickname));
     }
 }

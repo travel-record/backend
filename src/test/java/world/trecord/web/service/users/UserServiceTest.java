@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -16,9 +15,11 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.security.UserContext;
+import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
 import world.trecord.web.service.users.response.UserRecordLikeListResponse;
@@ -28,9 +29,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
 
-@IntegrationTestSupport
-class UserServiceTest {
+class UserServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserService userService;
@@ -81,7 +82,7 @@ class UserServiceTest {
         UserEntity saveUser = userRepository.save(userEntity);
 
         //when
-        UserInfoResponse response = userService.getUserInfo(saveUser.getId());
+        UserInfoResponse response = userService.getUser(saveUser.getId());
 
         //then
         Assertions.assertThat(response.getNickname()).isEqualTo(nickname);
@@ -96,7 +97,7 @@ class UserServiceTest {
         Long notExistingUserId = 0L;
 
         //when // then
-        Assertions.assertThatThrownBy(() -> userService.getUserInfo(notExistingUserId))
+        Assertions.assertThatThrownBy(() -> userService.getUser(notExistingUserId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
@@ -125,7 +126,7 @@ class UserServiceTest {
         CommentEntity commentEntity4 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content4));
 
         //when
-        UserCommentsResponse response = userService.getUserCommentsBy(userEntity.getId());
+        UserCommentsResponse response = userService.getUserComments(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getComments())
@@ -148,7 +149,7 @@ class UserServiceTest {
                 .build());
 
         //when
-        UserCommentsResponse response = userService.getUserCommentsBy(userEntity.getId());
+        UserCommentsResponse response = userService.getUserComments(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getComments()).isEmpty();
@@ -175,7 +176,7 @@ class UserServiceTest {
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when
-        UserRecordLikeListResponse response = userService.getUserRecordLikeListBy(userEntity.getId());
+        UserRecordLikeListResponse response = userService.getUserRecordLikeList(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getRecords())
@@ -206,16 +207,99 @@ class UserServiceTest {
 
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
-        userRecordLikeRepository.softDelete(userRecordLikeEntity2);
+        userRecordLikeRepository.softDeleteById(userRecordLikeEntity2.getId());
 
         //when
-        UserRecordLikeListResponse response = userService.getUserRecordLikeListBy(other.getId());
+        UserRecordLikeListResponse response = userService.getUserRecordLikeList(other.getId());
 
         //then
         Assertions.assertThat(response.getRecords())
                 .hasSize(1)
                 .extracting("recordId")
                 .containsOnly(recordEntity1.getId());
+    }
+
+    @Test
+    @DisplayName("새로운 닉네임으로 업데이트 한다")
+    void updateUserTest() throws Exception {
+        //given
+        userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        String changedNickname = "changed nickname";
+        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
+                .nickname(changedNickname)
+                .build();
+
+        //when
+        UserInfoResponse response = userService.updateUser(userEntity.getId(), updateRequest);
+
+        //then
+        Assertions.assertThat(userRepository.findById(userEntity.getId()).get())
+                .extracting("nickname")
+                .isEqualTo(changedNickname);
+    }
+
+    @Test
+    @DisplayName("이미 저장된 닉네임으로 업데이트 요청하면 예외가 발생한다")
+    void updateUserWhenDuplicatedNicknameTest() throws Exception {
+        //given
+        String savedNickname = "nickname";
+
+        userRepository.save(UserEntity.builder()
+                .nickname(savedNickname)
+                .email("test@email.com")
+                .build());
+
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .email("test1@email.com")
+                .build());
+
+        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
+                .nickname(savedNickname)
+                .build();
+
+        //when
+        Assertions.assertThatThrownBy(() -> userService.updateUser(userEntity.getId(), updateRequest))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(EXISTING_NICKNAME);
+    }
+
+    @Test
+    @DisplayName("새로운 소개글로 업데이트한다")
+    void updateUserWhenNewDescTest() throws Exception {
+        //given
+        userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+
+        String originalNickname = "nickname";
+        String changedIntroduction = "change introduction";
+
+        UserEntity userEntity = userRepository.save(UserEntity.builder()
+                .nickname(originalNickname)
+                .introduction("before introduction")
+                .email("test1@email.com")
+                .build());
+
+        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
+                .nickname(originalNickname)
+                .introduction(changedIntroduction)
+                .build();
+
+        //when
+        UserInfoResponse response = userService.updateUser(userEntity.getId(), updateRequest);
+
+        //then
+        Assertions.assertThat(userRepository.findById(userEntity.getId()).get())
+                .extracting("nickname", "introduction")
+                .containsExactly(originalNickname, changedIntroduction);
     }
 
     @Test
@@ -227,7 +311,7 @@ class UserServiceTest {
                 .build());
 
         //when
-        UserRecordLikeListResponse response = userService.getUserRecordLikeListBy(userEntity.getId());
+        UserRecordLikeListResponse response = userService.getUserRecordLikeList(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getRecords()).isEmpty();
@@ -240,7 +324,7 @@ class UserServiceTest {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
-        UserContext userContext = userService.loadUserContextByUserId(userEntity.getId());
+        UserContext userContext = userService.loadUserContext(userEntity.getId());
 
         //then
         Assertions.assertThat(userContext.getUserEntity()).isEqualTo(userEntity);
@@ -253,7 +337,7 @@ class UserServiceTest {
         long notExistingUserId = -1L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> userService.loadUserContextByUserId(notExistingUserId))
+        Assertions.assertThatThrownBy(() -> userService.loadUserContext(notExistingUserId))
                 .isInstanceOf(UsernameNotFoundException.class);
     }
 

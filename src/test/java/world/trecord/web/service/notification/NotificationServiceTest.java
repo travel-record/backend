@@ -4,22 +4,17 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.NotificationRepository;
-import world.trecord.domain.notification.NotificationStatus;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.*;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.exception.CustomException;
-import world.trecord.web.exception.CustomExceptionError;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
@@ -35,8 +30,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
-@IntegrationTestSupport
-class NotificationServiceTest {
+class NotificationServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -84,9 +78,9 @@ class NotificationServiceTest {
         //then
         Assertions.assertThat(notificationRepository.findAll())
                 .hasSize(1)
-                .extracting("type", "status", "usersToEntity", "usersFromEntity", "commentEntity", "recordEntity")
+                .extracting("type", "status")
                 .containsExactly(
-                        tuple(COMMENT, UNREAD, author, commenter, commentEntity, recordEntity)
+                        tuple(COMMENT, UNREAD)
                 );
     }
 
@@ -223,19 +217,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자가 알림 리스트를 조회하면 예외가 발생한다")
-    void getNotificationsByNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> notificationService.getNotifications(notExistingUserId))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
-    }
-
-    @Test
     @DisplayName("알림 리스트가 없으면 알림 리스트로 조회 시 빈 배열을 반환한다")
     void getNotificationsByWithEmptyNotificationListTest() throws Exception {
         //given
@@ -263,9 +244,9 @@ class NotificationServiceTest {
         //then
         Assertions.assertThat(notificationRepository.findAll())
                 .hasSize(1)
-                .extracting("type", "status", "usersToEntity", "usersFromEntity", "recordEntity")
+                .extracting("type", "status")
                 .containsExactly(
-                        tuple(RECORD_LIKE, UNREAD, writer, viewer, recordEntity)
+                        tuple(RECORD_LIKE, UNREAD)
                 );
     }
 
@@ -309,7 +290,7 @@ class NotificationServiceTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
-        NotificationListResponse response = notificationService.getNotifications(author.getId(), RECORD_LIKE);
+        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId(), RECORD_LIKE);
 
         //then
         Assertions.assertThat(response.notifications)
@@ -344,7 +325,7 @@ class NotificationServiceTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
         //when
-        NotificationListResponse response = notificationService.getNotifications(author.getId(), RECORD_LIKE);
+        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId(), RECORD_LIKE);
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
@@ -416,13 +397,17 @@ class NotificationServiceTest {
     }
 
     private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus notificationStatus, NotificationType notificationType) {
-        return NotificationEntity.builder()
-                .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
+        NotificationArgs args = NotificationArgs.builder()
                 .commentEntity(commentEntity)
                 .recordEntity(recordEntity)
+                .userFromEntity(userFromEntity)
+                .build();
+
+        return NotificationEntity.builder()
+                .usersToEntity(userToEntity)
                 .type(notificationType)
                 .status(notificationStatus)
+                .args(args)
                 .build();
     }
 }

@@ -88,7 +88,6 @@ public class RecordEntity extends BaseEntity {
         this.companion = companion;
         this.imageUrl = imageUrl;
         this.sequence = sequence;
-        this.deletedDateTime = null;
     }
 
     public void update(RecordEntity updateEntity) {

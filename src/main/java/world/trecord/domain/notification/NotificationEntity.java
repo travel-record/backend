@@ -1,15 +1,15 @@
 package world.trecord.domain.notification;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
-import world.trecord.domain.comment.CommentEntity;
-import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDateTime;
@@ -35,34 +35,24 @@ public class NotificationEntity extends BaseEntity {
     @Column(name = "status", nullable = false, columnDefinition = "varchar(20) default 'UNREAD'")
     private NotificationStatus status;
 
-    @Column(name = "deleted_date_time", nullable = true)
-    private LocalDateTime deletedDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users_to", nullable = true, foreignKey = @ForeignKey(name = "fk_notification_users_to"))
     private UserEntity usersToEntity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users_from", nullable = true, foreignKey = @ForeignKey(name = "fk_notification_users_from"))
-    private UserEntity usersFromEntity;
+    @Type(JsonType.class)
+    @Column(name = "args", nullable = true, columnDefinition = "json")
+    private NotificationArgs args;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_comment", nullable = true, foreignKey = @ForeignKey(name = "fk_notification_comment"))
-    private CommentEntity commentEntity;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_record", nullable = true, foreignKey = @ForeignKey(name = "fk_notification_record"))
-    private RecordEntity recordEntity;
+    @Column(name = "deleted_date_time", nullable = true)
+    private LocalDateTime deletedDateTime;
 
     @Builder
-    private NotificationEntity(NotificationType type, NotificationStatus status, UserEntity usersToEntity, UserEntity usersFromEntity, CommentEntity commentEntity, RecordEntity recordEntity) {
+    private NotificationEntity(NotificationType type, NotificationStatus status, UserEntity usersToEntity, NotificationArgs args) {
         this.type = type;
         this.status = status;
         this.usersToEntity = usersToEntity;
-        this.usersFromEntity = usersFromEntity;
-        this.commentEntity = commentEntity;
-        this.recordEntity = recordEntity;
-        this.deletedDateTime = null;
+        this.args = args;
     }
 
     public String getNotificationContent() {

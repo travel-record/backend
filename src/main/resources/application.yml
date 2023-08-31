@@ -10,7 +10,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: none # Do not change
+    open-in-view: false
 
 feign:
   client:
@@ -42,8 +43,6 @@ spring:
       on-profile: local
 
   jpa:
-    hibernate:
-      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
@@ -54,12 +53,6 @@ spring:
   config:
     activate:
       on-profile: test
-
-  datasource:
-    url: jdbc:h2:mem:~/testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
 
   jpa:
     hibernate:

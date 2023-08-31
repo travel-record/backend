@@ -1,4 +1,4 @@
-package world.trecord.web.security.jwt;
+package world.trecord.web.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

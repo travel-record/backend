@@ -5,21 +5,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
-import world.trecord.MockMvcTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.NotificationRepository;
-import world.trecord.domain.notification.NotificationStatus;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.*;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.MockMvcContainerBaseTest;
 import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.security.jwt.JwtTokenHandler;
+import world.trecord.web.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,8 +31,7 @@ import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
 
-@MockMvcTestSupport
-class NotificationControllerTest {
+class NotificationControllerTest extends MockMvcContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -238,13 +234,17 @@ class NotificationControllerTest {
     }
 
     private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus status, NotificationType type) {
+        NotificationArgs args = NotificationArgs.builder()
+                .commentEntity(commentEntity)
+                .recordEntity(recordEntity)
+                .userFromEntity(userFromEntity)
+                .build();
+
         return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
-                .recordEntity(recordEntity)
-                .commentEntity(commentEntity)
                 .type(type)
                 .status(status)
+                .args(args)
                 .build();
     }
 

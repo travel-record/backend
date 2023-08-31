@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.IntegrationTestSupport;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -22,8 +22,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
-@IntegrationTestSupport
-class NotificationRepositoryTest {
+class NotificationRepositoryTest extends IntegrationContainerBaseTest {
 
     @Autowired
     NotificationRepository notificationRepository;
@@ -88,7 +87,7 @@ class NotificationRepositoryTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
         //then
         Assertions.assertThat(notificationList)
@@ -180,16 +179,20 @@ class NotificationRepositoryTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
-        notificationRepository.deleteAllByRecordEntity(recordEntity);
+        notificationRepository.deleteAllByRecordEntityId(recordEntity.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();
     }
 
     private NotificationEntity createNotificationEntity(UserEntity userEntity, RecordEntity recordEntity, NotificationType type, NotificationStatus status) {
+        NotificationArgs args = NotificationArgs.builder()
+                .recordEntity(recordEntity)
+                .build();
+
         return NotificationEntity.builder()
                 .usersToEntity(userEntity)
-                .recordEntity(recordEntity)
+                .args(args)
                 .type(type)
                 .status(status)
                 .build();

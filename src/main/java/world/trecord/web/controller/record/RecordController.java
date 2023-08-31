@@ -30,9 +30,10 @@ public class RecordController {
     @GetMapping("/{recordId}")
     public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable("recordId") Long recordId, @CurrentUser UserEntity userEntity) {
         Long viewerId = (userEntity != null) ? userEntity.getId() : null;
-        return ApiResponse.ok(recordService.getRecordInfo(viewerId, recordId));
+        return ApiResponse.ok(recordService.getRecord(viewerId, recordId));
     }
 
+    // TODO add pageable
     @GetMapping("/{recordId}/comments")
     public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") Long recordId, @CurrentUser UserEntity userEntity) {
         Long viewerId = (userEntity != null) ? userEntity.getId() : null;

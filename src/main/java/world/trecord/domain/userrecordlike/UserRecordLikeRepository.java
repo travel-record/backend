@@ -5,37 +5,35 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
-import world.trecord.domain.users.UserEntity;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEntity, Long> {
-    Optional<UserRecordLikeEntity> findUserRecordLikeEntityByUserEntityAndRecordEntity(UserEntity userEntity, RecordEntity recordEntity);
+    Optional<UserRecordLikeEntity> findByUserEntityIdAndRecordEntityId(Long userId, Long recordId);
 
     @Query("SELECT re.id as id, re.title as title, re.imageUrl as imageUrl , ue.id as authorId, ue.nickname as authorNickname " +
             "FROM UserRecordLikeEntity lrle " +
             "JOIN lrle.recordEntity re " +
             "JOIN re.feedEntity fe " +
             "JOIN fe.userEntity ue " +
-            "WHERE lrle.userEntity = :userEntity " +
+            "WHERE lrle.userEntity.id = :userId " +
             "ORDER BY lrle.createdDateTime DESC ")
-    List<UserRecordProjection> findLikedRecordsByUserEntity(@Param("userEntity") UserEntity userEntity);
+    List<UserRecordProjection> findLikeRecordsByUserEntityId(@Param("userId") Long userId);
 
-    boolean existsByUserEntityAndRecordEntity(UserEntity userEntity, RecordEntity recordEntity);
-
-    @Modifying
-    @Query("UPDATE UserRecordLikeEntity le " +
-            "SET le.deletedDateTime = NOW() " +
-            "where le.recordEntity = :recordEntity")
-    void deleteAllByRecordEntity(@Param("recordEntity") RecordEntity recordEntity);
+    boolean existsByUserEntityIdAndRecordEntityId(Long userId, Long recordId);
 
     @Modifying
     @Query("UPDATE UserRecordLikeEntity le " +
             "SET le.deletedDateTime = NOW() " +
-            "where le = :userRecordLikeEntity")
-    void softDelete(@Param("userRecordLikeEntity") UserRecordLikeEntity userRecordLikeEntity);
+            "where le.recordEntity.id = :recordId")
+    void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
+
+    @Modifying
+    @Query("UPDATE UserRecordLikeEntity urle " +
+            "SET urle.deletedDateTime = NOW() " +
+            "where urle.id = :userRecordLikeId")
+    void softDeleteById(@Param("userRecordLikeId") Long userRecordLikeId);
 }

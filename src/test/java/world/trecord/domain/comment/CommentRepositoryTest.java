@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
@@ -18,8 +18,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@IntegrationTestSupport
-class CommentRepositoryTest {
+class CommentRepositoryTest extends IntegrationContainerBaseTest {
 
     @Autowired
     CommentRepository commentRepository;
@@ -58,7 +57,7 @@ class CommentRepositoryTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
         //then
         Assertions.assertThat(projectionList)
@@ -80,7 +79,7 @@ class CommentRepositoryTest {
                 .build());
 
         //when
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
         //then
         Assertions.assertThat(projectionList).isEmpty();
@@ -110,7 +109,7 @@ class CommentRepositoryTest {
         commentRepository.saveAll(List.of(commentEntity4, commentEntity3, commentEntity2, commentEntity1));
 
         //when
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(recordEntity);
+        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentEntities)
@@ -129,7 +128,7 @@ class CommentRepositoryTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(recordEntity);
+        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentEntities).isEmpty();
@@ -151,7 +150,7 @@ class CommentRepositoryTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
-        commentRepository.deleteAllByRecordEntity(recordEntity);
+        commentRepository.deleteAllByRecordEntityId(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
@@ -175,7 +174,7 @@ class CommentRepositoryTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
         //when
-        commentRepository.deleteAllByCommentEntity(parentComment);
+        commentRepository.deleteAllByCommentEntityId(parentComment.getId());
 
         //then
         Assertions.assertThat(commentRepository.findAll()).containsOnly(parentComment);
@@ -193,7 +192,7 @@ class CommentRepositoryTest {
         commentRepository.save(commentEntity);
 
         //when
-        commentRepository.softDelete(commentEntity);
+        commentRepository.softDeleteById(commentEntity.getId());
 
         //then
         Assertions.assertThat(commentRepository.findAll()).isEmpty();

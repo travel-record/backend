@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -13,8 +13,7 @@ import world.trecord.domain.users.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@IntegrationTestSupport
-class FeedRepositoryTest {
+class FeedRepositoryTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -64,7 +63,7 @@ class FeedRepositoryTest {
         //then
         Assertions.assertThat(feedEntities).isEmpty();
     }
-    
+
     @Test
     @DisplayName("피드를 삭제하면 피드에 등록된 기록들과 함께 삭제된다")
     void deleteFeedWithRecordEntitiesTest() throws Exception {
@@ -97,7 +96,7 @@ class FeedRepositoryTest {
         FeedEntity savedFeedEntity = feedRepository.save(createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when
-        feedRepository.softDelete(savedFeedEntity);
+        feedRepository.softDeleteById(savedFeedEntity.getId());
 
         //then
         Assertions.assertThat(feedRepository.findAll()).isEmpty();

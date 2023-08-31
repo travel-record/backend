@@ -31,13 +31,11 @@ public class CommentService {
 
     @Transactional
     public void createComment(Long userId, CommentCreateRequest request) {
-        UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
+        UserEntity userEntity = getUserOrException(userId);
 
-        RecordEntity recordEntity = recordRepository.findById(request.getRecordId())
-                .orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        RecordEntity recordEntity = getRecordOrException(request.getRecordId());
 
-        CommentEntity parentCommentEntity = findParentCommentEntity(request.getParentId());
+        CommentEntity parentCommentEntity = getCommentOrNull(request.getParentId());
 
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
 
@@ -46,11 +44,13 @@ public class CommentService {
 
     @Transactional
     public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
-        CommentEntity commentEntity = findCommentEntityWithUserEntityBy(commentId);
+        CommentEntity commentEntity = getCommentWithUserOrException(commentId);
 
         checkPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
+
+        commentRepository.saveAndFlush(commentEntity);
 
         return CommentUpdateResponse.builder()
                 .commentEntity(commentEntity)
@@ -59,27 +59,39 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
-        CommentEntity commentEntity = findCommentEntityWithChildCommentEntitiesWith(commentId);
+        CommentEntity commentEntity = getCommentWithChildCommentsOrException(commentId);
 
         checkPermissionOverComment(commentEntity, userId);
 
-        commentRepository.deleteAllByCommentEntity(commentEntity);
+        commentRepository.deleteAllByCommentEntityId(commentId);
 
-        commentRepository.softDelete(commentEntity);
+        commentRepository.softDeleteById(commentId);
     }
 
-    private CommentEntity findParentCommentEntity(Long parentId) {
+    private UserEntity getUserOrException(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
+    }
+
+    private RecordEntity getRecordOrException(Long recordId) {
+        return recordRepository.findById(recordId)
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+    }
+
+    private CommentEntity getCommentOrNull(Long parentId) {
         return Optional.ofNullable(parentId)
-                .map(this::findCommentEntityWithUserEntityBy)
+                .map(this::getCommentWithUserOrException)
                 .orElse(null);
     }
 
-    private CommentEntity findCommentEntityWithChildCommentEntitiesWith(Long commentId) {
-        return commentRepository.findCommentEntityWithChildCommentEntitiesById(commentId).orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
+    private CommentEntity getCommentWithChildCommentsOrException(Long commentId) {
+        return commentRepository.findCommentEntityWithChildCommentEntitiesById(commentId)
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
     }
 
-    private CommentEntity findCommentEntityWithUserEntityBy(Long commentId) {
-        return commentRepository.findCommentEntityWithUserEntityById(commentId).orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
+    private CommentEntity getCommentWithUserOrException(Long commentId) {
+        return commentRepository.findCommentEntityWithUserEntityById(commentId)
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
     }
 
     private void checkPermissionOverComment(CommentEntity commentEntity, Long userId) {

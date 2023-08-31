@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
+import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
-import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 
@@ -20,7 +19,6 @@ import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -28,7 +26,6 @@ import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
 
     // TODO async 처리
     @Transactional
@@ -70,46 +67,52 @@ public class NotificationService {
 
     @Transactional
     public NotificationListResponse getNotifications(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
-
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userId);
 
         NotificationListResponse response = NotificationListResponse.builder()
                 .notificationEntities(notificationList)
                 .build();
 
         // TODO async 처리
-        notificationRepository.updateNotificationStatusByUserId(userEntity.getId(), UNREAD, READ);
+        notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
 
         return response;
     }
 
-    public NotificationListResponse getNotifications(Long userId, NotificationType type) {
+    public NotificationListResponse getNotificationsOrException(Long userId, NotificationType type) {
         List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userId, type);
 
         return NotificationListResponse.builder()
                 .notificationEntities(notificationList)
                 .build();
     }
-    
+
     private NotificationEntity createRecordLikeNotificationEntity(RecordEntity recordEntity, UserEntity userToEntity, UserEntity userFromEntity) {
-        return NotificationEntity.builder()
+        NotificationArgs args = NotificationArgs.builder()
                 .recordEntity(recordEntity)
+                .userFromEntity(userFromEntity)
+                .build();
+
+        return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
+                .args(args)
                 .type(RECORD_LIKE)
                 .status(UNREAD)
                 .build();
     }
 
     private NotificationEntity createCommentNotificationEntity(CommentEntity commentEntity, UserEntity userToEntity, UserEntity userFromEntity) {
-        return NotificationEntity.builder()
-                .recordEntity(commentEntity.getRecordEntity())
+        NotificationArgs args = NotificationArgs.builder()
                 .commentEntity(commentEntity)
+                .recordEntity(commentEntity.getRecordEntity())
+                .userFromEntity(userFromEntity)
+                .build();
+
+        return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
                 .type(COMMENT)
                 .status(UNREAD)
+                .args(args)
                 .build();
     }
 }
