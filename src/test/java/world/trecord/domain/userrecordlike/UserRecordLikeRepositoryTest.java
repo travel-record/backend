@@ -198,7 +198,7 @@ class UserRecordLikeRepositoryTest {
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2, userRecordLikeEntity3));
 
         //when
-        userRecordLikeRepository.deleteAllByRecordEntity(recordEntity);
+        userRecordLikeRepository.deleteAllByRecordEntityId(recordEntity.getId());
 
         //then
         Assertions.assertThat(userRecordLikeRepository.findAll()).isEmpty();

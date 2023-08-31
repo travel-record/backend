@@ -80,9 +80,9 @@ public class FeedService {
 
         checkPermissionOverFeed(feedEntity, userId);
 
-        recordRepository.deleteAllByFeedEntity(feedEntity);
+        recordRepository.deleteAllByFeedEntityId(feedId);
 
-        feedRepository.softDelete(feedEntity);
+        feedRepository.softDeleteById(feedId);
     }
 
     private void checkPermissionOverFeed(FeedEntity feedEntity, Long userId) {

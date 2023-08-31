@@ -15,6 +15,6 @@ public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     @Modifying
     @Query("UPDATE FeedEntity fe " +
             "SET fe.deletedDateTime = NOW() " +
-            "WHERE fe = :feedEntity")
-    void softDelete(@Param("feedEntity") FeedEntity feedEntity);
+            "WHERE fe.id = :feedId")
+    void softDeleteById(@Param("feedId") Long feedId);
 }

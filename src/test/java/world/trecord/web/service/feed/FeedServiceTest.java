@@ -119,7 +119,7 @@ class FeedServiceTest {
 
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
 
-        feedRepository.softDelete(feedEntity3);
+        feedRepository.softDeleteById(feedEntity3.getId());
 
         //when
         FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
@@ -145,7 +145,7 @@ class FeedServiceTest {
 
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
-        recordRepository.softDelete(recordEntity2);
+        recordRepository.softDeleteById(recordEntity2.getId());
 
         //when
         FeedInfoResponse response = feedService.getFeed(userEntity.getId(), feedEntity.getId());

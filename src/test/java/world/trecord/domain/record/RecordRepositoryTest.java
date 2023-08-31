@@ -141,7 +141,7 @@ class RecordRepositoryTest {
         recordRepository.save(createRecordEntity(feedEntity, "title", "place", date, "content", "weather", "satisfaction", "feeling", sequence));
 
         //when
-        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), date);
+        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), date);
 
         //then
         Assertions.assertThat(maxSequence.orElse(0)).isEqualTo(sequence);
@@ -157,7 +157,7 @@ class RecordRepositoryTest {
         LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
 
         //when
-        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), date);
+        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), date);
 
         //then
         Assertions.assertThat(maxSequence).isEmpty();
@@ -177,7 +177,7 @@ class RecordRepositoryTest {
         recordRepository.saveAll(List.of(record1, record2, record3));
 
         //when
-        recordRepository.deleteAllByFeedEntity(feedEntity);
+        recordRepository.deleteAllByFeedEntityId(feedEntity.getId());
 
         //then
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
@@ -192,7 +192,7 @@ class RecordRepositoryTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
 
         //when
-        recordRepository.softDelete(recordEntity);
+        recordRepository.softDeleteById(recordEntity.getId());
 
         //then
         Assertions.assertThat(recordRepository.findAll()).isEmpty();

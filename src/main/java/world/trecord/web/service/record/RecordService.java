@@ -109,11 +109,11 @@ public class RecordService {
 
         checkPermissionOverFeed(feedEntity, userId);
 
-        commentRepository.deleteAllByRecordEntity(recordEntity);
-        userRecordLikeRepository.deleteAllByRecordEntity(recordEntity);
-        notificationRepository.deleteAllByRecordEntity(recordEntity);
+        commentRepository.deleteAllByRecordEntityId(recordId);
+        userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
+        notificationRepository.deleteAllByRecordEntityId(recordId);
 
-        recordRepository.softDelete(recordEntity);
+        recordRepository.softDeleteById(recordId);
     }
 
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
@@ -133,7 +133,7 @@ public class RecordService {
 
     private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
         // TODO 동시성 처리
-        return recordRepository.findMaxSequenceByFeedAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
+        return recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
     }
 
     private void checkHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {

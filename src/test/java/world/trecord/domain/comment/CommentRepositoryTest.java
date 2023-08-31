@@ -151,7 +151,7 @@ class CommentRepositoryTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
-        commentRepository.deleteAllByRecordEntity(recordEntity);
+        commentRepository.deleteAllByRecordEntityId(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
