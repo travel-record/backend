@@ -39,7 +39,7 @@ public class FeedService {
     }
 
     public FeedInfoResponse getFeed(Long viewerId, Long feedId) {
-        FeedEntity feedEntity = feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+        FeedEntity feedEntity = findFeedEntityBy(feedId);
 
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedId);
 
@@ -52,7 +52,7 @@ public class FeedService {
 
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
 
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
 
@@ -63,7 +63,7 @@ public class FeedService {
 
     @Transactional
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
-        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
+        FeedEntity feedEntity = findFeedEntityBy(feedId);
 
         checkPermissionOverFeed(feedEntity, userId);
 
@@ -76,7 +76,7 @@ public class FeedService {
 
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
+        FeedEntity feedEntity = findFeedEntityBy(feedId);
 
         checkPermissionOverFeed(feedEntity, userId);
 
@@ -91,12 +91,7 @@ public class FeedService {
         }
     }
 
-    private FeedEntity findFeedEntityWithUserEntityBy(Long feedId) {
-        return feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+    private FeedEntity findFeedEntityBy(Long feedId) {
+        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
-
-    private UserEntity findUserEntityBy(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
-    }
-
 }

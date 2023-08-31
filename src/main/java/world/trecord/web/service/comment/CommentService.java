@@ -31,9 +31,11 @@ public class CommentService {
 
     @Transactional
     public void createComment(Long userId, CommentCreateRequest request) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
 
-        RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
+        RecordEntity recordEntity = recordRepository.findById(request.getRecordId())
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
 
         CommentEntity parentCommentEntity = findParentCommentEntity(request.getParentId());
 
@@ -78,14 +80,6 @@ public class CommentService {
 
     private CommentEntity findCommentEntityWithUserEntityBy(Long commentId) {
         return commentRepository.findCommentEntityWithUserEntityById(commentId).orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
-    }
-
-    private UserEntity findUserEntityBy(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
-    }
-
-    private RecordEntity findRecordEntityBy(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
     private void checkPermissionOverComment(CommentEntity commentEntity, Long userId) {
