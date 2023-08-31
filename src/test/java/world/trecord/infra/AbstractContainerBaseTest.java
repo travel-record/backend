@@ -1,10 +1,11 @@
 package world.trecord.infra;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MariaDBContainer;
 
-@MockMvcTestSupport
-public abstract class MockMvcContainerBaseTest {
+import java.util.Arrays;
+
+@IntegrationTestSupport
+public abstract class AbstractContainerBaseTest {
 
     static final MariaDBContainer MARIA_DB_CONTAINER;
 
@@ -13,11 +14,8 @@ public abstract class MockMvcContainerBaseTest {
                 .withDatabaseName("trecord")
                 .withUsername("test")
                 .withPassword("1234");
-        MARIA_DB_CONTAINER.start();
-    }
 
-    @BeforeAll
-    public static void setUp() {
-        System.setProperty("TC_MARIADB_JDBC_URL", MARIA_DB_CONTAINER.getJdbcUrl());
+        MARIA_DB_CONTAINER.setPortBindings(Arrays.asList("3307:3306"));
+        MARIA_DB_CONTAINER.start();
     }
 }

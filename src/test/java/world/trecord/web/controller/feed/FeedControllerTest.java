@@ -13,7 +13,8 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.MockMvcContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
@@ -27,7 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
-class FeedControllerTest extends MockMvcContainerBaseTest {
+@MockMvcTestSupport
+class FeedControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

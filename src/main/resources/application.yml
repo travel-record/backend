@@ -54,11 +54,11 @@ spring:
     activate:
       on-profile: test
 
-    datasource:
-      url: ${TC_MARIADB_JDBC_URL}
-      driver-class-name: org.mariadb.jdbc.Driver
-      username: test
-      password: 1234
+  datasource:
+    url: jdbc:mariadb://localhost:3307/trecord
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: test
+    password: 1234
 
   jpa:
     hibernate:

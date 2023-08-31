@@ -4,19 +4,21 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-class RecordRepositoryTest extends IntegrationContainerBaseTest {
+@IntegrationTestSupport
+class RecordRepositoryTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

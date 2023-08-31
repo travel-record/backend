@@ -8,7 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.MockMvcContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
 import world.trecord.web.properties.JwtProperties;
@@ -20,7 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
-public class AuthControllerTest extends MockMvcContainerBaseTest {
+@MockMvcTestSupport
+public class AuthControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

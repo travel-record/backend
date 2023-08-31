@@ -10,7 +10,8 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.IntegrationContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
@@ -26,7 +27,8 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-class FeedServiceTest extends IntegrationContainerBaseTest {
+@IntegrationTestSupport
+class FeedServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     FeedRepository feedRepository;

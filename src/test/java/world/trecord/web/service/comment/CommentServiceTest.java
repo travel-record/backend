@@ -12,7 +12,8 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.IntegrationContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
@@ -22,7 +23,8 @@ import world.trecord.web.service.comment.response.CommentUpdateResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 
-class CommentServiceTest extends IntegrationContainerBaseTest {
+@IntegrationTestSupport
+class CommentServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
