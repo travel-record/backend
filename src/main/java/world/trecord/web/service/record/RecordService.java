@@ -75,6 +75,8 @@ public class RecordService {
 
         recordEntity.update(request.toUpdateEntity());
 
+        recordRepository.saveAndFlush(recordEntity);
+
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
                 .viewerId(userId)

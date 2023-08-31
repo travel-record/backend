@@ -169,6 +169,8 @@ class FeedControllerTest {
                 .andExpect(status().isOk());
     }
 
+    // TODO POST /api/v1/feeds 실패
+
     @Test
     @DisplayName("PUT /api/v1/feeds/{feedId} - 성공")
     void updateFeedTest() throws Exception {
@@ -213,6 +215,8 @@ class FeedControllerTest {
                 .containsExactly(updateFeedName, updatedFeedImage, updatedFeedDescription, updatedStartAt, updatedEndAt);
     }
 
+    // TODO PUT /api/v1/feeds 실패
+
     @Test
     @DisplayName("DELETE /api/v1/feeds/{feedId} - 성공")
     void deleteFeedTest() throws Exception {
@@ -240,6 +244,8 @@ class FeedControllerTest {
 
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
+
+    // TODO DELETE /api/v1/feeds/{feedId} 실패
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()

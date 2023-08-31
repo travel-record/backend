@@ -69,6 +69,8 @@ public class FeedService {
 
         feedEntity.update(request.toUpdateEntity());
 
+        feedRepository.saveAndFlush(feedEntity);
+
         return FeedUpdateResponse.builder()
                 .feedEntity(feedEntity)
                 .build();

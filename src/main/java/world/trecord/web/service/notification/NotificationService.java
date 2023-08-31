@@ -9,7 +9,6 @@ import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 
@@ -26,7 +25,6 @@ import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
 
     // TODO async 처리
     @Transactional

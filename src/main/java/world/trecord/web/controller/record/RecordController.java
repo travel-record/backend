@@ -47,6 +47,7 @@ public class RecordController {
 
     @PostMapping("/swap")
     public ApiResponse<RecordSequenceSwapResponse> swapRecordSequence(@RequestBody @Valid RecordSequenceSwapRequest recordSequenceSwapRequest, @CurrentUser UserEntity userEntity) {
+        // TODO API 변경
         return ApiResponse.ok(recordService.swapRecordSequence(userEntity.getId(), recordSequenceSwapRequest));
     }
 
