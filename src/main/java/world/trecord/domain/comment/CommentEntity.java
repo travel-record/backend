@@ -14,6 +14,7 @@ import world.trecord.domain.users.UserEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -70,5 +71,9 @@ public class CommentEntity extends BaseEntity {
 
     public void update(CommentEntity updateEntity) {
         this.content = updateEntity.getContent();
+    }
+
+    public boolean isCommenter(Long userId) {
+        return Objects.equals(this.userEntity.getId(), userId);
     }
 }

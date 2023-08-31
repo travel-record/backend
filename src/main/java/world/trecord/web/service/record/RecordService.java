@@ -37,10 +37,10 @@ public class RecordService {
     private final NotificationRepository notificationRepository;
     private final CommentRepository commentRepository;
 
-    public RecordInfoResponse getRecordInfo(Long recordId, Long viewerId) {
+    public RecordInfoResponse getRecordInfo(Long viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordEntityBy(recordId);
 
-        boolean liked = hasUserLikedRecord(viewerId, recordEntity);
+        boolean liked = userLiked(recordEntity, viewerId);
 
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
@@ -152,7 +152,7 @@ public class RecordService {
         }
     }
 
-    private boolean hasUserLikedRecord(Long viewerId, RecordEntity recordEntity) {
+    private boolean userLiked(RecordEntity recordEntity, Long viewerId) {
         if (viewerId == null) {
             return false;
         }

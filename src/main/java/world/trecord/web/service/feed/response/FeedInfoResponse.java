@@ -33,7 +33,7 @@ public class FeedInfoResponse {
     private FeedInfoResponse(FeedEntity feedEntity, Long viewerId, List<RecordWithFeedProjection> projectionList) {
         this.writerId = feedEntity.getUserEntity().getId();
         this.feedId = feedEntity.getId();
-        this.isUpdatable = writerId.equals(viewerId);
+        this.isUpdatable = feedEntity.isManagedBy(viewerId);
         this.name = feedEntity.getName();
         this.imageUrl = feedEntity.getImageUrl();
         this.description = feedEntity.getDescription();

@@ -30,7 +30,7 @@ public class RecordController {
     @GetMapping("/{recordId}")
     public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable("recordId") Long recordId, @CurrentUser UserEntity userEntity) {
         Long viewerId = (userEntity != null) ? userEntity.getId() : null;
-        return ApiResponse.ok(recordService.getRecordInfo(recordId, viewerId));
+        return ApiResponse.ok(recordService.getRecordInfo(viewerId, recordId));
     }
 
     @GetMapping("/{recordId}/comments")

@@ -71,7 +71,7 @@ class RecordServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), writer.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(writer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -106,7 +106,7 @@ class RecordServiceTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), commenter1.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(commenter1.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -141,7 +141,7 @@ class RecordServiceTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), null);
+        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(null, recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -446,7 +446,7 @@ class RecordServiceTest {
         userRecordLikeRepository.save(createUserRecordLikeEntity(viewer, recordEntity));
 
         //when
-        RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), viewer.getId());
+        RecordInfoResponse response = recordService.getRecordInfo(viewer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isTrue();
@@ -468,7 +468,7 @@ class RecordServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
-        RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), viewer.getId());
+        RecordInfoResponse response = recordService.getRecordInfo(viewer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();
@@ -486,7 +486,7 @@ class RecordServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
-        RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), null);
+        RecordInfoResponse response = recordService.getRecordInfo(null, recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();

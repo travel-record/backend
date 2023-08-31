@@ -30,6 +30,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
+    // TODO async 처리
     @Transactional
     public void createCommentNotification(CommentEntity commentEntity) {
 
@@ -46,6 +47,7 @@ public class NotificationService {
         notificationRepository.save(notificationEntity);
     }
 
+    // TODO async 처리
     @Transactional
     public void createRecordLikeNotification(RecordEntity recordEntity, UserEntity userFromEntity) {
 

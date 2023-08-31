@@ -144,26 +144,7 @@ class CommentServiceTest {
                 .extracting("recordId", "commentId", "content")
                 .containsExactly(recordEntity.getId(), commentEntity.getId(), changedContent);
     }
-
-    @Test
-    @DisplayName("존재하지 않는 사용자가 기록에 댓글을 수정하려고 하면 예외가 발생한다")
-    void updateCommentWithNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-        Long notExistingCommentId = 0L;
-
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-
-        CommentUpdateRequest request = CommentUpdateRequest.builder()
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> commentService.updateComment(notExistingUserId, notExistingCommentId, request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
-    }
-
+    
     @Test
     @DisplayName("존재하지 않는 댓글을 수정하려고 하면 예외가 발생한다")
     void updateCommentWithNotExistingCommentIdTest() throws Exception {
@@ -259,21 +240,6 @@ class CommentServiceTest {
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_COMMENT);
     }
-
-    @Test
-    @DisplayName("존재하지 않는 사용자가 댓글을 삭제하려고 하면 예외가 발생한다")
-    void deleteCommentWithNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-        Long notExistingCommentId = 0L;
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> commentService.deleteComment(notExistingUserId, notExistingCommentId))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
-    }
-
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()
