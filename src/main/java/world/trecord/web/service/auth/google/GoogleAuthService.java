@@ -15,7 +15,7 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AU
 
 @RequiredArgsConstructor
 @Component
-public class GoogleAuthManager {
+public class GoogleAuthService {
 
     @Value("${google.client-id}")
     private String googleClientId;
@@ -30,11 +30,11 @@ public class GoogleAuthManager {
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
     public String getUserEmail(String authorizationCode, String redirectionUri) {
-        String accessToken = requestAccessTokenWith(authorizationCode, redirectionUri);
-        return requestUserEmailWith(accessToken);
+        String token = getToken(authorizationCode, redirectionUri);
+        return getEmail(token);
     }
 
-    private String requestAccessTokenWith(String authorizationCode, String redirectionUri) throws CustomException {
+    private String getToken(String authorizationCode, String redirectionUri) throws CustomException {
         GoogleTokenRequest request = GoogleTokenRequest.builder()
                 .client_id(googleClientId)
                 .client_secret(googleClientSecret)
@@ -54,7 +54,7 @@ public class GoogleAuthManager {
         return body.getAccessToken();
     }
 
-    private String requestUserEmailWith(String accessToken) {
+    private String getEmail(String accessToken) {
         ResponseEntity<GoogleUserInfoResponse> response = googleUserInfoFeignClient.call(BEARER + accessToken);
 
         GoogleUserInfoResponse body = response.getBody();

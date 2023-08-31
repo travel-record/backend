@@ -20,10 +20,10 @@ import static org.mockito.Mockito.when;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @ExtendWith(MockitoExtension.class)
-class GoogleAuthManagerTest {
+class GoogleAuthServiceTest {
 
     @InjectMocks
-    private GoogleAuthManager googleAuthManager;
+    private GoogleAuthService googleAuthService;
 
     @Mock
     private GoogleTokenFeignClient googleTokenFeignClient;
@@ -50,7 +50,7 @@ class GoogleAuthManagerTest {
         when(googleUserInfoFeignClient.call("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(mockUserInfoResponse));
 
         //when
-        String resultEmail = googleAuthManager.getUserEmail(authorizationCode, redirectionUri);
+        String resultEmail = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
 
         //then
         Assertions.assertThat(expectedEmail).isEqualTo(resultEmail);
@@ -66,7 +66,7 @@ class GoogleAuthManagerTest {
         when(googleTokenFeignClient.call(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(null));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> googleAuthManager.getUserEmail(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);
@@ -87,7 +87,7 @@ class GoogleAuthManagerTest {
         when(googleUserInfoFeignClient.call("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(null));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> googleAuthManager.getUserEmail(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);

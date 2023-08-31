@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
-import world.trecord.web.service.auth.AuthHandler;
+import world.trecord.web.service.auth.AuthService;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
 
@@ -18,16 +18,16 @@ import world.trecord.web.service.auth.response.RefreshResponse;
 @RequestMapping(value = "/api/v1/auth")
 public class AuthController {
 
-    private final AuthHandler authHandler;
+    private final AuthService authService;
 
     @PostMapping("/google-login")
     public ApiResponse<LoginResponse> googleLogin(@RequestBody @Valid GoogleLoginRequest request) {
-        return ApiResponse.ok(authHandler.googleLogin(request.getAuthorizationCode(), request.getRedirectionUri()));
+        return ApiResponse.ok(authService.googleLogin(request.getAuthorizationCode(), request.getRedirectionUri()));
     }
 
     @PostMapping("/token")
     public ApiResponse<RefreshResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
-        return ApiResponse.ok(authHandler.reissueToken(request.getRefreshToken()));
+        return ApiResponse.ok(authService.reissueToken(request.getRefreshToken()));
     }
 
 }

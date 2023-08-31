@@ -11,14 +11,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.exception.CustomException;
-import world.trecord.web.service.auth.AuthHandler;
+import world.trecord.web.service.auth.AuthService;
 import world.trecord.web.service.auth.response.LoginResponse;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerMockTest {
 
     @Mock
-    AuthHandler authHandler;
+    AuthService authService;
 
     @InjectMocks
     AuthController authController;
@@ -43,7 +43,7 @@ class AuthControllerMockTest {
                 .refreshToken(refreshToken)
                 .build();
 
-        BDDMockito.when(authHandler.googleLogin(validAuthorizationCode, redirectionUri))
+        BDDMockito.when(authService.googleLogin(validAuthorizationCode, redirectionUri))
                 .thenReturn(loginResponse);
 
         //when
@@ -68,7 +68,7 @@ class AuthControllerMockTest {
 
         GoogleLoginRequest request = GoogleLoginRequest.builder().authorizationCode(validAuthorizationCode).redirectionUri(redirectionUri).build();
 
-        BDDMockito.when(authHandler.googleLogin(validAuthorizationCode, redirectionUri))
+        BDDMockito.when(authService.googleLogin(validAuthorizationCode, redirectionUri))
                 .thenThrow(CustomException.class);
 
         //when //then

@@ -15,7 +15,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.security.jwt.JwtTokenHandler;
-import world.trecord.web.service.auth.google.GoogleAuthManager;
+import world.trecord.web.service.auth.google.GoogleAuthService;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
 
@@ -27,10 +27,10 @@ import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-class AuthHandlerTest {
+class AuthServiceTest {
 
     @Mock
-    GoogleAuthManager googleAuthManager;
+    GoogleAuthService googleAuthService;
 
     @Spy
     UserRepository userRepository;
@@ -39,7 +39,7 @@ class AuthHandlerTest {
     JwtTokenHandler jwtTokenHandler;
 
     @InjectMocks
-    AuthHandler authHandler;
+    AuthService authService;
 
     @Test
     @DisplayName("유효한 구글 인가 코드로 사용자 정보와 토큰을 반환한다")
@@ -53,10 +53,10 @@ class AuthHandlerTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
-        ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "expiredTimeMs", expiredTimeMs);
 
-        given(googleAuthManager.getUserEmail(anyString(), anyString()))
+        given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willReturn("test@email.com");
 
         given(userRepository.findByEmail(anyString()))
@@ -71,7 +71,7 @@ class AuthHandlerTest {
                 .willReturn(token);
 
         //when
-        LoginResponse loginResponse = authHandler.googleLogin(accessToken, redirectionUri);
+        LoginResponse loginResponse = authService.googleLogin(accessToken, redirectionUri);
 
         //then
         Assertions.assertThat(loginResponse)
@@ -85,11 +85,11 @@ class AuthHandlerTest {
         //given
         String authorizationCode = "dummy access token";
         String redirectionUri = "dummy redirection uri";
-        given(googleAuthManager.getUserEmail(anyString(), anyString()))
+        given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willThrow(new CustomException(CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE));
 
         //when // then
-        Assertions.assertThatThrownBy(() -> authHandler.googleLogin(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> authService.googleLogin(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE);
@@ -104,8 +104,8 @@ class AuthHandlerTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
-        ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "expiredTimeMs", expiredTimeMs);
 
         given(jwtTokenHandler.extractUserId(secretKey, token))
                 .willReturn(userId);
@@ -114,7 +114,7 @@ class AuthHandlerTest {
                 .willReturn(token);
 
         //when
-        RefreshResponse refreshResponse = authHandler.reissueToken(token);
+        RefreshResponse refreshResponse = authService.reissueToken(token);
 
         //then
         Assertions.assertThat(refreshResponse.getToken()).isEqualTo(token);
@@ -128,14 +128,14 @@ class AuthHandlerTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(authHandler, "secretKey", secretKey);
-        ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "expiredTimeMs", expiredTimeMs);
 
         doThrow(new JwtException("Invalid Token"))
                 .when(jwtTokenHandler).verify(secretKey, invalidToken);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> authHandler.reissueToken(invalidToken))
+        Assertions.assertThatThrownBy(() -> authService.reissueToken(invalidToken))
                 .isInstanceOf(JwtException.class);
     }
 }

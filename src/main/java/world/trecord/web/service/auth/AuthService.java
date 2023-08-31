@@ -6,19 +6,19 @@ import org.springframework.stereotype.Component;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.security.jwt.JwtTokenHandler;
-import world.trecord.web.service.auth.google.GoogleAuthManager;
+import world.trecord.web.service.auth.google.GoogleAuthService;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
 import world.trecord.web.service.users.UserService;
 
 @RequiredArgsConstructor
 @Component
-public class AuthHandler {
+public class AuthService {
 
     private final UserRepository userRepository;
     private final UserService userService;
     private final JwtTokenHandler jwtTokenHandler;
-    private final GoogleAuthManager googleAuthManager;
+    private final GoogleAuthService googleAuthService;
 
     @Value("${jwt.secret-key}")
     private String secretKey;
@@ -27,7 +27,7 @@ public class AuthHandler {
     private Long expiredTimeMs;
 
     public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
-        String email = googleAuthManager.getUserEmail(authorizationCode, redirectionUri);
+        String email = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
 
         UserEntity userEntity = getOrCreateUser(email);
 
