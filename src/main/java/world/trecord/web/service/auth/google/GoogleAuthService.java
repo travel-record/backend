@@ -1,7 +1,6 @@
 package world.trecord.web.service.auth.google;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import world.trecord.web.client.feign.client.GoogleTokenFeignClient;
 import world.trecord.web.client.feign.client.GoogleUserInfoFeignClient;
@@ -9,6 +8,7 @@ import world.trecord.web.client.feign.client.request.GoogleTokenRequest;
 import world.trecord.web.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.web.exception.CustomException;
+import world.trecord.web.properties.GoogleProperties;
 
 import java.util.Optional;
 
@@ -18,12 +18,13 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AU
 @Service
 public class GoogleAuthService {
 
-    @Value("${google.client-id}")
-    private String googleClientId;
+//    @Value("${google.client-id}")
+//    private String googleClientId;
+//
+//    @Value("${google.client-secret}")
+//    private String googleClientSecret;
 
-    @Value("${google.client-secret}")
-    private String googleClientSecret;
-
+    private final GoogleProperties googleProperties;
     private static final String BEARER = "Bearer ";
     private static final String GRANT_TYPE = "authorization_code";
 
@@ -37,8 +38,8 @@ public class GoogleAuthService {
 
     private String getToken(String authorizationCode, String redirectionUri) throws CustomException {
         GoogleTokenRequest request = GoogleTokenRequest.builder()
-                .client_id(googleClientId)
-                .client_secret(googleClientSecret)
+                .client_id(googleProperties.getClientId())
+                .client_secret(googleProperties.getClientSecret())
                 .code(authorizationCode)
                 .redirect_uri(redirectionUri)
                 .grant_type(GRANT_TYPE)

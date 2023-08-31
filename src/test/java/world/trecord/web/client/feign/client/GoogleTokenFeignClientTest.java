@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import world.trecord.IntegrationTestSupport;
 import world.trecord.web.client.feign.client.request.GoogleTokenRequest;
 import world.trecord.web.client.feign.client.response.GoogleTokenResponse;
@@ -44,10 +43,10 @@ class GoogleTokenFeignClientTest {
         GoogleTokenRequest request = new GoogleTokenRequest();
 
         //when
-        ResponseEntity<GoogleTokenResponse> response = client.requestToken(request);
+        GoogleTokenResponse response = client.requestToken(request);
 
         //then
-        Assertions.assertThat(response.getBody().getAccessToken()).isEqualTo("sample_token");
+        Assertions.assertThat(response.getAccessToken()).isEqualTo("sample_token");
     }
 
     @Test

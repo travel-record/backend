@@ -1,12 +1,17 @@
 package world.trecord.web.client.feign.config;
 
 import feign.Logger;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import world.trecord.web.client.feign.decoder.GoogleFeignErrorDecoder;
+import world.trecord.web.properties.GoogleProperties;
 
+@RequiredArgsConstructor
 @Configuration
 public class GoogleFeignConfig {
+
+    private final GoogleProperties googleProperties;
 
     @Bean
     public GoogleFeignErrorDecoder googleErrorDecoder() {
@@ -16,5 +21,15 @@ public class GoogleFeignConfig {
     @Bean
     public Logger.Level feignLoggerLevel() {
         return Logger.Level.FULL;
+    }
+
+    @Bean(name = "googleOauth2Endpoint")
+    public String googleOauth2Endpoint() {
+        return googleProperties.getOauth2().getEndpoint();
+    }
+
+    @Bean(name = "googleApiBaseUrl")
+    public String googleApiBaseUrl() {
+        return googleProperties.getApi().getBaseUrl();
     }
 }

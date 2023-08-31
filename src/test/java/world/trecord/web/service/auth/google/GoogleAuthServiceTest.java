@@ -7,13 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 import world.trecord.web.client.feign.client.GoogleTokenFeignClient;
 import world.trecord.web.client.feign.client.GoogleUserInfoFeignClient;
 import world.trecord.web.client.feign.client.request.GoogleTokenRequest;
 import world.trecord.web.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.web.exception.CustomException;
+import world.trecord.web.properties.GoogleProperties;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -23,13 +23,17 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AU
 class GoogleAuthServiceTest {
 
     @InjectMocks
-    private GoogleAuthService googleAuthService;
+    GoogleAuthService googleAuthService;
 
     @Mock
-    private GoogleTokenFeignClient googleTokenFeignClient;
+    GoogleTokenFeignClient googleTokenFeignClient;
 
     @Mock
-    private GoogleUserInfoFeignClient googleUserInfoFeignClient;
+    GoogleUserInfoFeignClient googleUserInfoFeignClient;
+
+    @Mock
+    GoogleProperties googleProperties;
+
 
     @Test
     @DisplayName("올바른 인가 코드와 리디렉션 URI로 구글 서버로 요청하여 사용자의 정보를 얻어와서 반환한다")
@@ -46,8 +50,10 @@ class GoogleAuthServiceTest {
         GoogleUserInfoResponse mockUserInfoResponse = new GoogleUserInfoResponse();
         mockUserInfoResponse.setEmail(expectedEmail);
 
-        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
-        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(mockUserInfoResponse));
+        when(googleProperties.getClientId()).thenReturn("client id");
+        when(googleProperties.getClientSecret()).thenReturn("client secret");
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(mockTokenResponse);
+        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(mockUserInfoResponse);
 
         //when
         String resultEmail = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
@@ -63,7 +69,7 @@ class GoogleAuthServiceTest {
         String authorizationCode = "testCode";
         String redirectionUri = "http://test.com";
 
-        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(null));
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(null);
 
         //when //then
         Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
@@ -83,8 +89,8 @@ class GoogleAuthServiceTest {
         GoogleTokenResponse mockTokenResponse = new GoogleTokenResponse();
         mockTokenResponse.setAccess_token(mockAccessToken);
 
-        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
-        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(null));
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(mockTokenResponse);
+        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(null);
 
         //when //then
         Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))

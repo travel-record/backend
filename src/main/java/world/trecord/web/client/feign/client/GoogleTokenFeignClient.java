@@ -9,7 +9,7 @@ import world.trecord.web.client.feign.config.GoogleFeignConfig;
 
 @FeignClient(
         name = "google-token-client",
-        url = "${google.oauth2.endpoint}",
+        url = "#{@googleOauth2Endpoint}",
         configuration = GoogleFeignConfig.class
 )
 public interface GoogleTokenFeignClient {

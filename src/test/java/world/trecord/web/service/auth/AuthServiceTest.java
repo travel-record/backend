@@ -14,6 +14,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.auth.google.GoogleAuthService;
 import world.trecord.web.service.auth.response.LoginResponse;
@@ -38,6 +39,9 @@ class AuthServiceTest {
     @Mock
     JwtTokenHandler jwtTokenHandler;
 
+    @Spy
+    JwtProperties jwtProperties;
+
     @InjectMocks
     AuthService authService;
 
@@ -53,8 +57,8 @@ class AuthServiceTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
-        ReflectionTestUtils.setField(authService, "expiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
 
         given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willReturn("test@email.com");
@@ -104,8 +108,8 @@ class AuthServiceTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
-        ReflectionTestUtils.setField(authService, "expiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
 
         given(jwtTokenHandler.extractUserId(secretKey, token))
                 .willReturn(userId);
@@ -128,8 +132,8 @@ class AuthServiceTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
-        ReflectionTestUtils.setField(authService, "expiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
 
         doThrow(new JwtException("Invalid Token"))
                 .when(jwtTokenHandler).verify(secretKey, invalidToken);

@@ -6,7 +6,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -30,16 +29,14 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
+    private final String secretKey;
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
     private final ObjectMapper objectMapper;
     private final Map<RequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
 
-    public JwtTokenFilter(JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap) {
+    public JwtTokenFilter(String secretKey, JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap) {
+        this.secretKey = secretKey;
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
         this.objectMapper = objectMapper;
@@ -77,7 +74,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         res.setCharacterEncoding(StandardCharsets.UTF_8.name());
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        
+
         res.getWriter().write(objectMapper.writeValueAsString(body));
     }
 

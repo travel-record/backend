@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
@@ -17,6 +16,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
@@ -54,11 +54,8 @@ class CommentControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
-    @Value("${jwt.token.expired-time-ms}")
-    private Long expiredTimeMs;
+    @Autowired
+    JwtProperties jwtProperties;
 
     @Test
     @DisplayName("POST /api/v1/comments - 성공")
@@ -68,7 +65,7 @@ class CommentControllerTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         String content = "content";
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -97,7 +94,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         String content = "content";
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -127,7 +124,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         long notExistingCommentId = 0L;
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         String content = "content";
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -157,7 +154,7 @@ class CommentControllerTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         String invalidContent = "";
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -188,7 +185,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         String changeContent = "change content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -217,7 +214,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         String invalidContent = "";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -246,7 +243,7 @@ class CommentControllerTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -265,7 +262,7 @@ class CommentControllerTest {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
         String pathVariable = "Invalid path variable";
 
         //when //then
@@ -308,4 +305,8 @@ class CommentControllerTest {
                 .build();
     }
 
+
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
+    }
 }

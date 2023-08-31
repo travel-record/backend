@@ -8,7 +8,7 @@ import world.trecord.web.client.feign.config.GoogleFeignConfig;
 
 @FeignClient(
         name = "google-user-info-client",
-        url = "${google.api.baseUrl}",
+        url = "#{@googleApiBaseUrl}",
         configuration = GoogleFeignConfig.class
 )
 public interface GoogleUserInfoFeignClient {

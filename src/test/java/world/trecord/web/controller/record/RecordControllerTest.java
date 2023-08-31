@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
@@ -19,6 +18,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
@@ -64,11 +64,8 @@ class RecordControllerTest {
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
 
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
-    @Value("${jwt.token.expired-time-ms}")
-    private Long expiredTimeMs;
+    @Autowired
+    JwtProperties jwtProperties;
 
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 성공")
@@ -78,7 +75,7 @@ class RecordControllerTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         //when //then
         mockMvc.perform(
@@ -148,7 +145,7 @@ class RecordControllerTest {
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .build();
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         String body = objectMapper.writeValueAsString(request);
 
@@ -197,7 +194,7 @@ class RecordControllerTest {
                 .imageUrl(imageUrl)
                 .build();
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         String body = objectMapper.writeValueAsString(request);
 
@@ -250,7 +247,7 @@ class RecordControllerTest {
                 .imageUrl(imageUrl)
                 .build();
 
-        String token = jwtTokenHandler.generateToken(viewer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(viewer.getId());
 
         String body = objectMapper.writeValueAsString(request);
 
@@ -271,7 +268,7 @@ class RecordControllerTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -322,7 +319,7 @@ class RecordControllerTest {
 
         UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(other.getId(), secretKey, expiredTimeMs);
+        String token = createToken(other.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -359,7 +356,7 @@ class RecordControllerTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -404,7 +401,7 @@ class RecordControllerTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         FeedEntity feedEntity1 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity1, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
@@ -437,7 +434,7 @@ class RecordControllerTest {
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
         UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(other.getId(), secretKey, expiredTimeMs);
+        String token = createToken(other.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
@@ -467,7 +464,7 @@ class RecordControllerTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -499,7 +496,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         RecordUpdateRequest request = RecordUpdateRequest.builder().build();
 
@@ -524,7 +521,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         String invalidPathVariable = "invalid";
 
@@ -553,7 +550,7 @@ class RecordControllerTest {
                 .email("test2@email.com")
                 .build());
 
-        String token = jwtTokenHandler.generateToken(writer.getId(), secretKey, expiredTimeMs);
+        String token = createToken(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -582,7 +579,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
@@ -607,7 +604,7 @@ class RecordControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
@@ -694,4 +691,8 @@ class RecordControllerTest {
                 .build();
     }
 
+
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
+    }
 }

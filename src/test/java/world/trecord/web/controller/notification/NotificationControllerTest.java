@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
 import world.trecord.domain.comment.CommentEntity;
@@ -19,6 +18,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 
 import java.time.LocalDateTime;
@@ -61,11 +61,8 @@ class NotificationControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
-    @Value("${jwt.token.expired-time-ms}")
-    private Long expiredTimeMs;
+    @Autowired
+    JwtProperties jwtProperties;
 
     @Test
     @DisplayName("GET /api/v1/notifications/check - 성공")
@@ -77,7 +74,7 @@ class NotificationControllerTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -98,7 +95,7 @@ class NotificationControllerTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -115,7 +112,7 @@ class NotificationControllerTest {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(author.getId(), secretKey, expiredTimeMs);
+        String token = createToken(author.getId());
 
         UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
@@ -153,7 +150,7 @@ class NotificationControllerTest {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(author.getId(), secretKey, expiredTimeMs);
+        String token = createToken(author.getId());
 
         UserEntity viewer1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity viewer2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
@@ -189,7 +186,7 @@ class NotificationControllerTest {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = jwtTokenHandler.generateToken(author.getId(), secretKey, expiredTimeMs);
+        String token = createToken(author.getId());
 
         String notExistingType = "NOT_EXISTING_TYPE";
 
@@ -251,4 +248,8 @@ class NotificationControllerTest {
                 .build();
     }
 
+
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
+    }
 }
