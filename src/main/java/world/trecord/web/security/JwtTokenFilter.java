@@ -56,7 +56,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             Long userId = jwtTokenHandler.extractUserId(secretKey, token);
 
-            UserContext userContext = userService.loadUserContextByUserId(userId);
+            UserContext userContext = userService.loadUserContext(userId);
 
             setAuthenticationWith(userContext);
 

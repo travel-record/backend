@@ -65,7 +65,7 @@ class JwtTokenFilterMockTest {
 
         when(request.getHeader("Authorization")).thenReturn(validToken);
         when(jwtTokenHandler.extractUserId(secretKey, validToken)).thenReturn(1L);
-        when(userService.loadUserContextByUserId(1L)).thenReturn(mock(UserContext.class));
+        when(userService.loadUserContext(1L)).thenReturn(mock(UserContext.class));
 
         //when
         jwtTokenFilter.doFilterInternal(request, response, filterChain);

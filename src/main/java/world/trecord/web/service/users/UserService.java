@@ -19,6 +19,7 @@ import world.trecord.web.service.users.response.UserInfoResponse;
 import world.trecord.web.service.users.response.UserRecordLikeListResponse;
 
 import java.util.List;
+import java.util.Objects;
 
 import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
 import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
@@ -41,7 +42,7 @@ public class UserService {
         return userRepository.save(userEntity);
     }
 
-    public UserInfoResponse getUserInfo(Long userId) {
+    public UserInfoResponse getUser(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         return UserInfoResponse.builder()
@@ -50,7 +51,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserInfoResponse updateUserInfo(Long userId, UserUpdateRequest updateRequest) {
+    public UserInfoResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         if (isNicknameUpdatedAndExists(userEntity.getNickname(), updateRequest.getNickname())) {
@@ -84,7 +85,7 @@ public class UserService {
                 .build();
     }
 
-    public UserContext loadUserContextByUserId(Long userId) throws UsernameNotFoundException {
+    public UserContext loadUserContext(Long userId) throws UsernameNotFoundException {
         return userRepository.findById(userId)
                 .map(userEntity -> new UserContext(userEntity, AuthorityUtils.createAuthorityList(userEntity.getRole())))
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_EXISTING_USER.name()));
@@ -95,6 +96,6 @@ public class UserService {
     }
 
     private boolean isNicknameUpdatedAndExists(String originNickname, String requestNickname) {
-        return (originNickname != null) && (!originNickname.equals(requestNickname)) && (userRepository.existsByNickname(requestNickname));
+        return !Objects.equals(originNickname, requestNickname) && (userRepository.existsByNickname(requestNickname));
     }
 }
