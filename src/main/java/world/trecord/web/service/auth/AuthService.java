@@ -2,7 +2,7 @@ package world.trecord.web.service.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.security.jwt.JwtTokenHandler;
@@ -12,7 +12,7 @@ import world.trecord.web.service.auth.response.RefreshResponse;
 import world.trecord.web.service.users.UserService;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class AuthService {
 
     private final UserRepository userRepository;

@@ -44,7 +44,7 @@ class GoogleTokenFeignClientTest {
         GoogleTokenRequest request = new GoogleTokenRequest();
 
         //when
-        ResponseEntity<GoogleTokenResponse> response = client.call(request);
+        ResponseEntity<GoogleTokenResponse> response = client.requestToken(request);
 
         //then
         Assertions.assertThat(response.getBody().getAccessToken()).isEqualTo("sample_token");
@@ -64,7 +64,7 @@ class GoogleTokenFeignClientTest {
         GoogleTokenRequest request = new GoogleTokenRequest();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> client.call(request))
+        Assertions.assertThatThrownBy(() -> client.requestToken(request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);

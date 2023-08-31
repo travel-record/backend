@@ -46,8 +46,8 @@ class GoogleAuthServiceTest {
         GoogleUserInfoResponse mockUserInfoResponse = new GoogleUserInfoResponse();
         mockUserInfoResponse.setEmail(expectedEmail);
 
-        when(googleTokenFeignClient.call(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
-        when(googleUserInfoFeignClient.call("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(mockUserInfoResponse));
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
+        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(mockUserInfoResponse));
 
         //when
         String resultEmail = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
@@ -63,7 +63,7 @@ class GoogleAuthServiceTest {
         String authorizationCode = "testCode";
         String redirectionUri = "http://test.com";
 
-        when(googleTokenFeignClient.call(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(null));
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(null));
 
         //when //then
         Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
@@ -83,8 +83,8 @@ class GoogleAuthServiceTest {
         GoogleTokenResponse mockTokenResponse = new GoogleTokenResponse();
         mockTokenResponse.setAccess_token(mockAccessToken);
 
-        when(googleTokenFeignClient.call(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
-        when(googleUserInfoFeignClient.call("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(null));
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
+        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(null));
 
         //when //then
         Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))

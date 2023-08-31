@@ -37,7 +37,7 @@ class GoogleUserInfoFeignClientTest {
                         .withBody(responseBody)));
 
         //when
-        ResponseEntity<GoogleUserInfoResponse> response = client.call(validToken);
+        ResponseEntity<GoogleUserInfoResponse> response = client.fetchUserInfo(validToken);
 
         //then
         Assertions.assertThat(response.getBody().getEmail()).isEqualTo("sample@gmail.com");
@@ -57,7 +57,7 @@ class GoogleUserInfoFeignClientTest {
                         .withBody(responseBody)));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> client.call("Bearer " + invalidToken))
+        Assertions.assertThatThrownBy(() -> client.fetchUserInfo("Bearer " + invalidToken))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);

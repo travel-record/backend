@@ -2,8 +2,7 @@ package world.trecord.web.service.auth.google;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import world.trecord.web.client.feign.client.GoogleTokenFeignClient;
 import world.trecord.web.client.feign.client.GoogleUserInfoFeignClient;
 import world.trecord.web.client.feign.client.request.GoogleTokenRequest;
@@ -11,10 +10,12 @@ import world.trecord.web.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.web.exception.CustomException;
 
+import java.util.Optional;
+
 import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class GoogleAuthService {
 
     @Value("${google.client-id}")
@@ -43,26 +44,14 @@ public class GoogleAuthService {
                 .grant_type(GRANT_TYPE)
                 .build();
 
-        ResponseEntity<GoogleTokenResponse> response = googleTokenFeignClient.call(request);
-
-        GoogleTokenResponse body = response.getBody();
-
-        if (body == null) {
-            throw new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE);
-        }
-
-        return body.getAccessToken();
+        return Optional.ofNullable(googleTokenFeignClient.requestToken(request))
+                .map(GoogleTokenResponse::getAccessToken)
+                .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
     }
 
     private String getEmail(String accessToken) {
-        ResponseEntity<GoogleUserInfoResponse> response = googleUserInfoFeignClient.call(BEARER + accessToken);
-
-        GoogleUserInfoResponse body = response.getBody();
-
-        if (body == null) {
-            throw new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE);
-        }
-
-        return body.getEmail();
+        return Optional.ofNullable(googleUserInfoFeignClient.fetchUserInfo(BEARER + accessToken))
+                .map(GoogleUserInfoResponse::getEmail)
+                .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
     }
 }
