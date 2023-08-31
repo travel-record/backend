@@ -31,7 +31,7 @@ public class FeedController {
     @GetMapping("/{feedId}")
     public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserEntity userEntity) {
         Long viewerId = (userEntity != null) ? userEntity.getId() : null;
-        return ApiResponse.ok(feedService.getFeed(feedId, viewerId));
+        return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
 
     @PostMapping

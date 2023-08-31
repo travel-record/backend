@@ -33,7 +33,7 @@ public class UserService {
     private final UserRecordLikeRepository userRecordLikeRepository;
 
     @Transactional
-    public UserEntity createNewUserWith(String email) {
+    public UserEntity createNewUser(String email) {
         UserEntity userEntity = UserEntity.builder()
                 .email(email)
                 .build();
@@ -53,7 +53,7 @@ public class UserService {
     public UserInfoResponse updateUserInfo(Long userId, UserUpdateRequest updateRequest) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        if (isNicknameChangedAndDuplicate(updateRequest.getNickname(), userEntity.getNickname())) {
+        if (isNicknameChangedAndDuplicated(userEntity.getNickname(), updateRequest.getNickname())) {
             throw new CustomException(EXISTING_NICKNAME);
         }
 
@@ -94,7 +94,7 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
     }
 
-    private boolean isNicknameChangedAndDuplicate(String requestNickname, String originNickname) {
+    private boolean isNicknameChangedAndDuplicated(String originNickname, String requestNickname) {
         return (originNickname != null) && (!originNickname.equals(requestNickname)) && (userRepository.existsByNickname(requestNickname));
     }
 }

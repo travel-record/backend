@@ -57,7 +57,7 @@ class UserServiceTest {
         String email = "test@test.com";
 
         //when
-        UserEntity newUser = userService.createNewUserWith(email);
+        UserEntity newUser = userService.createNewUser(email);
 
         //then
         assertThat(newUser.getEmail()).isEqualTo(email);

@@ -97,7 +97,7 @@ class FeedServiceTest {
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedInfoResponse response = feedService.getFeed(savedFeedEntity.getId(), savedUserEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(savedUserEntity.getId(), savedFeedEntity.getId());
 
         //then
         Assertions.assertThat(response)
@@ -148,7 +148,7 @@ class FeedServiceTest {
         recordRepository.softDelete(recordEntity2);
 
         //when
-        FeedInfoResponse response = feedService.getFeed(feedEntity.getId(), userEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(userEntity.getId(), feedEntity.getId());
 
         //then
         Assertions.assertThat(response.getRecords())
@@ -165,7 +165,7 @@ class FeedServiceTest {
         Long notExistingUserId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.getFeed(notExistingFeedId, notExistingUserId))
+        Assertions.assertThatThrownBy(() -> feedService.getFeed(notExistingUserId, notExistingFeedId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
@@ -219,26 +219,9 @@ class FeedServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자 아이디로 피드를 수정하려고 하면 예외가 발생한다")
-    void updateFeedWithNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-        Long notExistingFeedId = 0L;
-        FeedUpdateRequest request = FeedUpdateRequest.builder()
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> feedService.updateFeed(notExistingUserId, notExistingFeedId, request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
-    }
-
-    @Test
     @DisplayName("존재하지 않는 피드 아이디로 피드를 수정하려고 하면 예외가 발생한다")
     void updateFeedWithNotExistingFeedIdTest() throws Exception {
         //given
-
         UserEntity userEntity = userRepository.save(UserEntity.builder()
                 .email("test@email.com")
                 .build());

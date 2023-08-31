@@ -54,6 +54,6 @@ public class AuthHandler {
 
     private UserEntity getOrCreateUserBy(String email) {
         return Optional.ofNullable(userRepository.findByEmail(email))
-                .orElseGet(() -> userService.createNewUserWith(email));
+                .orElseGet(() -> userService.createNewUser(email));
     }
 }
