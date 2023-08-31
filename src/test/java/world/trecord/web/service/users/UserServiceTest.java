@@ -125,7 +125,7 @@ class UserServiceTest {
         CommentEntity commentEntity4 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content4));
 
         //when
-        UserCommentsResponse response = userService.getUserCommentsBy(userEntity.getId());
+        UserCommentsResponse response = userService.getUserComments(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getComments())
@@ -148,7 +148,7 @@ class UserServiceTest {
                 .build());
 
         //when
-        UserCommentsResponse response = userService.getUserCommentsBy(userEntity.getId());
+        UserCommentsResponse response = userService.getUserComments(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getComments()).isEmpty();
@@ -175,7 +175,7 @@ class UserServiceTest {
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when
-        UserRecordLikeListResponse response = userService.getUserRecordLikeListBy(userEntity.getId());
+        UserRecordLikeListResponse response = userService.getUserRecordLikeList(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getRecords())
@@ -209,7 +209,7 @@ class UserServiceTest {
         userRecordLikeRepository.softDelete(userRecordLikeEntity2);
 
         //when
-        UserRecordLikeListResponse response = userService.getUserRecordLikeListBy(other.getId());
+        UserRecordLikeListResponse response = userService.getUserRecordLikeList(other.getId());
 
         //then
         Assertions.assertThat(response.getRecords())
@@ -227,7 +227,7 @@ class UserServiceTest {
                 .build());
 
         //when
-        UserRecordLikeListResponse response = userService.getUserRecordLikeListBy(userEntity.getId());
+        UserRecordLikeListResponse response = userService.getUserRecordLikeList(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getRecords()).isEmpty();

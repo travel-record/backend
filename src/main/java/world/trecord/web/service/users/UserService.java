@@ -64,7 +64,7 @@ public class UserService {
                 .build();
     }
 
-    public UserCommentsResponse getUserCommentsBy(Long userId) {
+    public UserCommentsResponse getUserComments(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
@@ -74,7 +74,7 @@ public class UserService {
                 .build();
     }
 
-    public UserRecordLikeListResponse getUserRecordLikeListBy(Long userId) {
+    public UserRecordLikeListResponse getUserRecordLikeList(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikedRecordsByUserEntity(userEntity);
