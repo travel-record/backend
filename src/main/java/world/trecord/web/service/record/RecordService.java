@@ -119,7 +119,7 @@ public class RecordService {
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
         RecordEntity recordEntity = findRecordEntityBy(recordId);
 
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(recordEntity);
+        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
                 .commentEntities(commentEntities)

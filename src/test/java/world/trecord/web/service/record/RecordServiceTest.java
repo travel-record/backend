@@ -549,7 +549,7 @@ class RecordServiceTest {
 
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1, commentEntity3));
 
-        commentRepository.softDelete(commentEntity2);
+        commentRepository.softDeleteById(commentEntity2.getId());
 
         //when
         RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), commenter1.getId());

@@ -63,9 +63,9 @@ public class CommentService {
 
         checkPermissionOverComment(commentEntity, userId);
 
-        commentRepository.deleteAllByCommentEntity(commentEntity);
+        commentRepository.deleteAllByCommentEntityId(commentId);
 
-        commentRepository.softDelete(commentEntity);
+        commentRepository.softDeleteById(commentId);
     }
 
     private CommentEntity findParentCommentEntity(Long parentId) {

@@ -67,7 +67,7 @@ public class UserService {
     public UserCommentsResponse getUserComments(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
         return UserCommentsResponse.builder()
                 .projectionList(projectionList)
