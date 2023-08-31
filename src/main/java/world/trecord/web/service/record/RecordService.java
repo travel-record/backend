@@ -37,7 +37,7 @@ public class RecordService {
     private final NotificationRepository notificationRepository;
     private final CommentRepository commentRepository;
 
-    public RecordInfoResponse getRecordInfo(Long viewerId, Long recordId) {
+    public RecordInfoResponse getRecord(Long viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordEntityBy(recordId);
 
         boolean liked = userLiked(recordEntity, viewerId);
