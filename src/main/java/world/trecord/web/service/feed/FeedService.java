@@ -66,9 +66,9 @@ public class FeedService {
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
 
-        checkPermissionOverFeed(userId, feedEntity);
+        checkPermissionOverFeed(feedEntity, userId);
 
-        updateFeedEntity(request, feedEntity);
+        feedEntity.update(request.toUpdateEntity());
 
         return FeedUpdateResponse.builder()
                 .feedEntity(feedEntity)
@@ -79,13 +79,14 @@ public class FeedService {
     public void deleteFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
 
-        checkPermissionOverFeed(userId, feedEntity);
+        checkPermissionOverFeed(feedEntity, userId);
 
         recordRepository.deleteAllByFeedEntity(feedEntity);
+
         feedRepository.softDelete(feedEntity);
     }
 
-    private void checkPermissionOverFeed(Long userId, FeedEntity feedEntity) {
+    private void checkPermissionOverFeed(FeedEntity feedEntity, Long userId) {
         if (!Objects.equals(feedEntity.getUserEntity().getId(), userId)) {
             throw new CustomException(FORBIDDEN);
         }
@@ -99,7 +100,4 @@ public class FeedService {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
     }
 
-    private void updateFeedEntity(FeedUpdateRequest request, FeedEntity feedEntity) {
-        feedEntity.update(request.toUpdateEntity());
-    }
 }
