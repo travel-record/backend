@@ -29,7 +29,7 @@ public class NotificationController {
     // TODO add pageable
     @GetMapping
     public ApiResponse<NotificationListResponse> getNotifications(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(notificationService.getNotificationsOrException(userEntity.getId()));
+        return ApiResponse.ok(notificationService.getNotifications(userEntity.getId()));
     }
 
     // TODO add pageable

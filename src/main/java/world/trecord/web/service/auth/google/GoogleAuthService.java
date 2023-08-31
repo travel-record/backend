@@ -26,11 +26,11 @@ public class GoogleAuthService {
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
     public String getUserEmail(String authorizationCode, String redirectionUri) {
-        String token = getToken(authorizationCode, redirectionUri);
-        return getEmail(token);
+        String token = getTokenOrException(authorizationCode, redirectionUri);
+        return getEmailOrException(token);
     }
 
-    private String getToken(String authorizationCode, String redirectionUri) {
+    private String getTokenOrException(String authorizationCode, String redirectionUri) {
         GoogleTokenRequest request = GoogleTokenRequest.builder()
                 .client_id(googleProperties.getClientId())
                 .client_secret(googleProperties.getClientSecret())
@@ -44,7 +44,7 @@ public class GoogleAuthService {
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
     }
 
-    private String getEmail(String accessToken) {
+    private String getEmailOrException(String accessToken) {
         return Optional.ofNullable(googleUserInfoFeignClient.fetchUserInfo(BEARER + accessToken))
                 .map(GoogleUserInfoResponse::getEmail)
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));

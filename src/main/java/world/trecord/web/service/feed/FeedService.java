@@ -40,7 +40,7 @@ public class FeedService {
     }
 
     public FeedInfoResponse getFeed(Long viewerId, Long feedId) {
-        FeedEntity feedEntity = findFeedEntityBy(feedId);
+        FeedEntity feedEntity = getFeedOrException(feedId);
 
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedId);
 
@@ -64,7 +64,7 @@ public class FeedService {
 
     @Transactional
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
-        FeedEntity feedEntity = findFeedEntityBy(feedId);
+        FeedEntity feedEntity = getFeedOrException(feedId);
 
         checkPermissionOverFeed(feedEntity, userId);
 
@@ -79,7 +79,7 @@ public class FeedService {
 
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = findFeedEntityBy(feedId);
+        FeedEntity feedEntity = getFeedOrException(feedId);
 
         checkPermissionOverFeed(feedEntity, userId);
 
@@ -94,7 +94,7 @@ public class FeedService {
         }
     }
 
-    private FeedEntity findFeedEntityBy(Long feedId) {
+    private FeedEntity getFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
     }
 }

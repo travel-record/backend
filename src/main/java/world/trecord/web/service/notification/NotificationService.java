@@ -66,7 +66,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationListResponse getNotificationsOrException(Long userId) {
+    public NotificationListResponse getNotifications(Long userId) {
         List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userId);
 
         NotificationListResponse response = NotificationListResponse.builder()

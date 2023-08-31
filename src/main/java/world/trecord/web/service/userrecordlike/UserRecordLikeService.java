@@ -28,9 +28,9 @@ public class UserRecordLikeService {
 
     @Transactional
     public UserRecordLikeResponse toggleLike(Long userId, Long recordId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = getUserOrException(userId);
 
-        RecordEntity recordEntity = findRecordEntityBy(recordId);
+        RecordEntity recordEntity = getRecordOrException(recordId);
 
         return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
                 .map(this::unlike)
@@ -44,15 +44,14 @@ public class UserRecordLikeService {
     }
 
     private UserRecordLikeResponse like(UserEntity userEntity, RecordEntity recordEntity) {
-        saveUserRecordLikeEntity(userEntity, recordEntity);
-
-        // TODO async 처리
+        saveUserRecordLike(userEntity, recordEntity);
+        
         notificationService.createRecordLikeNotification(userEntity, recordEntity);
 
         return createUserRecordLikeResponse(true);
     }
 
-    private void saveUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
+    private void saveUserRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
         UserRecordLikeEntity userRecordLikeEntity = UserRecordLikeEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
@@ -67,11 +66,11 @@ public class UserRecordLikeService {
                 .build();
     }
 
-    private RecordEntity findRecordEntityBy(Long recordId) {
+    private RecordEntity getRecordOrException(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
     }
 
-    private UserEntity findUserEntityBy(Long userId) {
+    private UserEntity getUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
     }
 }

@@ -43,7 +43,7 @@ public class UserService {
     }
 
     public UserInfoResponse getUser(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = getUserOrException(userId);
 
         return UserInfoResponse.builder()
                 .userEntity(userEntity)
@@ -52,7 +52,7 @@ public class UserService {
 
     @Transactional
     public UserInfoResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = getUserOrException(userId);
 
         if (isNicknameUpdatedAndExists(userEntity.getNickname(), updateRequest.getNickname())) {
             throw new CustomException(EXISTING_NICKNAME);
@@ -66,7 +66,7 @@ public class UserService {
     }
 
     public UserCommentsResponse getUserComments(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = getUserOrException(userId);
 
         List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
@@ -76,7 +76,7 @@ public class UserService {
     }
 
     public UserRecordLikeListResponse getUserRecordLikeList(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = getUserOrException(userId);
 
         List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
 
@@ -91,7 +91,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_EXISTING_USER.name()));
     }
 
-    private UserEntity findUserEntityBy(Long userId) {
+    private UserEntity getUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
     }
 

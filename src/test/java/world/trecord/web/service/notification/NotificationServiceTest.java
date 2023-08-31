@@ -167,7 +167,7 @@ class NotificationServiceTest extends IntegrationContainerBaseTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
-        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId());
+        NotificationListResponse response = notificationService.getNotifications(author.getId());
 
         //then
         Assertions.assertThat(response.getNotifications())
@@ -208,7 +208,7 @@ class NotificationServiceTest extends IntegrationContainerBaseTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
-        notificationService.getNotificationsOrException(author.getId());
+        notificationService.getNotifications(author.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll())
@@ -223,7 +223,7 @@ class NotificationServiceTest extends IntegrationContainerBaseTest {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
-        NotificationListResponse response = notificationService.getNotificationsOrException(userEntity.getId());
+        NotificationListResponse response = notificationService.getNotifications(userEntity.getId());
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
@@ -357,7 +357,7 @@ class NotificationServiceTest extends IntegrationContainerBaseTest {
         recordService.deleteRecord(author.getId(), recordEntity2.getId());
 
         //when
-        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId());
+        NotificationListResponse response = notificationService.getNotifications(author.getId());
 
         //then
         Assertions.assertThat(response.getNotifications())
