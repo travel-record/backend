@@ -12,11 +12,13 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
 
+@IntegrationTestSupport
 class RecordValidatorTest extends AbstractContainerBaseTest {
 
     @Autowired
