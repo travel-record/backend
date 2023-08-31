@@ -27,7 +27,7 @@ public class AuthController {
 
     @PostMapping("/token")
     public ApiResponse<RefreshResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
-        return ApiResponse.ok(authHandler.reissueTokenWith(request.getRefreshToken()));
+        return ApiResponse.ok(authHandler.reissueToken(request.getRefreshToken()));
     }
 
 }

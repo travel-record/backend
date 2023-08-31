@@ -19,6 +19,8 @@ import world.trecord.web.service.auth.google.GoogleAuthManager;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
 
+import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.doThrow;
@@ -58,9 +60,9 @@ class AuthHandlerTest {
                 .willReturn("test@email.com");
 
         given(userRepository.findByEmail(anyString()))
-                .willReturn(UserEntity.builder()
+                .willReturn(Optional.ofNullable(UserEntity.builder()
                         .nickname(nickname)
-                        .build());
+                        .build()));
 
         given(jwtTokenHandler.generateToken(null, secretKey, expiredTimeMs))
                 .willReturn(token);
@@ -112,7 +114,7 @@ class AuthHandlerTest {
                 .willReturn(token);
 
         //when
-        RefreshResponse refreshResponse = authHandler.reissueTokenWith(token);
+        RefreshResponse refreshResponse = authHandler.reissueToken(token);
 
         //then
         Assertions.assertThat(refreshResponse.getToken()).isEqualTo(token);
@@ -133,7 +135,7 @@ class AuthHandlerTest {
                 .when(jwtTokenHandler).verify(secretKey, invalidToken);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> authHandler.reissueTokenWith(invalidToken))
+        Assertions.assertThatThrownBy(() -> authHandler.reissueToken(invalidToken))
                 .isInstanceOf(JwtException.class);
     }
 }

@@ -11,8 +11,6 @@ import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
 import world.trecord.web.service.users.UserService;
 
-import java.util.Optional;
-
 @RequiredArgsConstructor
 @Component
 public class AuthHandler {
@@ -31,7 +29,7 @@ public class AuthHandler {
     public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
         String email = googleAuthManager.getUserEmail(authorizationCode, redirectionUri);
 
-        UserEntity userEntity = getOrCreateUserBy(email);
+        UserEntity userEntity = getOrCreateUser(email);
 
         return LoginResponse.builder()
                 .userId(userEntity.getId())
@@ -41,10 +39,10 @@ public class AuthHandler {
                 .build();
     }
 
-    public RefreshResponse reissueTokenWith(String refreshToken) {
+    public RefreshResponse reissueToken(String refreshToken) {
         jwtTokenHandler.verify(secretKey, refreshToken);
 
-        Long userId = Long.valueOf(jwtTokenHandler.extractUserId(secretKey, refreshToken));
+        Long userId = jwtTokenHandler.extractUserId(secretKey, refreshToken);
 
         return RefreshResponse.builder()
                 .token(jwtTokenHandler.generateToken(userId, secretKey, expiredTimeMs))
@@ -52,8 +50,8 @@ public class AuthHandler {
                 .build();
     }
 
-    private UserEntity getOrCreateUserBy(String email) {
-        return Optional.ofNullable(userRepository.findByEmail(email))
+    private UserEntity getOrCreateUser(String email) {
+        return userRepository.findByEmail(email)
                 .orElseGet(() -> userService.createNewUser(email));
     }
 }
