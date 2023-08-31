@@ -47,12 +47,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
         try {
-            String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+            String token = req.getHeader(HttpHeaders.AUTHORIZATION);
 
-            if (token == null && isRequestInWhitelist(request)) {
-                filterChain.doFilter(request, response);
+            if (token == null && isRequestInWhitelist(req)) {
+                chain.doFilter(req, res);
                 return;
             }
 
@@ -64,23 +64,28 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             setAuthenticationWith(userContext);
 
-            filterChain.doFilter(request, response);
+            chain.doFilter(req, res);
 
         } catch (Exception e) {
-            ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
-
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write(objectMapper.writeValueAsString(body));
+            handleInvalidTokenResponse(res);
         }
     }
 
-    private boolean isRequestInWhitelist(HttpServletRequest request) {
-        return whitelistMap.entrySet().stream().anyMatch(entry -> {
-            RequestMatcher matcher = entry.getKey();
-            List<HttpMethod> allowedMethods = entry.getValue();
-            return matcher.matches(request) && allowedMethods.contains(HttpMethod.valueOf(request.getMethod()));
+    private void handleInvalidTokenResponse(HttpServletResponse res) throws IOException {
+        ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
+
+        res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        res.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        
+        res.getWriter().write(objectMapper.writeValueAsString(body));
+    }
+
+    private boolean isRequestInWhitelist(HttpServletRequest req) {
+        return whitelistMap.entrySet().stream().anyMatch(it -> {
+            RequestMatcher matcher = it.getKey();
+            List<HttpMethod> allowedMethods = it.getValue();
+            return matcher.matches(req) && allowedMethods.contains(HttpMethod.valueOf(req.getMethod()));
         });
     }
 
