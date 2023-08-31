@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
+import world.trecord.web.security.Role;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
