@@ -86,8 +86,8 @@ public class UserService {
 
     public UserContext loadUserContextByUserId(Long userId) throws UsernameNotFoundException {
         return userRepository.findById(userId)
-                .map(userEntity -> new UserContext(userEntity, AuthorityUtils.createAuthorityList("ROLE_USER")))
-                .orElseThrow(() -> new UsernameNotFoundException("NOT_EXIST_USER"));
+                .map(userEntity -> new UserContext(userEntity, AuthorityUtils.createAuthorityList(userEntity.getRole())))
+                .orElseThrow(() -> new UsernameNotFoundException(NOT_EXISTING_USER.name()));
     }
 
     private UserEntity findUserEntityBy(Long userId) {
