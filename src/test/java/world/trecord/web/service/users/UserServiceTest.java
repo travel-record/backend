@@ -15,7 +15,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
@@ -33,7 +33,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
 
 @IntegrationTestSupport
-class UserServiceTest extends AbstractContainerBaseTest {
+class UserServiceTest extends ContainerBaseTest {
 
     @Autowired
     UserService userService;

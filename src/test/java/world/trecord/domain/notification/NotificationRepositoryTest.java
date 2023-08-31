@@ -11,7 +11,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @IntegrationTestSupport
-class NotificationRepositoryTest extends AbstractContainerBaseTest {
+class NotificationRepositoryTest extends ContainerBaseTest {
 
     @Autowired
     NotificationRepository notificationRepository;

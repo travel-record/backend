@@ -16,7 +16,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @MockMvcTestSupport
-class UserControllerTest extends AbstractContainerBaseTest {
+class UserControllerTest extends ContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

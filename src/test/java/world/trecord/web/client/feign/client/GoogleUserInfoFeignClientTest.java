@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.web.exception.CustomException;
@@ -18,7 +18,7 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AU
 
 @AutoConfigureWireMock(port = 8089)
 @IntegrationTestSupport
-class GoogleUserInfoFeignClientTest extends AbstractContainerBaseTest {
+class GoogleUserInfoFeignClientTest extends ContainerBaseTest {
 
     @Autowired
     private GoogleUserInfoFeignClient client;

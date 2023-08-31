@@ -13,7 +13,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -24,7 +24,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @IntegrationTestSupport
-class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
+class UserRecordLikeServiceTest extends ContainerBaseTest {
 
     @Autowired
     UserRecordLikeService userRecordLikeService;
