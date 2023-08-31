@@ -88,7 +88,7 @@ class NotificationRepositoryTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
         //then
         Assertions.assertThat(notificationList)
@@ -180,7 +180,7 @@ class NotificationRepositoryTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
-        notificationRepository.deleteAllByRecordEntity(recordEntity);
+        notificationRepository.deleteAllByRecordEntityId(recordEntity.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();

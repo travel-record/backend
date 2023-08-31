@@ -18,8 +18,6 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.exception.CustomException;
-import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
@@ -220,19 +218,6 @@ class NotificationServiceTest {
         Assertions.assertThat(notificationRepository.findAll())
                 .extracting("status")
                 .containsOnly(READ);
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 사용자가 알림 리스트를 조회하면 예외가 발생한다")
-    void getNotificationsByNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> notificationService.getNotifications(notExistingUserId))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
     }
 
     @Test

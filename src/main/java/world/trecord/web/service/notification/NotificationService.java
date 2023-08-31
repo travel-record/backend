@@ -10,7 +10,6 @@ import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 
@@ -20,7 +19,6 @@ import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -70,16 +68,14 @@ public class NotificationService {
 
     @Transactional
     public NotificationListResponse getNotifications(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
-
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityOrderByCreatedDateTimeDesc(userEntity);
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userId);
 
         NotificationListResponse response = NotificationListResponse.builder()
                 .notificationEntities(notificationList)
                 .build();
 
         // TODO async 처리
-        notificationRepository.updateNotificationStatusByUserId(userEntity.getId(), UNREAD, READ);
+        notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
 
         return response;
     }
@@ -91,7 +87,7 @@ public class NotificationService {
                 .notificationEntities(notificationList)
                 .build();
     }
-    
+
     private NotificationEntity createRecordLikeNotificationEntity(RecordEntity recordEntity, UserEntity userToEntity, UserEntity userFromEntity) {
         return NotificationEntity.builder()
                 .recordEntity(recordEntity)
