@@ -9,7 +9,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.comment.CommentEntity;
-import world.trecord.domain.feed.FeedEntity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -55,10 +54,6 @@ public class UserEntity extends BaseEntity {
         this.nickname = updateEntity.getNickname();
         this.imageUrl = updateEntity.getImageUrl();
         this.introduction = updateEntity.getIntroduction();
-    }
-
-    public boolean isManagerOf(FeedEntity feedEntity) {
-        return Objects.equals(this.id, feedEntity.getUserEntity().getId());
     }
 
     public boolean isCommenterOf(CommentEntity commentEntity) {

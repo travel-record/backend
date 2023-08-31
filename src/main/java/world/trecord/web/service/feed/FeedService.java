@@ -18,7 +18,6 @@ import world.trecord.web.service.feed.response.FeedListResponse;
 import world.trecord.web.service.feed.response.FeedUpdateResponse;
 
 import java.util.List;
-import java.util.Objects;
 
 import static world.trecord.web.exception.CustomExceptionError.*;
 
@@ -87,7 +86,7 @@ public class FeedService {
     }
 
     private void checkPermissionOverFeed(FeedEntity feedEntity, Long userId) {
-        if (!Objects.equals(feedEntity.getUserEntity().getId(), userId)) {
+        if (!feedEntity.isManagedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.domain.comment.CommentEntity;
-import world.trecord.domain.feed.FeedEntity;
 
 class UserEntityTest {
 
@@ -36,51 +35,6 @@ class UserEntityTest {
         Assertions.assertThat(userEntity)
                 .extracting("nickname", "imageUrl", "introduction")
                 .containsExactly(updatedNickname, updatedImageUrl, updatedIntroduction);
-    }
-
-    @Test
-    @DisplayName("사용자가 피드 매니저이면 true를 반환한다")
-    void isManagerOfFeedWhenUserIsManagerOfFeedTest() throws Exception {
-        //given
-        UserEntity userEntity = UserEntity.builder()
-                .build();
-
-        ReflectionTestUtils.setField(userEntity, "id", 1L);
-
-        FeedEntity feedEntity = FeedEntity.builder()
-                .userEntity(userEntity)
-                .build();
-
-        //when
-        boolean result = userEntity.isManagerOf(feedEntity);
-
-        //then
-        Assertions.assertThat(result).isTrue();
-    }
-
-    @Test
-    @DisplayName("사용자가 피드 매니저가 아니면 false를 반환한다")
-    void isManagerOfFeedWhenUserIsNotManagerOfFeedTest() throws Exception {
-        //given
-        UserEntity userEntity = UserEntity.builder()
-                .build();
-
-        ReflectionTestUtils.setField(userEntity, "id", 1L);
-
-        UserEntity otherEntity = UserEntity.builder()
-                .build();
-
-        ReflectionTestUtils.setField(otherEntity, "id", 2L);
-
-        FeedEntity feedEntity = FeedEntity.builder()
-                .userEntity(otherEntity)
-                .build();
-
-        //when
-        boolean result = userEntity.isManagerOf(feedEntity);
-
-        //then
-        Assertions.assertThat(result).isFalse();
     }
 
     @Test

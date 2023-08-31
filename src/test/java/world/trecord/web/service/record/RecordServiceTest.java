@@ -235,20 +235,6 @@ class RecordServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자 아이디로 기록을 생성하려고 하면 예외가 발생한다")
-    void createRecordWithNotExistingUserIdTest() throws Exception {
-        //given
-        RecordCreateRequest request = RecordCreateRequest.builder()
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.createRecord(0L, request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_USER);
-    }
-
-    @Test
     @DisplayName("존재하지 않는 피드 아이디로 기록을 생성하려고 하면 예외가 발생한다")
     void createRecordWithNotExistingFeedIdTest() throws Exception {
         //given
@@ -321,7 +307,7 @@ class RecordServiceTest {
                 .build();
 
         //when
-        RecordInfoResponse response = recordService.updateRecord(writer.getId(), recordEntity.getId(), request);
+        recordService.updateRecord(writer.getId(), recordEntity.getId(), request);
 
         //then
         Assertions.assertThat(recordRepository.findById(recordEntity.getId()))
@@ -331,22 +317,6 @@ class RecordServiceTest {
                             .extracting("title", "date", "place", "content", "feeling", "weather", "companion", "transportation")
                             .containsExactly(changedTitle, changedDate, changedPlace, changedContent, changedFeeling, changedWeather, changedCompanion, changedTransportation);
                 });
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 사용자 아이디로 기록을 수정하려고 하면 예외가 발생한다")
-    void updateRecordWithNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-        Long notExistingRecordId = 0L;
-        RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.updateRecord(notExistingUserId, notExistingRecordId, request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_USER);
     }
 
     @Test
@@ -416,20 +386,6 @@ class RecordServiceTest {
 
         //then
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("존재하지 않은 사용자가 기록을 삭제하려고 하면 예외가 발생한다")
-    void deleteRecordWithNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-        Long notExistingRecordId = 0L;
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(notExistingUserId, notExistingRecordId))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_USER);
     }
 
     @Test
