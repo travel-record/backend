@@ -15,8 +15,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.security.jwt.JwtTokenFilter;
-import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.users.UserService;
 
 import java.time.Duration;

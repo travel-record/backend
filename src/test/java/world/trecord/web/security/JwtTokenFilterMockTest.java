@@ -1,4 +1,4 @@
-package world.trecord.web.security.jwt;
+package world.trecord.web.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.UserService;
 
 import java.io.PrintWriter;

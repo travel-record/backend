@@ -17,7 +17,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.security.jwt.JwtTokenHandler;
+import world.trecord.web.security.JwtTokenHandler;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 

@@ -12,7 +12,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
 import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.security.jwt.JwtTokenHandler;
+import world.trecord.web.security.JwtTokenHandler;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

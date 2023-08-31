@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.security.jwt.JwtTokenHandler;
+import world.trecord.web.security.JwtTokenHandler;
 import world.trecord.web.service.auth.google.GoogleAuthService;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;

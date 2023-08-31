@@ -1,4 +1,4 @@
-package world.trecord.web.security.jwt;
+package world.trecord.web.security;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +16,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import world.trecord.web.controller.ApiResponse;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.UserService;
 
 import java.io.IOException;
