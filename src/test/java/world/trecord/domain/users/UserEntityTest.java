@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import world.trecord.web.security.Role;
 
 class UserEntityTest {
 
@@ -68,5 +69,18 @@ class UserEntityTest {
 
         //then
         Assertions.assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("ROLE_USER을 반환한다")
+    void getRoleTest() throws Exception {
+        //given
+        UserEntity userEntity = UserEntity.builder().build();
+
+        //when
+        String role = userEntity.getRole();
+
+        //then
+        Assertions.assertThat(role).isEqualTo(Role.ROLE_USER.name());
     }
 }
