@@ -158,7 +158,7 @@ public class RecordService {
         }
 
         return userRepository.findById(viewerId)
-                .map(userEntity -> userRecordLikeRepository.existsByUserEntityAndRecordEntity(userEntity, recordEntity))
+                .map(userEntity -> userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId()))
                 .orElseGet(() -> false);
     }
 }

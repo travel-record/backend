@@ -49,7 +49,7 @@ class UserRecordLikeRepositoryTest {
         userRecordLikeRepository.save(userRecordLikeEntity);
 
         //when
-        Optional<UserRecordLikeEntity> likeEntity = userRecordLikeRepository.findUserRecordLikeEntityByUserEntityAndRecordEntity(userEntity, recordEntity);
+        Optional<UserRecordLikeEntity> likeEntity = userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(likeEntity).isPresent();
@@ -66,7 +66,7 @@ class UserRecordLikeRepositoryTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        Optional<UserRecordLikeEntity> likeEntity = userRecordLikeRepository.findUserRecordLikeEntityByUserEntityAndRecordEntity(userEntity, recordEntity);
+        Optional<UserRecordLikeEntity> likeEntity = userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(likeEntity).isEmpty();
@@ -95,7 +95,7 @@ class UserRecordLikeRepositoryTest {
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when
-        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikedRecordsByUserEntity(userEntity);
+        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
 
         //then
         Assertions.assertThat(projectionList)
@@ -116,7 +116,7 @@ class UserRecordLikeRepositoryTest {
                 .build());
 
         //when
-        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikedRecordsByUserEntity(userEntity);
+        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
 
         //then
         Assertions.assertThat(projectionList).isEmpty();
@@ -139,7 +139,7 @@ class UserRecordLikeRepositoryTest {
         userRecordLikeRepository.save(userRecordLikeEntity);
 
         //when
-        boolean result = userRecordLikeRepository.existsByUserEntityAndRecordEntity(userEntity, recordEntity);
+        boolean result = userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(result).isTrue();
@@ -156,7 +156,7 @@ class UserRecordLikeRepositoryTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        boolean result = userRecordLikeRepository.existsByUserEntityAndRecordEntity(userEntity, recordEntity);
+        boolean result = userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(result).isFalse();
@@ -173,7 +173,7 @@ class UserRecordLikeRepositoryTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        boolean result = userRecordLikeRepository.existsByUserEntityAndRecordEntity(null, recordEntity);
+        boolean result = userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(null, recordEntity.getId());
 
         //then
         Assertions.assertThat(result).isFalse();
@@ -222,7 +222,7 @@ class UserRecordLikeRepositoryTest {
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when
-        userRecordLikeRepository.softDelete(userRecordLikeEntity1);
+        userRecordLikeRepository.softDeleteById(userRecordLikeEntity1.getId());
 
         //then
         Assertions.assertThat(userRecordLikeRepository.findAll())
@@ -244,10 +244,10 @@ class UserRecordLikeRepositoryTest {
 
         UserRecordLikeEntity userRecordLikeEntity = userRecordLikeRepository.save(createUserRecordLikeEntity(other, recordEntity));
 
-        userRecordLikeRepository.softDelete(userRecordLikeEntity);
+        userRecordLikeRepository.delete(userRecordLikeEntity);
 
         //when
-        boolean result = userRecordLikeRepository.existsByUserEntityAndRecordEntity(userEntity, recordEntity);
+        boolean result = userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(result).isFalse();

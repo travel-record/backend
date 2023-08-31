@@ -32,13 +32,13 @@ public class UserRecordLikeService {
 
         RecordEntity recordEntity = findRecordEntityBy(recordId);
 
-        return userRecordLikeRepository.findUserRecordLikeEntityByUserEntityAndRecordEntity(userEntity, recordEntity)
+        return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
                 .map(this::unlike)
                 .orElseGet(() -> like(userEntity, recordEntity));
     }
 
     private UserRecordLikeResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
-        userRecordLikeRepository.softDelete(userRecordLikeEntity);
+        userRecordLikeRepository.softDeleteById(userRecordLikeEntity.getId());
         return createUserRecordLikeResponse(false);
     }
 

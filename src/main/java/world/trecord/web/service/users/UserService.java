@@ -77,7 +77,7 @@ public class UserService {
     public UserRecordLikeListResponse getUserRecordLikeList(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikedRecordsByUserEntity(userEntity);
+        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
 
         return UserRecordLikeListResponse.builder()
                 .projectionList(projectionList)

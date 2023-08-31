@@ -206,7 +206,7 @@ class UserServiceTest {
 
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
-        userRecordLikeRepository.softDelete(userRecordLikeEntity2);
+        userRecordLikeRepository.softDeleteById(userRecordLikeEntity2.getId());
 
         //when
         UserRecordLikeListResponse response = userService.getUserRecordLikeList(other.getId());
