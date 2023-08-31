@@ -1,6 +1,5 @@
 package world.trecord.domain.notification;
 
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,10 +12,8 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
     boolean existsByUsersToEntityIdAndStatus(Long userId, NotificationStatus status);
 
-    @EntityGraph(attributePaths = {"usersFromEntity", "commentEntity"})
     List<NotificationEntity> findByUsersToEntityIdOrderByCreatedDateTimeDesc(Long userToEntityId);
-
-    @EntityGraph(attributePaths = {"usersFromEntity", "commentEntity"})
+    
     List<NotificationEntity> findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(Long userToEntityId, NotificationType type);
 
     @Modifying(clearAutomatically = true)
@@ -28,8 +25,8 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
                                          @Param("newStatus") NotificationStatus newStatus);
 
     @Modifying
-    @Query("UPDATE NotificationEntity ne " +
-            "SET ne.deletedDateTime = NOW() " +
-            "where ne.recordEntity.id = :recordId")
+    @Query(value = "UPDATE notification " +
+            "SET deleted_date_time = NOW() " +
+            "WHERE JSON_EXTRACT(args, '$.recordId') = :recordId", nativeQuery = true)
     void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
 }

@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -13,6 +12,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
@@ -22,8 +22,7 @@ import world.trecord.web.service.comment.response.CommentUpdateResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@IntegrationTestSupport
-class CommentServiceTest {
+class CommentServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -144,7 +143,7 @@ class CommentServiceTest {
                 .extracting("recordId", "commentId", "content")
                 .containsExactly(recordEntity.getId(), commentEntity.getId(), changedContent);
     }
-    
+
     @Test
     @DisplayName("존재하지 않는 댓글을 수정하려고 하면 예외가 발생한다")
     void updateCommentWithNotExistingCommentIdTest() throws Exception {

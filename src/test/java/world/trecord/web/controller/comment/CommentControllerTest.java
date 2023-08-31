@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import world.trecord.MockMvcTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -16,6 +15,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.MockMvcContainerBaseTest;
 import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
@@ -30,8 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
 import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_COMMENT;
 
-@MockMvcTestSupport
-class CommentControllerTest {
+class CommentControllerTest extends MockMvcContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

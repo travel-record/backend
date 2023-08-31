@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
@@ -18,8 +18,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@IntegrationTestSupport
-class CommentRepositoryTest {
+class CommentRepositoryTest extends IntegrationContainerBaseTest {
 
     @Autowired
     CommentRepository commentRepository;

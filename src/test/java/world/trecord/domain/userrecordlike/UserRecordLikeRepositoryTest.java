@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -19,8 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@IntegrationTestSupport
-class UserRecordLikeRepositoryTest {
+class UserRecordLikeRepositoryTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;

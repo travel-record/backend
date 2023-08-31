@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -15,6 +14,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
@@ -29,8 +29,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.web.exception.CustomExceptionError.*;
 
-@IntegrationTestSupport
-class RecordServiceTest {
+class RecordServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     RecordService recordService;

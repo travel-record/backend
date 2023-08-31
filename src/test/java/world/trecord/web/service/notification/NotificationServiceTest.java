@@ -4,20 +4,17 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.NotificationRepository;
-import world.trecord.domain.notification.NotificationStatus;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.*;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
@@ -33,8 +30,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
-@IntegrationTestSupport
-class NotificationServiceTest {
+class NotificationServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -82,9 +78,9 @@ class NotificationServiceTest {
         //then
         Assertions.assertThat(notificationRepository.findAll())
                 .hasSize(1)
-                .extracting("type", "status", "usersToEntity", "usersFromEntity", "commentEntity", "recordEntity")
+                .extracting("type", "status")
                 .containsExactly(
-                        tuple(COMMENT, UNREAD, author, commenter, commentEntity, recordEntity)
+                        tuple(COMMENT, UNREAD)
                 );
     }
 
@@ -248,9 +244,9 @@ class NotificationServiceTest {
         //then
         Assertions.assertThat(notificationRepository.findAll())
                 .hasSize(1)
-                .extracting("type", "status", "usersToEntity", "usersFromEntity", "recordEntity")
+                .extracting("type", "status")
                 .containsExactly(
-                        tuple(RECORD_LIKE, UNREAD, writer, viewer, recordEntity)
+                        tuple(RECORD_LIKE, UNREAD)
                 );
     }
 
@@ -401,13 +397,17 @@ class NotificationServiceTest {
     }
 
     private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus notificationStatus, NotificationType notificationType) {
-        return NotificationEntity.builder()
-                .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
+        NotificationArgs args = NotificationArgs.builder()
                 .commentEntity(commentEntity)
                 .recordEntity(recordEntity)
+                .userFromEntity(userFromEntity)
+                .build();
+
+        return NotificationEntity.builder()
+                .usersToEntity(userToEntity)
                 .type(notificationType)
                 .status(notificationStatus)
+                .args(args)
                 .build();
     }
 }

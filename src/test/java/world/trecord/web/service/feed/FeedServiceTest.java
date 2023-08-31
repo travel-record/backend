@@ -4,13 +4,13 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
@@ -26,8 +26,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@IntegrationTestSupport
-class FeedServiceTest {
+class FeedServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     FeedRepository feedRepository;

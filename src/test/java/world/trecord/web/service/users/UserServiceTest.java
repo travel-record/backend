@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -16,6 +15,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.security.UserContext;
@@ -31,8 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
 
-@IntegrationTestSupport
-class UserServiceTest {
+class UserServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserService userService;

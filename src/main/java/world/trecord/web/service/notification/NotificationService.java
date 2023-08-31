@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
+import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationType;
@@ -87,23 +88,31 @@ public class NotificationService {
     }
 
     private NotificationEntity createRecordLikeNotificationEntity(RecordEntity recordEntity, UserEntity userToEntity, UserEntity userFromEntity) {
-        return NotificationEntity.builder()
+        NotificationArgs args = NotificationArgs.builder()
                 .recordEntity(recordEntity)
+                .userFromEntity(userFromEntity)
+                .build();
+
+        return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
+                .args(args)
                 .type(RECORD_LIKE)
                 .status(UNREAD)
                 .build();
     }
 
     private NotificationEntity createCommentNotificationEntity(CommentEntity commentEntity, UserEntity userToEntity, UserEntity userFromEntity) {
-        return NotificationEntity.builder()
-                .recordEntity(commentEntity.getRecordEntity())
+        NotificationArgs args = NotificationArgs.builder()
                 .commentEntity(commentEntity)
+                .recordEntity(commentEntity.getRecordEntity())
+                .userFromEntity(userFromEntity)
+                .build();
+
+        return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
-                .usersFromEntity(userFromEntity)
                 .type(COMMENT)
                 .status(UNREAD)
+                .args(args)
                 .build();
     }
 }

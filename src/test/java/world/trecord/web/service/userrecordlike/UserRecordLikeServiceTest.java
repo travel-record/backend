@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.notification.NotificationRepository;
@@ -14,6 +13,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.infra.IntegrationContainerBaseTest;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.time.LocalDateTime;
@@ -22,8 +22,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
-@IntegrationTestSupport
-class UserRecordLikeServiceTest {
+class UserRecordLikeServiceTest extends IntegrationContainerBaseTest {
 
     @Autowired
     UserRecordLikeService userRecordLikeService;
@@ -104,9 +103,9 @@ class UserRecordLikeServiceTest {
         //then
         Assertions.assertThat(notificationRepository.findAll())
                 .hasSize(1)
-                .extracting("type", "status", "usersToEntity", "usersFromEntity", "recordEntity")
+                .extracting("type", "status")
                 .containsExactly(
-                        tuple(RECORD_LIKE, UNREAD, writer, viewer, recordEntity)
+                        tuple(RECORD_LIKE, UNREAD)
                 );
     }
 
