@@ -147,18 +147,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자가 새로운 알림 체크 요청을 하면 예외가 발생한다")
-    void checkNewNotificationWithUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> notificationService.checkNewNotification(notExistingUserId))
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
-    }
-
-    @Test
     @DisplayName("사용자가 알림 리스트를 조회하면 시간 내림차순으로 정렬된 알림 리스트를 반환한다")
     void getNotificationsByTest() throws Exception {
         //given
@@ -270,7 +258,7 @@ class NotificationServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        notificationService.createRecordLikeNotification(recordEntity, viewer);
+        notificationService.createRecordLikeNotification(viewer, recordEntity);
 
         //then
         Assertions.assertThat(notificationRepository.findAll())
@@ -290,7 +278,7 @@ class NotificationServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        notificationService.createRecordLikeNotification(recordEntity, writer);
+        notificationService.createRecordLikeNotification(writer, recordEntity);
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();

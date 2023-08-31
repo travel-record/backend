@@ -10,6 +10,7 @@ import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -52,6 +53,10 @@ public class UserEntity extends BaseEntity {
         this.nickname = updateEntity.getNickname();
         this.imageUrl = updateEntity.getImageUrl();
         this.introduction = updateEntity.getIntroduction();
+    }
+
+    public boolean isEqualTo(UserEntity otherEntity) {
+        return Objects.equals(this.id, otherEntity.getId());
     }
 
     public String getRole() {

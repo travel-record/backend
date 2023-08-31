@@ -46,7 +46,7 @@ public class UserRecordLikeService {
         saveUserRecordLikeEntity(userEntity, recordEntity);
 
         // TODO async 처리
-        notificationService.createRecordLikeNotification(recordEntity, userEntity);
+        notificationService.createRecordLikeNotification(userEntity, recordEntity);
 
         return createUserRecordLikeResponse(true);
     }

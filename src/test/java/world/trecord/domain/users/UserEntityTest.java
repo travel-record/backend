@@ -3,6 +3,7 @@ package world.trecord.domain.users;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 class UserEntityTest {
 
@@ -33,5 +34,39 @@ class UserEntityTest {
         Assertions.assertThat(userEntity)
                 .extracting("nickname", "imageUrl", "introduction")
                 .containsExactly(updatedNickname, updatedImageUrl, updatedIntroduction);
+    }
+
+    @Test
+    @DisplayName("같은 id를 가지면 true를 반환한다")
+    void isEqualToReturnsTrueTest() throws Exception {
+        //given
+        UserEntity userEntity1 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity1, "id", 1L);
+
+        UserEntity userEntity2 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity2, "id", 1L);
+
+        //when
+        boolean result = userEntity1.isEqualTo(userEntity2);
+
+        //then
+        Assertions.assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("다른 id를 가지면 false를 반환한다")
+    void isEqualToReturnsFalseTest() throws Exception {
+        //given
+        UserEntity userEntity1 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity1, "id", 1L);
+
+        UserEntity userEntity2 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity2, "id", 2L);
+
+        //when
+        boolean result = userEntity1.isEqualTo(userEntity2);
+
+        //then
+        Assertions.assertThat(result).isFalse();
     }
 }
