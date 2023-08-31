@@ -62,7 +62,6 @@ public class NotificationEntity extends BaseEntity {
         this.usersFromEntity = usersFromEntity;
         this.commentEntity = commentEntity;
         this.recordEntity = recordEntity;
-        this.deletedDateTime = null;
     }
 
     public String getNotificationContent() {

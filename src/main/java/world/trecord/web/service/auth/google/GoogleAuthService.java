@@ -18,12 +18,6 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AU
 @Service
 public class GoogleAuthService {
 
-//    @Value("${google.client-id}")
-//    private String googleClientId;
-//
-//    @Value("${google.client-secret}")
-//    private String googleClientSecret;
-
     private final GoogleProperties googleProperties;
     private static final String BEARER = "Bearer ";
     private static final String GRANT_TYPE = "authorization_code";
@@ -36,7 +30,7 @@ public class GoogleAuthService {
         return getEmail(token);
     }
 
-    private String getToken(String authorizationCode, String redirectionUri) throws CustomException {
+    private String getToken(String authorizationCode, String redirectionUri) {
         GoogleTokenRequest request = GoogleTokenRequest.builder()
                 .client_id(googleProperties.getClientId())
                 .client_secret(googleProperties.getClientSecret())

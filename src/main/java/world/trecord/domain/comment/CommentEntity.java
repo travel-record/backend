@@ -53,7 +53,6 @@ public class CommentEntity extends BaseEntity {
     @Builder
     private CommentEntity(String content, UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         this.content = content;
-        this.deletedDateTime = null;
         this.userEntity = userEntity;
         if (recordEntity != null) {
             this.recordEntity = recordEntity;

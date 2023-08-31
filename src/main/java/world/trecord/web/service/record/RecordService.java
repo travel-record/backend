@@ -83,6 +83,7 @@ public class RecordService {
                 .build();
     }
 
+    // TODO 로직 변경
     @Transactional
     public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
         RecordEntity originalRecord = findRecordEntityBy(request.getOriginalRecordId());
@@ -96,6 +97,8 @@ public class RecordService {
         checkPermissionOverFeed(feedEntity, userId);
 
         originalRecord.swapSequenceWith(targetRecord);
+
+        recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
 
         return RecordSequenceSwapResponse.builder()
                 .originalRecordId(targetRecord.getId())

@@ -47,7 +47,6 @@ public class UserEntity extends BaseEntity {
         this.nickname = nickname;
         this.imageUrl = imageUrl;
         this.introduction = introduction;
-        this.deletedDateTime = null;
     }
 
     public void update(UserEntity updateEntity) {

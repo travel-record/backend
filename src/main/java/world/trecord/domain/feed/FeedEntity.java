@@ -77,7 +77,6 @@ public class FeedEntity extends BaseEntity {
         this.place = place;
         this.satisfaction = satisfaction;
         this.userEntity = userEntity;
-        this.deletedDateTime = null;
     }
 
     public void addRecordEntity(RecordEntity recordEntity) {
