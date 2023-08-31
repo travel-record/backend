@@ -64,6 +64,6 @@ public class RecordController {
 
     @PostMapping("/{recordId}/like")
     public ApiResponse<UserRecordLikeResponse> toggleLike(@PathVariable("recordId") Long recordId, @CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userRecordLikeService.toggleLike(recordId, userEntity.getId()));
+        return ApiResponse.ok(userRecordLikeService.toggleLike(userEntity.getId(), recordId));
     }
 }
