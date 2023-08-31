@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import world.trecord.IntegrationTestSupport;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
@@ -17,6 +18,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
+import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
 import world.trecord.web.service.users.response.UserRecordLikeListResponse;
@@ -229,6 +231,30 @@ class UserServiceTest {
 
         //then
         Assertions.assertThat(response.getRecords()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("사용자를 조회하여 UserContext로 반환한다")
+    void loadUserContextByUserIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
+        //when
+        UserContext userContext = userService.loadUserContextByUserId(userEntity.getId());
+
+        //then
+        Assertions.assertThat(userContext.getUserEntity()).isEqualTo(userEntity);
+    }
+
+    @Test
+    @DisplayName("사용자가 존재하지 않으면 UsernameNotFoundException 예외가 발생한다")
+    void loadUserContextByUserIdWhenUserNotFoundTest() throws Exception {
+        //given
+        long notExistingUserId = -1L;
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> userService.loadUserContextByUserId(notExistingUserId))
+                .isInstanceOf(UsernameNotFoundException.class);
     }
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
