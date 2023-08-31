@@ -57,7 +57,7 @@ class UserRecordLikeServiceTest {
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
 
         //when
-        UserRecordLikeResponse response = userRecordLikeService.toggleLike(recordEntity.getId(), userEntity.getId());
+        UserRecordLikeResponse response = userRecordLikeService.toggleLike(userEntity.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.isLiked()).isFalse();
@@ -76,7 +76,7 @@ class UserRecordLikeServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        UserRecordLikeResponse response = userRecordLikeService.toggleLike(recordEntity.getId(), userEntity.getId());
+        UserRecordLikeResponse response = userRecordLikeService.toggleLike(userEntity.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.isLiked()).isTrue();
@@ -99,7 +99,7 @@ class UserRecordLikeServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        userRecordLikeService.toggleLike(recordEntity.getId(), viewer.getId());
+        userRecordLikeService.toggleLike(viewer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll())
@@ -120,7 +120,7 @@ class UserRecordLikeServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        userRecordLikeService.toggleLike(recordEntity.getId(), writer.getId());
+        userRecordLikeService.toggleLike(writer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
@@ -12,6 +11,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -35,11 +35,8 @@ public class AuthControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
-    @Value("${jwt.token.expired-time-ms}")
-    private Long expiredTimeMs;
+    @Autowired
+    JwtProperties jwtProperties;
 
     @Test
     @DisplayName("POST /api/v1/auth/google-login - 실패 (파라미터 보내지 않음)")
@@ -71,7 +68,7 @@ public class AuthControllerTest {
                 .build();
         userRepository.save(userEntity);
 
-        String refreshToken = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String refreshToken = jwtTokenHandler.generateToken(userEntity.getId(), jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
 
         RefreshTokenRequest request = RefreshTokenRequest.builder()
                 .refreshToken(refreshToken)

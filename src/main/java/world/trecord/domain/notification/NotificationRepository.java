@@ -26,7 +26,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
                                          @Param("oldStatus") NotificationStatus oldStatus,
                                          @Param("newStatus") NotificationStatus newStatus);
 
-    List<NotificationEntity> findByUsersToEntityAndTypeOrderByCreatedDateTimeDesc(UserEntity userToEntity, NotificationType type);
+    List<NotificationEntity> findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(Long userToEntityId, NotificationType type);
 
     @Modifying
     @Query("UPDATE NotificationEntity ne " +

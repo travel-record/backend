@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import world.trecord.IntegrationTestSupport;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Optional;
 
 @IntegrationTestSupport
 class UserRepositoryTest {
@@ -26,11 +26,15 @@ class UserRepositoryTest {
         userRepository.save(userEntity);
 
         //when
-        UserEntity savedEntity = userRepository.findByEmail(email);
+        Optional<UserEntity> optionalUser = userRepository.findByEmail(email);
 
         //then
-        assertThat(savedEntity.getId()).isNotNull();
-        assertThat(savedEntity.getEmail()).isEqualTo(email);
+        Assertions.assertThat(optionalUser)
+                .isPresent()
+                .hasValueSatisfying(user -> {
+                    Assertions.assertThat(user.getId()).isNotNull();
+                    Assertions.assertThat(user.getEmail()).isEqualTo(email);
+                });
     }
 
     @Test

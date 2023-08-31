@@ -30,14 +30,14 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
+    // TODO async 처리
     @Transactional
     public void createCommentNotification(CommentEntity commentEntity) {
-
         UserEntity userToEntity = commentEntity.getRecordEntity().getFeedEntity().getUserEntity();
 
         UserEntity userFromEntity = commentEntity.getUserEntity();
 
-        if (isUserCommentingOnSelf(userToEntity, userFromEntity)) {
+        if (userToEntity.isEqualTo(userFromEntity)) {
             return;
         }
 
@@ -46,12 +46,12 @@ public class NotificationService {
         notificationRepository.save(notificationEntity);
     }
 
+    // TODO async 처리
     @Transactional
-    public void createRecordLikeNotification(RecordEntity recordEntity, UserEntity userFromEntity) {
-
+    public void createRecordLikeNotification(UserEntity userFromEntity, RecordEntity recordEntity) {
         UserEntity userToEntity = recordEntity.getFeedEntity().getUserEntity();
 
-        if (isUserLikeOnSelf(userToEntity, userFromEntity)) {
+        if (userToEntity.isEqualTo(userFromEntity)) {
             return;
         }
 
@@ -61,9 +61,7 @@ public class NotificationService {
     }
 
     public CheckNewNotificationResponse checkNewNotification(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
-
-        boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userEntity.getId(), UNREAD);
+        boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userId, UNREAD);
 
         return CheckNewNotificationResponse.builder()
                 .hasNewNotification(hasNewNotification)
@@ -72,7 +70,7 @@ public class NotificationService {
 
     @Transactional
     public NotificationListResponse getNotifications(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
 
         List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityOrderByCreatedDateTimeDesc(userEntity);
 
@@ -87,27 +85,13 @@ public class NotificationService {
     }
 
     public NotificationListResponse getNotifications(Long userId, NotificationType type) {
-        UserEntity userEntity = findUserEntityBy(userId);
-
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityAndTypeOrderByCreatedDateTimeDesc(userEntity, type);
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userId, type);
 
         return NotificationListResponse.builder()
                 .notificationEntities(notificationList)
                 .build();
     }
-
-    private UserEntity findUserEntityBy(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
-    }
-
-    private boolean isUserLikeOnSelf(UserEntity userToEntity, UserEntity userFromEntity) {
-        return userToEntity.equals(userFromEntity);
-    }
-
-    private boolean isUserCommentingOnSelf(UserEntity userToEntity, UserEntity userFromEntity) {
-        return userToEntity.equals(userFromEntity);
-    }
-
+    
     private NotificationEntity createRecordLikeNotificationEntity(RecordEntity recordEntity, UserEntity userToEntity, UserEntity userFromEntity) {
         return NotificationEntity.builder()
                 .recordEntity(recordEntity)

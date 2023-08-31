@@ -71,7 +71,7 @@ class RecordServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), writer.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(writer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -106,7 +106,7 @@ class RecordServiceTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), commenter1.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(commenter1.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -141,7 +141,7 @@ class RecordServiceTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(recordEntity.getId(), null);
+        RecordInfoResponse recordInfoResponse = recordService.getRecordInfo(null, recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -235,20 +235,6 @@ class RecordServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자 아이디로 기록을 생성하려고 하면 예외가 발생한다")
-    void createRecordWithNotExistingUserIdTest() throws Exception {
-        //given
-        RecordCreateRequest request = RecordCreateRequest.builder()
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.createRecord(0L, request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_USER);
-    }
-
-    @Test
     @DisplayName("존재하지 않는 피드 아이디로 기록을 생성하려고 하면 예외가 발생한다")
     void createRecordWithNotExistingFeedIdTest() throws Exception {
         //given
@@ -321,7 +307,7 @@ class RecordServiceTest {
                 .build();
 
         //when
-        RecordInfoResponse response = recordService.updateRecord(writer.getId(), recordEntity.getId(), request);
+        recordService.updateRecord(writer.getId(), recordEntity.getId(), request);
 
         //then
         Assertions.assertThat(recordRepository.findById(recordEntity.getId()))
@@ -331,22 +317,6 @@ class RecordServiceTest {
                             .extracting("title", "date", "place", "content", "feeling", "weather", "companion", "transportation")
                             .containsExactly(changedTitle, changedDate, changedPlace, changedContent, changedFeeling, changedWeather, changedCompanion, changedTransportation);
                 });
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 사용자 아이디로 기록을 수정하려고 하면 예외가 발생한다")
-    void updateRecordWithNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-        Long notExistingRecordId = 0L;
-        RecordUpdateRequest request = RecordUpdateRequest.builder()
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.updateRecord(notExistingUserId, notExistingRecordId, request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_USER);
     }
 
     @Test
@@ -419,20 +389,6 @@ class RecordServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않은 사용자가 기록을 삭제하려고 하면 예외가 발생한다")
-    void deleteRecordWithNotExistingUserIdTest() throws Exception {
-        //given
-        Long notExistingUserId = 0L;
-        Long notExistingRecordId = 0L;
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> recordService.deleteRecord(notExistingUserId, notExistingRecordId))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(NOT_EXISTING_USER);
-    }
-
-    @Test
     @DisplayName("존재하지 않는 기록 아이디로 기록을 삭제하려고 하면 예외가 발생한다")
     void deleteRecordWithNotExistingFeedIdTest() throws Exception {
         //given
@@ -490,7 +446,7 @@ class RecordServiceTest {
         userRecordLikeRepository.save(createUserRecordLikeEntity(viewer, recordEntity));
 
         //when
-        RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), viewer.getId());
+        RecordInfoResponse response = recordService.getRecordInfo(viewer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isTrue();
@@ -512,7 +468,7 @@ class RecordServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
-        RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), viewer.getId());
+        RecordInfoResponse response = recordService.getRecordInfo(viewer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();
@@ -530,7 +486,7 @@ class RecordServiceTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
-        RecordInfoResponse response = recordService.getRecordInfo(recordEntity.getId(), null);
+        RecordInfoResponse response = recordService.getRecordInfo(null, recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();

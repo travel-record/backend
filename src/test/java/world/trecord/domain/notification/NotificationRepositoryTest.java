@@ -134,7 +134,7 @@ class NotificationRepositoryTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
-        List<NotificationEntity> notificationEntities = notificationRepository.findByUsersToEntityAndTypeOrderByCreatedDateTimeDesc(userEntity, RECORD_LIKE);
+        List<NotificationEntity> notificationEntities = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userEntity.getId(), RECORD_LIKE);
 
         //then
         Assertions.assertThat(notificationEntities)
@@ -159,7 +159,7 @@ class NotificationRepositoryTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
-        List<NotificationEntity> notificationEntities = notificationRepository.findByUsersToEntityAndTypeOrderByCreatedDateTimeDesc(userEntity, COMMENT);
+        List<NotificationEntity> notificationEntities = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userEntity.getId(), COMMENT);
 
         //then
         Assertions.assertThat(notificationEntities).isEmpty();

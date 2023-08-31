@@ -53,7 +53,7 @@ public class UserService {
     public UserInfoResponse updateUserInfo(Long userId, UserUpdateRequest updateRequest) {
         UserEntity userEntity = findUserEntityBy(userId);
 
-        if (isNicknameChangedAndDuplicated(userEntity.getNickname(), updateRequest.getNickname())) {
+        if (isNicknameUpdatedAndExists(userEntity.getNickname(), updateRequest.getNickname())) {
             throw new CustomException(EXISTING_NICKNAME);
         }
 
@@ -94,7 +94,7 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
     }
 
-    private boolean isNicknameChangedAndDuplicated(String originNickname, String requestNickname) {
+    private boolean isNicknameUpdatedAndExists(String originNickname, String requestNickname) {
         return (originNickname != null) && (!originNickname.equals(requestNickname)) && (userRepository.existsByNickname(requestNickname));
     }
 }

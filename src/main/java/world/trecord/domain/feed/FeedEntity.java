@@ -112,4 +112,8 @@ public class FeedEntity extends BaseEntity {
     public LocalDate convertEndAtToLocalDate() {
         return this.endAt != null ? this.endAt.toLocalDate() : null;
     }
+
+    public boolean isManagedBy(Long userId) {
+        return Objects.equals(this.userEntity.getId(), userId);
+    }
 }

@@ -7,29 +7,33 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 import world.trecord.web.client.feign.client.GoogleTokenFeignClient;
 import world.trecord.web.client.feign.client.GoogleUserInfoFeignClient;
 import world.trecord.web.client.feign.client.request.GoogleTokenRequest;
 import world.trecord.web.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.web.exception.CustomException;
+import world.trecord.web.properties.GoogleProperties;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @ExtendWith(MockitoExtension.class)
-class GoogleAuthManagerTest {
+class GoogleAuthServiceTest {
 
     @InjectMocks
-    private GoogleAuthManager googleAuthManager;
+    GoogleAuthService googleAuthService;
 
     @Mock
-    private GoogleTokenFeignClient googleTokenFeignClient;
+    GoogleTokenFeignClient googleTokenFeignClient;
 
     @Mock
-    private GoogleUserInfoFeignClient googleUserInfoFeignClient;
+    GoogleUserInfoFeignClient googleUserInfoFeignClient;
+
+    @Mock
+    GoogleProperties googleProperties;
+
 
     @Test
     @DisplayName("올바른 인가 코드와 리디렉션 URI로 구글 서버로 요청하여 사용자의 정보를 얻어와서 반환한다")
@@ -46,11 +50,13 @@ class GoogleAuthManagerTest {
         GoogleUserInfoResponse mockUserInfoResponse = new GoogleUserInfoResponse();
         mockUserInfoResponse.setEmail(expectedEmail);
 
-        when(googleTokenFeignClient.call(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
-        when(googleUserInfoFeignClient.call("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(mockUserInfoResponse));
+        when(googleProperties.getClientId()).thenReturn("client id");
+        when(googleProperties.getClientSecret()).thenReturn("client secret");
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(mockTokenResponse);
+        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(mockUserInfoResponse);
 
         //when
-        String resultEmail = googleAuthManager.getUserEmail(authorizationCode, redirectionUri);
+        String resultEmail = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
 
         //then
         Assertions.assertThat(expectedEmail).isEqualTo(resultEmail);
@@ -63,10 +69,10 @@ class GoogleAuthManagerTest {
         String authorizationCode = "testCode";
         String redirectionUri = "http://test.com";
 
-        when(googleTokenFeignClient.call(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(null));
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(null);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> googleAuthManager.getUserEmail(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);
@@ -83,11 +89,11 @@ class GoogleAuthManagerTest {
         GoogleTokenResponse mockTokenResponse = new GoogleTokenResponse();
         mockTokenResponse.setAccess_token(mockAccessToken);
 
-        when(googleTokenFeignClient.call(any(GoogleTokenRequest.class))).thenReturn(ResponseEntity.ok(mockTokenResponse));
-        when(googleUserInfoFeignClient.call("Bearer " + mockAccessToken)).thenReturn(ResponseEntity.ok(null));
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(mockTokenResponse);
+        when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(null);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> googleAuthManager.getUserEmail(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);

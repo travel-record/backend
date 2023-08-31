@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
@@ -15,6 +14,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
@@ -48,11 +48,8 @@ class FeedControllerTest {
     @Autowired
     RecordRepository recordRepository;
 
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
-    @Value("${jwt.token.expired-time-ms}")
-    private Long expiredTimeMs;
+    @Autowired
+    JwtProperties jwtProperties;
 
     @Test
     @DisplayName("GET /api/v1/feeds - 성공 (빈 배열로 리턴)")
@@ -64,7 +61,7 @@ class FeedControllerTest {
 
         UserEntity savedUserEntity = userRepository.save(userEntity);
 
-        String token = jwtTokenHandler.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(savedUserEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -93,7 +90,7 @@ class FeedControllerTest {
 
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
-        String token = jwtTokenHandler.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(savedUserEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -115,7 +112,7 @@ class FeedControllerTest {
     @DisplayName("GET /api/v1/feeds - 실패 (사용자가 존재하지 않음)")
     void getFeedListNotExistingUserTest() throws Exception {
         //given
-        String token = jwtTokenHandler.generateToken(0L, secretKey, expiredTimeMs);
+        String token = createToken(0L);
 
         //when //then
         mockMvc.perform(
@@ -138,7 +135,7 @@ class FeedControllerTest {
 
         UserEntity savedUserEntity = userRepository.save(userEntity);
 
-        String token = jwtTokenHandler.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(savedUserEntity.getId());
 
         String feedName = "feed name";
         String imageUrl = "image";
@@ -182,7 +179,7 @@ class FeedControllerTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -225,7 +222,7 @@ class FeedControllerTest {
                 .build();
         UserEntity savedUserEntity = userRepository.save(userEntity);
 
-        String token = jwtTokenHandler.generateToken(savedUserEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(savedUserEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -240,7 +237,7 @@ class FeedControllerTest {
                                 .header("Authorization", token)
                 )
                 .andExpect(status().isOk());
-        
+
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 
@@ -264,5 +261,9 @@ class FeedControllerTest {
                 .transportation(satisfaction)
                 .feeling(feeling)
                 .build();
+    }
+
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
 }

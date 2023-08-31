@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.MockMvcTestSupport;
@@ -18,6 +17,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 
@@ -57,11 +57,8 @@ class UserControllerTest {
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
 
-    @Value("${jwt.secret-key}")
-    private String secretKey;
-
-    @Value("${jwt.token.expired-time-ms}")
-    private Long expiredTimeMs;
+    @Autowired
+    JwtProperties jwtProperties;
 
     @Test
     @DisplayName("GET /api/v1/users - 성공")
@@ -80,7 +77,7 @@ class UserControllerTest {
                 .build();
 
         UserEntity saveUser = userRepository.save(userEntity);
-        String token = jwtTokenHandler.generateToken(saveUser.getId(), secretKey, expiredTimeMs);
+        String token = createToken(saveUser.getId());
 
         //when //then
         mockMvc.perform(
@@ -98,7 +95,7 @@ class UserControllerTest {
     void getUserInfoWithNotExistingTokenTest() throws Exception {
         //given
         long notExistingUserId = -1L;
-        String token = jwtTokenHandler.generateToken(notExistingUserId, secretKey, expiredTimeMs);
+        String token = jwtTokenHandler.generateToken(notExistingUserId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
 
         //when //then
         mockMvc.perform(
@@ -126,7 +123,7 @@ class UserControllerTest {
 
         UserEntity saveUser = userRepository.save(userEntity);
 
-        String token = jwtTokenHandler.generateToken(saveUser.getId(), secretKey, expiredTimeMs);
+        String token = createToken(saveUser.getId());
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(nickname)
@@ -168,7 +165,7 @@ class UserControllerTest {
 
         userRepository.save(requestUserEntity);
 
-        String token = jwtTokenHandler.generateToken(requestUserEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(requestUserEntity.getId());
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(duplicatedNickname)
@@ -238,7 +235,7 @@ class UserControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
@@ -289,7 +286,7 @@ class UserControllerTest {
                 .email("test@email.com")
                 .build());
 
-        String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
+        String token = createToken(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -348,6 +345,10 @@ class UserControllerTest {
                 .startAt(startAt)
                 .endAt(endAt)
                 .build();
+    }
+
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
 
     private UserRecordLikeEntity createUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.domain.record.RecordEntity;
+import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -116,6 +117,47 @@ class FeedEntityTest {
 
         //when
         boolean result = feedEntity1.isEqualTo(feedEntity2);
+
+        //then
+        Assertions.assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("피드 관리자이면 true를 반환한다")
+    void isManagedByReturnsTrueTest() throws Exception {
+        //given
+        UserEntity userEntity = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
+
+        FeedEntity feedEntity = FeedEntity
+                .builder()
+                .userEntity(userEntity)
+                .build();
+
+        //when
+        boolean result = feedEntity.isManagedBy(userEntity.getId());
+
+        //then
+        Assertions.assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("피드 관리자가 아니면 false를 반환한다")
+    void isManagedByReturnsFalseTest() throws Exception {
+        //given
+        UserEntity userEntity1 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity1, "id", 1L);
+
+        UserEntity userEntity2 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity2, "id", 2L);
+
+        FeedEntity feedEntity = FeedEntity
+                .builder()
+                .userEntity(userEntity2)
+                .build();
+
+        //when
+        boolean result = feedEntity.isManagedBy(userEntity1.getId());
 
         //then
         Assertions.assertThat(result).isFalse();

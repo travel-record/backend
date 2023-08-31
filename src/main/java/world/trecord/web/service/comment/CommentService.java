@@ -31,27 +31,24 @@ public class CommentService {
 
     @Transactional
     public void createComment(Long userId, CommentCreateRequest request) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
 
-        UserEntity userEntity = findUserEntityBy(userId);
-
-        RecordEntity recordEntity = findRecordEntityBy(request.getRecordId());
+        RecordEntity recordEntity = recordRepository.findById(request.getRecordId())
+                .orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
 
         CommentEntity parentCommentEntity = findParentCommentEntity(request.getParentId());
 
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
 
-        // TODO async 처리
         notificationService.createCommentNotification(commentEntity);
     }
 
     @Transactional
     public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
-
-        UserEntity userEntity = findUserEntityBy(userId);
-
         CommentEntity commentEntity = findCommentEntityWithUserEntityBy(commentId);
 
-        checkPermissionOverComment(userEntity, commentEntity);
+        checkPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
 
@@ -62,14 +59,12 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
-
-        UserEntity userEntity = findUserEntityBy(userId);
-
         CommentEntity commentEntity = findCommentEntityWithChildCommentEntitiesWith(commentId);
 
-        checkPermissionOverComment(userEntity, commentEntity);
+        checkPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntity(commentEntity);
+
         commentRepository.softDelete(commentEntity);
     }
 
@@ -87,16 +82,8 @@ public class CommentService {
         return commentRepository.findCommentEntityWithUserEntityById(commentId).orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
     }
 
-    private UserEntity findUserEntityBy(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
-    }
-
-    private RecordEntity findRecordEntityBy(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
-    }
-
-    private void checkPermissionOverComment(UserEntity userEntity, CommentEntity commentEntity) {
-        if (!userEntity.isCommenterOf(commentEntity)) {
+    private void checkPermissionOverComment(CommentEntity commentEntity, Long userId) {
+        if (!commentEntity.isCommenter(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }

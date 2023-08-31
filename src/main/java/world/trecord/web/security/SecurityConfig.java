@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.jwt.JwtTokenFilter;
 import world.trecord.web.security.jwt.JwtTokenHandler;
 import world.trecord.web.service.users.UserService;
@@ -30,6 +31,7 @@ import static org.springframework.http.HttpMethod.POST;
 @Configuration
 public class SecurityConfig {
 
+    private final JwtProperties jwtProperties;
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
     private final ObjectMapper objectMapper;
@@ -64,7 +66,7 @@ public class SecurityConfig {
                 "/api/v1/records/{recordId}", List.of(GET),
                 "/api/v1/records/{recordId}/comments", List.of(GET)
         );
-        return new JwtTokenFilter(jwtTokenHandler, userService, objectMapper, whitelistMap);
+        return new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, whitelistMap);
     }
 
     @Bean

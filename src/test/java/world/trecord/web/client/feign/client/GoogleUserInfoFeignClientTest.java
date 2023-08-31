@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import world.trecord.IntegrationTestSupport;
 import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.web.exception.CustomException;
@@ -37,10 +36,10 @@ class GoogleUserInfoFeignClientTest {
                         .withBody(responseBody)));
 
         //when
-        ResponseEntity<GoogleUserInfoResponse> response = client.call(validToken);
+        GoogleUserInfoResponse response = client.fetchUserInfo(validToken);
 
         //then
-        Assertions.assertThat(response.getBody().getEmail()).isEqualTo("sample@gmail.com");
+        Assertions.assertThat(response.getEmail()).isEqualTo("sample@gmail.com");
     }
 
     @Test
@@ -57,7 +56,7 @@ class GoogleUserInfoFeignClientTest {
                         .withBody(responseBody)));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> client.call("Bearer " + invalidToken))
+        Assertions.assertThatThrownBy(() -> client.fetchUserInfo("Bearer " + invalidToken))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);

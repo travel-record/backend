@@ -15,6 +15,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
+import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.UserService;
 
@@ -30,30 +31,33 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 class JwtTokenFilterMockTest {
 
     @Mock
-    private JwtTokenHandler jwtTokenHandler;
+    JwtTokenHandler jwtTokenHandler;
 
     @Mock
-    private UserService userService;
+    UserService userService;
 
     @Mock
-    private HttpServletRequest request;
+    HttpServletRequest request;
 
     @Mock
-    private HttpServletResponse response;
+    HttpServletResponse response;
 
     @Mock
-    private FilterChain filterChain;
+    FilterChain filterChain;
 
     @Spy
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
-    private JwtTokenFilter jwtTokenFilter;
+    @Spy
+    JwtProperties jwtProperties;
+
+    JwtTokenFilter jwtTokenFilter;
 
     @Test
     @DisplayName("올바른 토큰을 가지고 요청하면 filterchain.doFilter이 호출된다")
     void doFilterInternalWithValidTokenTest() throws Exception {
         //given
-        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
+        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
 
         String validToken = "validToken";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
@@ -75,7 +79,7 @@ class JwtTokenFilterMockTest {
     @DisplayName("올바르지 않은 토큰으로 요청하면 601 에러 응답 코드를 반환한다")
     void doFilterInternalWithInvalidTokenTest() throws Exception {
         //given
-        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
+        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
 
         String invalidToken = "invalidToken";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
@@ -106,7 +110,7 @@ class JwtTokenFilterMockTest {
     void doFilterInternalWithoutTokenToWhitelistUrlTest() throws Exception {
         //given
         String whiteListPath = "/whitelist";
-        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, objectMapper, Map.of(whiteListPath, List.of(HttpMethod.GET)));
+        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of(whiteListPath, List.of(HttpMethod.GET)));
 
         when(request.getHeader("Authorization")).thenReturn(null);
         when(request.getServletPath()).thenReturn(whiteListPath);
@@ -123,7 +127,7 @@ class JwtTokenFilterMockTest {
     @DisplayName("토큰 없이 보안 URL 리소스에 대해서 요청을 하면 601 에러 응답 코드를 반환한다")
     void doFilterInternalWithoutTokenToSecuritylistUrlTest() throws Exception {
         //given
-        jwtTokenFilter = new JwtTokenFilter(jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
+        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
 
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 

@@ -30,7 +30,7 @@ public class RecordController {
     @GetMapping("/{recordId}")
     public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable("recordId") Long recordId, @CurrentUser UserEntity userEntity) {
         Long viewerId = (userEntity != null) ? userEntity.getId() : null;
-        return ApiResponse.ok(recordService.getRecordInfo(recordId, viewerId));
+        return ApiResponse.ok(recordService.getRecordInfo(viewerId, recordId));
     }
 
     @GetMapping("/{recordId}/comments")
@@ -64,6 +64,6 @@ public class RecordController {
 
     @PostMapping("/{recordId}/like")
     public ApiResponse<UserRecordLikeResponse> toggleLike(@PathVariable("recordId") Long recordId, @CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userRecordLikeService.toggleLike(recordId, userEntity.getId()));
+        return ApiResponse.ok(userRecordLikeService.toggleLike(userEntity.getId(), recordId));
     }
 }
