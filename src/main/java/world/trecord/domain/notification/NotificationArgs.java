@@ -12,6 +12,7 @@ import world.trecord.domain.users.UserEntity;
 @Getter
 @Setter
 public class NotificationArgs {
+
     private Long userFromId;
     private String userFromNickname;
     private Long commentId;

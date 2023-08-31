@@ -32,28 +32,27 @@ repositories {
 }
 
 dependencies {
-    // springboot web
+    // Springboot web
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    // spring cloud
+    // Spring cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
-    // jwt
+    // Jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // data
+    // Data
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-    implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.5.2'
-    implementation 'com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations:2.15.2'
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.5.2' // for JsonType
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // lombok
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
