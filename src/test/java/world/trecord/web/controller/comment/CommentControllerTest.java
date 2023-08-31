@@ -264,8 +264,6 @@ class CommentControllerTest {
     void deleteCommentWithCommentIdNullTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         String token = jwtTokenHandler.generateToken(userEntity.getId(), secretKey, expiredTimeMs);
         String pathVariable = "Invalid path variable";

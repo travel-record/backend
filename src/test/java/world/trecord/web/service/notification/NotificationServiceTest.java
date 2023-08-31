@@ -120,7 +120,7 @@ class NotificationServiceTest {
         notificationRepository.save(notificationEntity);
 
         //when
-        CheckNewNotificationResponse response = notificationService.checkNewNotificationBy(userEntity.getId());
+        CheckNewNotificationResponse response = notificationService.checkNewNotification(userEntity.getId());
 
         //then
         Assertions.assertThat(response.isHasNewNotification()).isTrue();
@@ -140,7 +140,7 @@ class NotificationServiceTest {
         notificationRepository.save(notificationEntity);
 
         //when
-        CheckNewNotificationResponse response = notificationService.checkNewNotificationBy(userEntity.getId());
+        CheckNewNotificationResponse response = notificationService.checkNewNotification(userEntity.getId());
 
         //then
         Assertions.assertThat(response.isHasNewNotification()).isFalse();
@@ -153,7 +153,7 @@ class NotificationServiceTest {
         Long notExistingUserId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> notificationService.checkNewNotificationBy(notExistingUserId))
+        Assertions.assertThatThrownBy(() -> notificationService.checkNewNotification(notExistingUserId))
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
     }

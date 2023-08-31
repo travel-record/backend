@@ -60,7 +60,7 @@ public class NotificationService {
         notificationRepository.save(notificationEntity);
     }
 
-    public CheckNewNotificationResponse checkNewNotificationBy(Long userId) {
+    public CheckNewNotificationResponse checkNewNotification(Long userId) {
         UserEntity userEntity = findUserEntityBy(userId);
 
         boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userEntity.getId(), UNREAD);

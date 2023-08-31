@@ -64,4 +64,8 @@ public class UserEntity extends BaseEntity {
     public boolean isCommenterOf(CommentEntity commentEntity) {
         return Objects.equals(this.id, commentEntity.getUserEntity().getId());
     }
+
+    public String getRole() {
+        return Role.ROLE_USER.name();
+    }
 }

@@ -77,7 +77,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> runtimeException(RuntimeException exception) {
-        log.error("[RuntimeException in customExceptionHandler]", exception);
+        log.error("[RuntimeException] {}", exception.toString());
         CustomExceptionError error = CustomExceptionError.INTERNAL_SERVER_ERROR;
         ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(apiResponse);

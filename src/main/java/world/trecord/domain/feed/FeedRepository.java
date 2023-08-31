@@ -6,20 +6,17 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-import world.trecord.domain.users.UserEntity;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
-    List<FeedEntity> findByUserEntityOrderByStartAtDesc(UserEntity userEntity);
+    List<FeedEntity> findByUserEntityIdOrderByStartAtDesc(Long userId);
 
     @EntityGraph(attributePaths = {"userEntity"})
     Optional<FeedEntity> findFeedEntityWithUserEntityById(Long feedId);
 
-    @Transactional
     @Modifying
     @Query("UPDATE FeedEntity fe " +
             "SET fe.deletedDateTime = NOW() " +

@@ -1,5 +1,6 @@
 package world.trecord.web.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,7 @@ public class SecurityConfig {
 
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -62,7 +64,7 @@ public class SecurityConfig {
                 "/api/v1/records/{recordId}", List.of(GET),
                 "/api/v1/records/{recordId}/comments", List.of(GET)
         );
-        return new JwtTokenFilter(jwtTokenHandler, userService, whitelistMap);
+        return new JwtTokenFilter(jwtTokenHandler, userService, objectMapper, whitelistMap);
     }
 
     @Bean

@@ -106,7 +106,7 @@ class AuthHandlerTest {
         ReflectionTestUtils.setField(authHandler, "expiredTimeMs", expiredTimeMs);
 
         given(jwtTokenHandler.extractUserId(secretKey, token))
-                .willReturn(String.valueOf(userId));
+                .willReturn(userId);
 
         given(jwtTokenHandler.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))
                 .willReturn(token);

@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.users.UserEntity;
 import world.trecord.web.controller.ApiResponse;
-import world.trecord.web.security.LoginUserId;
+import world.trecord.web.security.CurrentUser;
 import world.trecord.web.service.notification.NotificationService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
@@ -21,17 +22,17 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/check")
-    public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@LoginUserId String userId) {
-        return ApiResponse.ok(notificationService.checkNewNotificationBy(Long.parseLong(userId)));
+    public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentUser UserEntity userEntity) {
+        return ApiResponse.ok(notificationService.checkNewNotification(userEntity.getId()));
     }
 
     @GetMapping
-    public ApiResponse<NotificationListResponse> getNotifications(@LoginUserId String userId) {
-        return ApiResponse.ok(notificationService.getNotifications(Long.parseLong(userId)));
+    public ApiResponse<NotificationListResponse> getNotifications(@CurrentUser UserEntity userEntity) {
+        return ApiResponse.ok(notificationService.getNotifications(userEntity.getId()));
     }
 
     @GetMapping("/{type}")
-    public ApiResponse<NotificationListResponse> getNotificationsByType(@PathVariable("type") NotificationType type, @LoginUserId String userId) {
-        return ApiResponse.ok(notificationService.getNotifications(Long.parseLong(userId), type));
+    public ApiResponse<NotificationListResponse> getNotificationsByType(@PathVariable("type") NotificationType type, @CurrentUser UserEntity userEntity) {
+        return ApiResponse.ok(notificationService.getNotifications(userEntity.getId(), type));
     }
 }

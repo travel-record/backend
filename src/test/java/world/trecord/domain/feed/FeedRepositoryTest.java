@@ -41,7 +41,7 @@ class FeedRepositoryTest {
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
 
         //when
-        List<FeedEntity> feedEntities = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity);
+        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userEntity.getId());
 
         //then
         Assertions.assertThat(feedEntities).extracting("name")
@@ -54,13 +54,12 @@ class FeedRepositoryTest {
     @DisplayName("유저 엔티티로 피드 리스트를 조회할 때 사용자가 등록한 피드가 없으면 빈 리스트가 반환된다")
     void findByUserEntityOrderByStartAtDescWithEmptyFeedListTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
+        UserEntity saveUserEntity = userRepository.save(UserEntity.builder()
                 .email("test@email.com")
-                .build();
-        UserEntity saveUserEntity = userRepository.save(userEntity);
+                .build());
 
         //when
-        List<FeedEntity> feedEntities = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity);
+        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(saveUserEntity.getId());
 
         //then
         Assertions.assertThat(feedEntities).isEmpty();

@@ -18,6 +18,7 @@ import world.trecord.web.service.feed.response.FeedListResponse;
 import world.trecord.web.service.feed.response.FeedUpdateResponse;
 
 import java.util.List;
+import java.util.Objects;
 
 import static world.trecord.web.exception.CustomExceptionError.*;
 
@@ -30,17 +31,15 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
 
-    public FeedListResponse getFeedListBy(Long userId) {
-        UserEntity userEntity = findUserEntityBy(userId);
-
-        List<FeedEntity> feedEntities = feedRepository.findByUserEntityOrderByStartAtDesc(userEntity);
+    public FeedListResponse getFeedList(Long userId) {
+        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userId);
 
         return FeedListResponse.builder()
                 .feedEntities(feedEntities)
                 .build();
     }
 
-    public FeedInfoResponse getFeedBy(Long feedId, Long viewerId) {
+    public FeedInfoResponse getFeed(Long viewerId, Long feedId) {
         FeedEntity feedEntity = feedRepository.findFeedEntityWithUserEntityById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
 
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedId);
@@ -65,12 +64,9 @@ public class FeedService {
 
     @Transactional
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
-        UserEntity userEntity = findUserEntityBy(userId);
-
-        // TODO find feedEntity with record entity specific field
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
 
-        checkPermissionOverFeed(userEntity, feedEntity);
+        checkPermissionOverFeed(userId, feedEntity);
 
         updateFeedEntity(request, feedEntity);
 
@@ -81,18 +77,16 @@ public class FeedService {
 
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
-        UserEntity userEntity = findUserEntityBy(userId);
-
         FeedEntity feedEntity = findFeedEntityWithUserEntityBy(feedId);
 
-        checkPermissionOverFeed(userEntity, feedEntity);
+        checkPermissionOverFeed(userId, feedEntity);
 
         recordRepository.deleteAllByFeedEntity(feedEntity);
         feedRepository.softDelete(feedEntity);
     }
 
-    private void checkPermissionOverFeed(UserEntity userEntity, FeedEntity feedEntity) {
-        if (!userEntity.isManagerOf(feedEntity)) {
+    private void checkPermissionOverFeed(Long userId, FeedEntity feedEntity) {
+        if (!Objects.equals(feedEntity.getUserEntity().getId(), userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }

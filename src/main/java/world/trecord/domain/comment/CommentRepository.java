@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
@@ -32,21 +31,18 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     @EntityGraph(attributePaths = "userEntity")
     List<CommentEntity> findCommentEntityWithUserEntityByRecordEntityOrderByCreatedDateTimeAsc(RecordEntity recordEntity);
 
-    @Transactional
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
             "where ce.recordEntity = :recordEntity")
     void deleteAllByRecordEntity(@Param("recordEntity") RecordEntity recordEntity);
 
-    @Transactional
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
             "where ce.parentCommentEntity = :commentEntity")
     void deleteAllByCommentEntity(@Param("commentEntity") CommentEntity commentEntity);
 
-    @Transactional
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +

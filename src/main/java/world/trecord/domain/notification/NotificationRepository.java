@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
@@ -29,7 +28,6 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
 
     List<NotificationEntity> findByUsersToEntityAndTypeOrderByCreatedDateTimeDesc(UserEntity userToEntity, NotificationType type);
 
-    @Transactional
     @Modifying
     @Query("UPDATE NotificationEntity ne " +
             "SET ne.deletedDateTime = NOW() " +
