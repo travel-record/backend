@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -33,19 +35,16 @@ public class SecurityConfig {
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
     private final ObjectMapper objectMapper;
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .httpBasic().disable()
-                .csrf().disable()
-                .cors()
-                .configurationSource(corsConfigurationSource())
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                .httpBasic(HttpBasicConfigurer::disable)
+                .csrf(CsrfConfigurer::disable)
+                .cors(configurer -> configurer.configurationSource(corsConfigurationSource()))
+                .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
-                        req -> req
+                        registry -> registry
                                 .requestMatchers("/", "/api/**").permitAll()
                                 .anyRequest().authenticated()
                 )
