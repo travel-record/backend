@@ -42,6 +42,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+
         RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
         RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
         RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
@@ -68,6 +69,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+
         RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
         RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
         RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
@@ -94,6 +96,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+
         RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
         RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
         RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
@@ -120,6 +123,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
 
         //when
@@ -138,6 +142,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
 
         LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
         int sequence = 100;
+
         recordRepository.save(createRecordEntity(feedEntity, "title", "place", date, "content", "weather", "satisfaction", "feeling", sequence));
 
         //when

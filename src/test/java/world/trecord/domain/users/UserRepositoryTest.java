@@ -21,9 +21,8 @@ class UserRepositoryTest extends ContainerBaseTest {
     void findByEmailTest() throws Exception {
         //given
         String email = "test@test.com";
-        UserEntity userEntity = UserEntity.builder()
-                .email(email)
-                .build();
+        UserEntity userEntity = UserEntity.builder().email(email).build();
+
         userRepository.save(userEntity);
 
         //when
