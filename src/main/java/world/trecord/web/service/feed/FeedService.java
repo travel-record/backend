@@ -42,7 +42,7 @@ public class FeedService {
     public FeedInfoResponse getFeed(Long viewerId, Long feedId) {
         FeedEntity feedEntity = getFeedOrException(feedId);
 
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedId);
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedId);
 
         return FeedInfoResponse.builder()
                 .feedEntity(feedEntity)
@@ -53,7 +53,7 @@ public class FeedService {
 
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
 
@@ -95,6 +95,6 @@ public class FeedService {
     }
 
     private FeedEntity getFeedOrException(Long feedId) {
-        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 }

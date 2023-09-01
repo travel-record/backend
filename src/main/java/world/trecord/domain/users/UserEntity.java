@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
-import world.trecord.web.security.Role;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,23 +21,20 @@ public class UserEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_users")
+    @Column(name = "id_users", nullable = false)
     private Long id;
 
-    @Column(name = "email", nullable = false, length = 255, unique = true, updatable = false)
+    @Column(name = "email", nullable = false, unique = true, updatable = false)
     private String email;
 
-    @Column(name = "nickname", nullable = true, length = 20, unique = true)
+    @Column(name = "nickname", length = 20, unique = true)
     private String nickname;
 
-    @Column(name = "image_url", nullable = true, columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
-    @Column(name = "introduction", nullable = true, length = 255)
+    @Column(name = "introduction")
     private String introduction;
-
-    @Column(name = "deleted_date_time", nullable = true)
-    private LocalDateTime deletedDateTime;
 
     @Builder
     private UserEntity(String email, String nickname, String imageUrl, String introduction) {

@@ -89,6 +89,7 @@ class AuthServiceTest {
         //given
         String authorizationCode = "dummy access token";
         String redirectionUri = "dummy redirection uri";
+
         given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willThrow(new CustomException(CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE));
 
@@ -103,7 +104,7 @@ class AuthServiceTest {
     @DisplayName("유효한 리프레시 토큰으로만 재발급하여 반환한다")
     void reissueTokenWithValidRefreshTokenTest() throws Exception {
         //given
-        Long userId = 1L;
+        long userId = 1L;
         String token = "testToken";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
@@ -111,7 +112,7 @@ class AuthServiceTest {
         ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
         ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
 
-        given(jwtTokenHandler.extractUserId(secretKey, token))
+        given(jwtTokenHandler.getUserId(secretKey, token))
                 .willReturn(userId);
 
         given(jwtTokenHandler.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))

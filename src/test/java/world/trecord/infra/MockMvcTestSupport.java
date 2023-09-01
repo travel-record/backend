@@ -12,7 +12,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@ContextConfiguration(initializers = AbstractContainerBaseTest.class)
+@ContextConfiguration(initializers = ContainerBaseTest.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Rollback

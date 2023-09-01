@@ -14,7 +14,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
@@ -33,7 +33,7 @@ import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
 
 @MockMvcTestSupport
-class NotificationControllerTest extends AbstractContainerBaseTest {
+class NotificationControllerTest extends ContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -72,19 +72,17 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = createToken(userEntity.getId());
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/check")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.hasNewNotification").value(true));
     }
 
     @Test
-    @DisplayName("GET /api/v1/notifications/check - 새로운 알림이 없을때 성공")
+    @DisplayName("GET /api/v1/notifications/check - 성공 (새로운 알림이 없을 때)")
     void checkNotExistingNewNotificationTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
@@ -93,12 +91,10 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
 
         notificationRepository.save(notificationEntity);
 
-        String token = createToken(userEntity.getId());
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/check")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.hasNewNotification").value(false));
@@ -108,17 +104,19 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
     @DisplayName("GET /api/v1/notifications - 성공")
     void getNotificationsTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = UserEntity.builder().email("test@email.com").build();
+        UserEntity commenter1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
+        UserEntity commenter2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
+        UserEntity commenter3 = UserEntity.builder().nickname("nickname3").email("test3@email.com").build();
 
-        String token = createToken(author.getId());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
-        UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
-        UserEntity commenter3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
+        userRepository.saveAll(List.of(author, commenter1, commenter2, commenter3));
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity1, "content1");
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity2, "content2");
@@ -134,7 +132,7 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
         //whe //then
         mockMvc.perform(
                         get("/api/v1/notifications")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(author.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.notifications.size()").value(3))
@@ -147,14 +145,12 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
     void getNotificationsByTypeTest() throws Exception {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
-
-        String token = createToken(author.getId());
-
         UserEntity viewer1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity viewer2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
         UserEntity viewer3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         CommentEntity commentEntity1 = createCommentEntity(viewer1, recordEntity, "content1");
@@ -172,7 +168,7 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/{type}", RECORD_LIKE)
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(author.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.notifications.size()").value(2));
@@ -184,14 +180,12 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = createToken(author.getId());
-
         String notExistingType = "NOT_EXISTING_TYPE";
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/{type}", notExistingType)
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(author.getId()))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));

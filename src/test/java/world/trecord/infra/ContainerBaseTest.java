@@ -7,7 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.MariaDBContainer;
 
 @Slf4j
-public class AbstractContainerBaseTest implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+public class ContainerBaseTest implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     static final MariaDBContainer MARIA_DB_CONTAINER;
 

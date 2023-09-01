@@ -13,7 +13,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -24,7 +24,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @IntegrationTestSupport
-class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
+class UserRecordLikeServiceTest extends ContainerBaseTest {
 
     @Autowired
     UserRecordLikeService userRecordLikeService;
@@ -54,7 +54,9 @@ class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
 
         //when
@@ -74,6 +76,7 @@ class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
@@ -97,6 +100,7 @@ class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
         UserEntity viewer = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
@@ -118,6 +122,7 @@ class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
         UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when

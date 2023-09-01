@@ -124,7 +124,7 @@ public class RecordService {
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
         RecordEntity recordEntity = getRecordOrException(recordId);
 
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
                 .commentEntities(commentEntities)
@@ -133,12 +133,12 @@ public class RecordService {
     }
 
     private FeedEntity getFeedOrException(Long feedId) {
-        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
         // TODO 동시성 처리
-        return recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
+        return recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
     }
 
     private void checkHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
@@ -148,7 +148,7 @@ public class RecordService {
     }
 
     private RecordEntity getRecordOrException(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private void checkPermissionOverFeed(FeedEntity feedEntity, Long userId) {

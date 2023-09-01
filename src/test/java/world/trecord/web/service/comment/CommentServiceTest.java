@@ -12,7 +12,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @IntegrationTestSupport
-class CommentServiceTest extends AbstractContainerBaseTest {
+class CommentServiceTest extends ContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -46,10 +46,13 @@ class CommentServiceTest extends AbstractContainerBaseTest {
     void createCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         String content = "content";
+
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
                 .content(content)
@@ -70,8 +73,11 @@ class CommentServiceTest extends AbstractContainerBaseTest {
     void createChildCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
 
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -92,7 +98,7 @@ class CommentServiceTest extends AbstractContainerBaseTest {
     @DisplayName("존재하지 않는 사용자가 기록에 댓글을 달려고 하면 예외가 발생한다")
     void createCommentWithNotExistingUserIdTest() throws Exception {
         //given
-        Long notExistingUserId = 0L;
+        long notExistingUserId = 0L;
 
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .build();
@@ -101,15 +107,14 @@ class CommentServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.createComment(notExistingUserId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
     }
 
     @Test
     @DisplayName("존재하지 않는 기록에 댓글을 달려고 하면 예외가 발생한다")
     void createCommentWithNotExistingRecordIdTest() throws Exception {
         //given
-
-        Long notExistingRecordId = 0L;
+        long notExistingRecordId = 0L;
 
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
@@ -121,18 +126,22 @@ class CommentServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.createComment(userEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_RECORD);
+                .isEqualTo(CustomExceptionError.RECORD_NOT_FOUND);
     }
 
     @Test
     @DisplayName("댓글 작성자가 댓글을 수정하면 수정된 댓글 내용을 반환한다")
     void updateCommentTest() throws Exception {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
 
         String changedContent = "changed content";
+
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .content(changedContent)
                 .build();
@@ -150,37 +159,38 @@ class CommentServiceTest extends AbstractContainerBaseTest {
     @DisplayName("존재하지 않는 댓글을 수정하려고 하면 예외가 발생한다")
     void updateCommentWithNotExistingCommentIdTest() throws Exception {
         //given
-        Long notExistingCommentId = 0L;
-
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        long userId = 1L;
+        long notExistingCommentId = 0L;
 
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.updateComment(other.getId(), notExistingCommentId, request))
+        Assertions.assertThatThrownBy(() -> commentService.updateComment(userId, notExistingCommentId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_COMMENT);
+                .isEqualTo(CustomExceptionError.COMMENT_NOT_FOUND);
     }
 
     @Test
     @DisplayName("댓글 작성자가 아닌 사용자가 댓글을 수정하려고 하면 예외가 발생한다")
     void updateCommentWithNotCommenterTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity otherEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        UserEntity commenter = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(commenter, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
+
+        CommentEntity commentEntity = commentRepository.save(createCommentEntity(commenter, recordEntity, null, "content"));
 
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .content("change content")
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.updateComment(otherEntity.getId(), commentEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> commentService.updateComment(other.getId(), commentEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -190,17 +200,18 @@ class CommentServiceTest extends AbstractContainerBaseTest {
     @DisplayName("원댓글 작성자가 원댓글을 삭제하면 하위 댓글들도 함께 삭제된다")
     void deleteParentCommentTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
         UserEntity commenter = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(commenter, recordEntity, null, "content"));
 
-        CommentEntity childCommentEntity1 = createCommentEntity(writer, recordEntity, parentCommentEntity, "content");
-        CommentEntity childCommentEntity2 = createCommentEntity(writer, recordEntity, parentCommentEntity, "content");
-        CommentEntity childCommentEntity3 = createCommentEntity(writer, recordEntity, parentCommentEntity, "content");
+        CommentEntity childCommentEntity1 = createCommentEntity(author, recordEntity, parentCommentEntity, "content");
+        CommentEntity childCommentEntity2 = createCommentEntity(author, recordEntity, parentCommentEntity, "content");
+        CommentEntity childCommentEntity3 = createCommentEntity(author, recordEntity, parentCommentEntity, "content");
 
         commentRepository.saveAll(List.of(childCommentEntity1, childCommentEntity2, childCommentEntity3));
 
@@ -216,9 +227,13 @@ class CommentServiceTest extends AbstractContainerBaseTest {
     void deleteCommentWithNotCommenterTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         UserEntity otherEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
 
         //when //then
@@ -232,14 +247,14 @@ class CommentServiceTest extends AbstractContainerBaseTest {
     @DisplayName("존재하지 않는 댓글을 삭제하려고 하면 예외가 발생한다")
     void deleteCommentWithNotExistingCommentTest() throws Exception {
         //given
-        Long notExistingCommentId = 0L;
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        long notExistingCommentId = 0L;
+        long userId = 1L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.deleteComment(userEntity.getId(), notExistingCommentId))
+        Assertions.assertThatThrownBy(() -> commentService.deleteComment(userId, notExistingCommentId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_COMMENT);
+                .isEqualTo(CustomExceptionError.COMMENT_NOT_FOUND);
     }
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {

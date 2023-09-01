@@ -5,13 +5,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 import java.util.Optional;
 
 @IntegrationTestSupport
-class UserRepositoryTest extends AbstractContainerBaseTest {
+class UserRepositoryTest extends ContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -21,9 +21,8 @@ class UserRepositoryTest extends AbstractContainerBaseTest {
     void findByEmailTest() throws Exception {
         //given
         String email = "test@test.com";
-        UserEntity userEntity = UserEntity.builder()
-                .email(email)
-                .build();
+        UserEntity userEntity = UserEntity.builder().email(email).build();
+
         userRepository.save(userEntity);
 
         //when

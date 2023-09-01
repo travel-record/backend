@@ -14,7 +14,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
@@ -31,7 +31,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @IntegrationTestSupport
-class RecordServiceTest extends AbstractContainerBaseTest {
+class RecordServiceTest extends ContainerBaseTest {
 
     @Autowired
     RecordService recordService;
@@ -55,17 +55,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("기록 작성자가 기록을 조회하면 기록 상세 정보, 댓글 리스트를 반환한다")
     void getRecordInfoByRecordWriterIdTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -85,17 +75,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("댓글 작성자가 기록을 조회하면 기록 상세 정보, 댓글 리스트를 반환한다")
     void getRecordInfoByCommenterIdTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity commenter2 = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -120,17 +102,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("익명 사용자가 기록을 조회하면 기록 상세 정보, 댓글 리스트를 반환한다")
     void getRecordInfoByAnonymoudUserTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity commenter2 = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -142,23 +116,26 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecord(null, recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(null, recordEntity.getId());
 
         //then
-        Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
-        Assertions.assertThat(recordInfoResponse.getTitle()).isEqualTo(recordEntity.getTitle());
-        Assertions.assertThat(recordInfoResponse.getContent()).isEqualTo(recordEntity.getContent());
-        Assertions.assertThat(recordInfoResponse.getIsUpdatable()).isFalse();
+        Assertions.assertThat(response)
+                .extracting("writerId", "title", "content", "isUpdatable")
+                .containsExactly(writer.getId(), recordEntity.getTitle(), recordEntity.getContent(), false);
     }
 
     @Test
     @DisplayName("존재하지 않는 기록 아이디로 조회하면 예외가 발생한다")
     void getRecordInfoByNotExistingRecordIdTest() throws Exception {
+        //given
+        long viewerId = 1L;
+        long notExistingRecordId = 0L;
+
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.getRecord(0L, 0L))
+        Assertions.assertThatThrownBy(() -> recordService.getRecord(viewerId, notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_RECORD);
+                .isEqualTo(RECORD_NOT_FOUND);
     }
 
     @Test
@@ -200,9 +177,12 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     void createRecordSequenceNumberTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         LocalDateTime recordDate = LocalDateTime.of(2021, 10, 1, 0, 0);
         int sequence = 1;
+
         recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", recordDate, "content1", "weather1", "satisfaction1", "feeling1", sequence));
 
         String title = "title";
@@ -239,9 +219,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("존재하지 않는 피드 아이디로 기록을 생성하려고 하면 예외가 발생한다")
     void createRecordWithNotExistingFeedIdTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .feedId(0L)
@@ -251,20 +229,16 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> recordService.createRecord(writer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_FEED);
+                .isEqualTo(FEED_NOT_FOUND);
     }
 
     @Test
     @DisplayName("피드 작성자가 아닌 사용자가 기록을 생성하려고 하면 예외가 발생한다")
     void createRecordWithNotWriterIdTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        UserEntity other = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -284,7 +258,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     void updateRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         String changedTitle = "change title";
@@ -324,13 +300,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 작성자가 아닌 사용자가 기록을 수정하려고 하면 예외가 발생한다")
     void updateRecordWithNotFeedWriterTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        UserEntity other = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -352,15 +324,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         //given
         Long notExistingRecordId = 0L;
 
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity other = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .build();
@@ -369,7 +333,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> recordService.updateRecord(writer.getId(), notExistingRecordId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_RECORD);
+                .isEqualTo(RECORD_NOT_FOUND);
     }
 
     @Test
@@ -395,27 +359,21 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         //given
         Long notExistingRecordId = 0L;
 
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when //then
         Assertions.assertThatThrownBy(() -> recordService.deleteRecord(writer.getId(), notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_RECORD);
+                .isEqualTo(RECORD_NOT_FOUND);
     }
 
     @Test
     @DisplayName("피드 작성자가 아닌 사용자가 기록을 삭제하려고 하면 예외가 발생한다")
     void deleteRecordWithNotFeedWriterTest() throws Exception {
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        UserEntity viewer = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity viewer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -432,13 +390,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("기록에 대해 좋아요 한 사용자가 기록을 조회하면 RecordInfoResponse의 필드 liked = true다")
     void getRecordInfoByTestByUserWhoLikedOnRecord() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        UserEntity viewer = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity viewer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -457,15 +411,11 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("기록에 대해 좋아요 하지 않은 사용자가 기록을 조회하면 RecordInfoResponse의 필드 liked = false다")
     void getRecordInfoByTestByUserWhoNotLikedOnRecord() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity viewer = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity viewer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
@@ -479,11 +429,10 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("인증받지 않은 사용자가 기록을 조회하면 RecordInfoResponse의 필드 liked = false다")
     void getRecordInfoByTestByUserWhoNotAuthenticatedOnRecord() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
@@ -497,23 +446,16 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     @DisplayName("기록에 등록된 댓글들을 등록 시간 오름차 순으로 조회하여 RecordCommentsResponse로 반환한다")
     void getRecordCommentsTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        UserEntity viewer = userRepository.save(UserEntity.builder()
-                .email("viewer@email.com")
-                .build());
+        UserEntity viewer = userRepository.save(UserEntity.builder().email("viewer@email.com").build());
 
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity commenter2 = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
@@ -539,21 +481,22 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     void getRecordCommentsWhenCommentSoftDeletedTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity commenter = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter1, recordEntity, "content2");
-        CommentEntity commentEntity3 = createCommentEntity(commenter1, recordEntity, "content2");
+        CommentEntity commentEntity1 = createCommentEntity(commenter, recordEntity, "content1");
+        CommentEntity commentEntity2 = createCommentEntity(commenter, recordEntity, "content2");
+        CommentEntity commentEntity3 = createCommentEntity(commenter, recordEntity, "content2");
 
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1, commentEntity3));
 
         commentRepository.softDeleteById(commentEntity2.getId());
 
         //when
-        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), commenter1.getId());
+        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), commenter.getId());
 
         //then
         Assertions.assertThat(response.getComments())
@@ -569,6 +512,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when
@@ -587,9 +531,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         int recordEntitySeq1 = 1;
-        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", recordEntitySeq1));
-
         int recordEntitySeq2 = 2;
+
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", recordEntitySeq1));
         RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", recordEntitySeq2));
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
@@ -621,9 +565,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity1 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity1, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
-
         FeedEntity feedEntity2 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity1, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
         RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity2, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()

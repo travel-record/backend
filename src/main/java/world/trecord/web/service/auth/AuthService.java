@@ -43,7 +43,7 @@ public class AuthService {
 
         jwtTokenHandler.verify(secretKey, refreshToken);
 
-        Long userId = jwtTokenHandler.extractUserId(secretKey, refreshToken);
+        Long userId = jwtTokenHandler.getUserId(secretKey, refreshToken);
 
         return RefreshResponse.builder()
                 .token(jwtTokenHandler.generateToken(userId, secretKey, expiredTimeMs))

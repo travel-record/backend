@@ -16,7 +16,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @MockMvcTestSupport
-class UserControllerTest extends AbstractContainerBaseTest {
+class UserControllerTest extends ContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -78,12 +78,11 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 .build();
 
         UserEntity saveUser = userRepository.save(userEntity);
-        String token = createToken(saveUser.getId());
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/users")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(saveUser.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.nickname").value(nickname))
@@ -96,15 +95,14 @@ class UserControllerTest extends AbstractContainerBaseTest {
     void getUserInfoWithNotExistingTokenTest() throws Exception {
         //given
         long notExistingUserId = -1L;
-        String token = jwtTokenHandler.generateToken(notExistingUserId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/users")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(notExistingUserId))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -124,22 +122,18 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
         UserEntity saveUser = userRepository.save(userEntity);
 
-        String token = createToken(saveUser.getId());
-
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(nickname)
                 .imageUrl(imageUrl)
                 .introduction(introduction)
                 .build();
 
-        String content = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/users")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(saveUser.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.nickname").value(nickname))
@@ -152,6 +146,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
     void updateUserInfoWithExistingNicknameTest() throws Exception {
         //given
         String duplicatedNickname = "duplicate nickname";
+
         UserEntity userEntity = UserEntity.builder()
                 .email("test@email.com")
                 .nickname(duplicatedNickname)
@@ -166,24 +161,19 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
         userRepository.save(requestUserEntity);
 
-        String token = createToken(requestUserEntity.getId());
-
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(duplicatedNickname)
                 .build();
 
-        String content = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/users")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(requestUserEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
+                                .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(EXISTING_NICKNAME.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(EXISTING_NICKNAME.getErrorMsg()));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(NICKNAME_DUPLICATED.code()));
     }
 
     @Test
@@ -224,8 +214,8 @@ class UserControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         get("/api/v1/users/{userId}", notExistingUserId)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_USER.getErrorCode()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.code()));
     }
 
     @Test
@@ -236,9 +226,8 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 .email("test@email.com")
                 .build());
 
-        String token = createToken(userEntity.getId());
-
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
@@ -257,7 +246,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/comments")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.comments.size()").value(4))
@@ -276,18 +265,14 @@ class UserControllerTest extends AbstractContainerBaseTest {
                                 .header("Authorization", invalidToken)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
     @DisplayName("GET /api/v1/users/likes - 성공")
     void getUserRecordLikesTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        String token = createToken(userEntity.getId());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -306,7 +291,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/likes")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.records.size()").value(2))

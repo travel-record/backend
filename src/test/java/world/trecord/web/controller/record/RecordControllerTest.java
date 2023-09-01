@@ -17,7 +17,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.web.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @MockMvcTestSupport
-class RecordControllerTest extends AbstractContainerBaseTest {
+class RecordControllerTest extends ContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -73,15 +73,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     void getRecordInfoByWriterTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
-        String token = createToken(writer.getId());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(writer.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
@@ -95,7 +95,9 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     void getRecordInfoByWhoNotAuthenticatedTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         //when //then
@@ -112,27 +114,31 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 실패 (인증 토큰 검증 실패)")
     void getRecordInfoWithInvalidTokenTest() throws Exception {
-        // when // then
+        //given
+        String invalidToken = "invalid token";
+
+        //when // then
         mockMvc.perform(
                         get("/api/v1/records/{recordId}", 0L)
-                                .header("Authorization", "dummy")
+                                .header("Authorization", invalidToken)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()))
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()))
                 .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
     }
 
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 실패 (존재하지 않는 기록 아이디로 조회)")
     void getRecordInfoByNotExistingRecordIdTest() throws Exception {
-        // when // then
+        //given
         long notExistingRecordId = 0L;
+
+        //when //then
         mockMvc.perform(
                         get("/api/v1/records/{recordId}", notExistingRecordId)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_RECORD.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(NOT_EXISTING_RECORD.getErrorMsg()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(RECORD_NOT_FOUND.code()));
     }
 
     @Test
@@ -146,19 +152,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .build();
 
-        String token = createToken(writer.getId());
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(writer.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()))
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()))
                 .andExpect(jsonPath("$.message").value(INVALID_ARGUMENT.getErrorMsg()));
     }
 
@@ -166,9 +168,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     @DisplayName("POST /api/v1/records - 성공")
     void createRecordWithValidParameterTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -195,16 +195,12 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .imageUrl(imageUrl)
                 .build();
 
-        String token = createToken(writer.getId());
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(writer.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
 
@@ -215,13 +211,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     @DisplayName("POST /api/v1/records - 실패 (피드 관리자가 아닌 사용자가 요청)")
     void createRecordTestWhenUserIsNotManager() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity viewer = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity viewer = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -248,19 +239,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .imageUrl(imageUrl)
                 .build();
 
-        String token = createToken(viewer.getId());
-
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(viewer.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
     @Test
@@ -268,8 +255,6 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     void updateRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
-
-        String token = createToken(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -297,14 +282,12 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .imageUrl(changedImageUrl)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(writer.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value(changedTitle))
@@ -319,8 +302,6 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-
-        String token = createToken(other.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -338,17 +319,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .imageUrl("changed image url")
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(other.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
     @Test
@@ -356,8 +335,6 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     void swapRecordSequenceTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
-
-        String token = createToken(writer.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -372,14 +349,12 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .targetRecordId(recordEntity2.getId())
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(writer.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
 
@@ -402,12 +377,10 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = createToken(writer.getId());
-
         FeedEntity feedEntity1 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity1, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
-
         FeedEntity feedEntity2 = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity1, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
         RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity2, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 1));
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
@@ -415,17 +388,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .targetRecordId(recordEntity2.getId())
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(writer.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -435,9 +406,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
         UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        String token = createToken(other.getId());
-
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
         RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 1));
 
@@ -446,17 +416,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .targetRecordId(recordEntity2.getId())
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(other.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
     @Test
@@ -465,93 +433,68 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = createToken(writer.getId());
-
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         long notExistingRecordId = 0L;
+
+        String token = createToken(writer.getId());
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
                 .originalRecordId(notExistingRecordId)
                 .targetRecordId(notExistingRecordId)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
                                 .header("Authorization", token)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_RECORD.getErrorCode()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(RECORD_NOT_FOUND.code()));
     }
 
     @Test
     @DisplayName("PUT /api/v1/records - 실패 (올바르지 않은 요청 파라미터)")
     void updateRecordWithInvalidDataTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        String token = createToken(writer.getId());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         RecordUpdateRequest request = RecordUpdateRequest.builder().build();
 
-        String body = objectMapper.writeValueAsString(request);
+        String token = createToken(writer.getId());
 
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", 0L)
                                 .header("Authorization", token)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/records/{recordId} - 실패 (올바르지 않은 경로 변수)")
+    @DisplayName("DELETE /api/v1/records/{recordId} - 실패 (인증되지 않는 사용자)")
     void deleteRecordWithInvalidDataTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        String token = createToken(writer.getId());
-
         String invalidPathVariable = "invalid";
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/records/{recordId}", invalidPathVariable)
-                                .header("Authorization", token)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
     @DisplayName("DELETE /api/v1/records/{recordId} - 성공")
     void deleteRecordTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
-
-        String token = createToken(writer.getId());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity commenter2 = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -561,6 +504,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
+
+        String token = createToken(writer.getId());
 
         //when //then
         mockMvc.perform(
@@ -576,15 +521,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     @DisplayName("POST /api/v1/records/{recordId}/like - 성공 (false 리턴)")
     void toggleLikeTestWhenUserLikeRecord() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        String token = createToken(userEntity.getId());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
         userRecordLikeRepository.save(createUserRecordLikeEntity(userEntity, recordEntity));
+
+        String token = createToken(userEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -601,14 +546,13 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     @DisplayName("POST /api/v1/records/{recordId}/like - 성공 (true 리턴)")
     void toggleLikeTestWhenUserNotLikeRecord() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        String token = createToken(userEntity.getId());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
+
+        String token = createToken(userEntity.getId());
 
         //when //then
         mockMvc.perform(
@@ -623,19 +567,12 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     @DisplayName("GET /api/v1/records/{recordId}/comments - 성공")
     void getRecordCommentsTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
-
-        UserEntity commenter1 = userRepository.save(UserEntity.builder()
-                .email("test1@email.com")
-                .build());
-
-        UserEntity commenter2 = userRepository.save(UserEntity.builder()
-                .email("test2@email.com")
-                .build());
+        UserEntity writer = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity commenter1 = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity commenter2 = userRepository.save(UserEntity.builder().email("test2@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2021, 10, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1", 0));
 
         CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");

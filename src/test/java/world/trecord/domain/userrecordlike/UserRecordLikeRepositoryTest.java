@@ -11,7 +11,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @IntegrationTestSupport
-class UserRecordLikeRepositoryTest extends AbstractContainerBaseTest {
+class UserRecordLikeRepositoryTest extends ContainerBaseTest {
 
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
@@ -39,10 +39,10 @@ class UserRecordLikeRepositoryTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 좋아요한 기록이 존재하면 UserRecordLikeEntity를 반환한다")
     void existsUserRecordLikeEntityByUserEntityAndRecordEntityTestWhenUserLikeRecordExists() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         UserRecordLikeEntity userRecordLikeEntity = createUserRecordLikeEntity(userEntity, recordEntity);
@@ -60,10 +60,10 @@ class UserRecordLikeRepositoryTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 좋아요한 기록이 존재하지 않으면 빈 UserRecordLikeEntity를 반환한다")
     void existsUserRecordLikeEntityByUserEntityAndRecordEntityTestWhenUserLikeRecordNotExists() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
@@ -77,9 +77,7 @@ class UserRecordLikeRepositoryTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 좋아요한 기록 리스트를 등록 시간 내림차 순으로 projection으로 반환한다")
     void findLikedRecordsByUserEntityTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -112,9 +110,7 @@ class UserRecordLikeRepositoryTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 좋아요한 기록이 없으면 빈 배열을 반환한다")
     void findLikedRecordsByUserEntityWithNotExistingLikeTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
         List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
@@ -127,9 +123,7 @@ class UserRecordLikeRepositoryTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 기록에 좋아요 하였으면 조회 시 true를 반환한다")
     void existsByUserEntityAndRecordEntityWhenUserLikedRecordTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 

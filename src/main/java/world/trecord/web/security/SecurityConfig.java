@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -37,19 +39,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .httpBasic().disable()
-                .csrf().disable()
-                .cors()
-                .configurationSource(corsConfigurationSource())
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/", "/api/**").permitAll()
-                        .anyRequest().authenticated()
+                .httpBasic(HttpBasicConfigurer::disable)
+                .csrf(CsrfConfigurer::disable)
+                .cors(configurer -> configurer.configurationSource(corsConfigurationSource()))
+                .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(
+                        registry -> registry
+                                .requestMatchers("/", "/api/**").permitAll()
+                                .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter(),
-                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -57,12 +56,12 @@ public class SecurityConfig {
     public JwtTokenFilter jwtAuthFilter() {
         Map<String, List<HttpMethod>> whitelistMap = Map.of(
                 "/", List.of(GET),
-                "/api/v1/auth/google-login", List.of(POST),
-                "/api/v1/auth/token", List.of(POST),
-                "/api/v1/users/{userId}", List.of(GET),
-                "/api/v1/feeds/{feedId}", List.of(GET),
-                "/api/v1/records/{recordId}", List.of(GET),
-                "/api/v1/records/{recordId}/comments", List.of(GET)
+                "/api/*/auth/google-login", List.of(POST),
+                "/api/*/auth/token", List.of(POST),
+                "/api/*/users/{userId}", List.of(GET),
+                "/api/*/feeds/{feedId}", List.of(GET),
+                "/api/*/records/{recordId}", List.of(GET),
+                "/api/*/records/{recordId}/comments", List.of(GET)
         );
         return new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, whitelistMap);
     }

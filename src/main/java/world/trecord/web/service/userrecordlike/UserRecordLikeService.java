@@ -13,8 +13,8 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.notification.NotificationService;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_RECORD;
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
+import static world.trecord.web.exception.CustomExceptionError.RECORD_NOT_FOUND;
+import static world.trecord.web.exception.CustomExceptionError.USER_NOT_FOUND;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -39,19 +39,16 @@ public class UserRecordLikeService {
 
     private UserRecordLikeResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
         userRecordLikeRepository.softDeleteById(userRecordLikeEntity.getId());
-
-        return createUserRecordLikeResponse(false);
+        return buildLikeResponse(false);
     }
 
     private UserRecordLikeResponse like(UserEntity userEntity, RecordEntity recordEntity) {
-        saveUserRecordLike(userEntity, recordEntity);
-        
+        saveRecordLike(userEntity, recordEntity);
         notificationService.createRecordLikeNotification(userEntity, recordEntity);
-
-        return createUserRecordLikeResponse(true);
+        return buildLikeResponse(true);
     }
 
-    private void saveUserRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
+    private void saveRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
         UserRecordLikeEntity userRecordLikeEntity = UserRecordLikeEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
@@ -60,17 +57,17 @@ public class UserRecordLikeService {
         userRecordLikeRepository.save(userRecordLikeEntity);
     }
 
-    private UserRecordLikeResponse createUserRecordLikeResponse(boolean liked) {
+    private UserRecordLikeResponse buildLikeResponse(boolean liked) {
         return UserRecordLikeResponse.builder()
                 .liked(liked)
                 .build();
     }
 
     private RecordEntity getRecordOrException(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private UserEntity getUserOrException(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
+        return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 }

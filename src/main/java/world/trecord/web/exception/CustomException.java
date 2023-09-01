@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class CustomException extends RuntimeException {
+
     private CustomExceptionError error;
     private String message;
 
@@ -20,5 +21,9 @@ public class CustomException extends RuntimeException {
     public String getMessage() {
         String errorMsg = error.getErrorMsg();
         return message == null ? errorMsg : String.format("%s. %s", errorMsg, message);
+    }
+
+    public String message() {
+        return getMessage();
     }
 }

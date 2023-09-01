@@ -15,11 +15,10 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
+import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
@@ -30,10 +29,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
+import static world.trecord.web.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 
 @IntegrationTestSupport
-class UserServiceTest extends AbstractContainerBaseTest {
+class UserServiceTest extends ContainerBaseTest {
 
     @Autowired
     UserService userService;
@@ -74,6 +73,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
         String nickname = "nickname";
         String imageUrl = "http://localhost/pictures";
         String introduction = "hello";
+
         UserEntity userEntity = UserEntity.builder()
                 .email(email)
                 .nickname(nickname)
@@ -87,9 +87,9 @@ class UserServiceTest extends AbstractContainerBaseTest {
         UserInfoResponse response = userService.getUser(saveUser.getId());
 
         //then
-        Assertions.assertThat(response.getNickname()).isEqualTo(nickname);
-        Assertions.assertThat(response.getIntroduction()).isEqualTo(introduction);
-        Assertions.assertThat(response.getImageUrl()).isEqualTo(imageUrl);
+        Assertions.assertThat(response)
+                .extracting("nickname", "introduction", "imageUrl")
+                .containsExactly(nickname, introduction, imageUrl);
     }
 
     @Test
@@ -102,7 +102,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> userService.getUser(notExistingUserId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
     }
 
     @Test
@@ -114,6 +114,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
@@ -122,10 +123,12 @@ class UserServiceTest extends AbstractContainerBaseTest {
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content1));
-        CommentEntity commentEntity2 = commentRepository.save(createCommentEntity(userEntity, recordEntity2, content2));
-        CommentEntity commentEntity3 = commentRepository.save(createCommentEntity(userEntity, recordEntity2, content3));
-        CommentEntity commentEntity4 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content4));
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, content1);
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, content2);
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, content3);
+        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, content4);
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
         UserCommentsResponse response = userService.getUserComments(userEntity.getId());
@@ -270,7 +273,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> userService.updateUser(userEntity.getId(), updateRequest))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(EXISTING_NICKNAME);
+                .isEqualTo(NICKNAME_DUPLICATED);
     }
 
     @Test
@@ -326,10 +329,10 @@ class UserServiceTest extends AbstractContainerBaseTest {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
-        UserContext userContext = userService.loadUserContext(userEntity.getId());
+        UserContext userContext = userService.getUserContextOrException(userEntity.getId());
 
         //then
-        Assertions.assertThat(userContext.getUserEntity()).isEqualTo(userEntity);
+        Assertions.assertThat(userContext.getId()).isEqualTo(userEntity.getId());
     }
 
     @Test
@@ -339,7 +342,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
         long notExistingUserId = -1L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> userService.loadUserContext(notExistingUserId))
+        Assertions.assertThatThrownBy(() -> userService.getUserContextOrException(notExistingUserId))
                 .isInstanceOf(UsernameNotFoundException.class);
     }
 

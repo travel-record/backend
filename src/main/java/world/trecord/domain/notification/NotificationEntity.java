@@ -12,8 +12,6 @@ import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.users.UserEntity;
 
-import java.time.LocalDateTime;
-
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "notification")
@@ -35,18 +33,14 @@ public class NotificationEntity extends BaseEntity {
     @Column(name = "status", nullable = false, columnDefinition = "varchar(20) default 'UNREAD'")
     private NotificationStatus status;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users_to", nullable = true, foreignKey = @ForeignKey(name = "fk_notification_users_to"))
-    private UserEntity usersToEntity;
-
     @Type(JsonType.class)
-    @Column(name = "args", nullable = true, columnDefinition = "json")
+    @Column(name = "args", columnDefinition = "json")
     private NotificationArgs args;
 
-    @Column(name = "deleted_date_time", nullable = true)
-    private LocalDateTime deletedDateTime;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_users_to", foreignKey = @ForeignKey(name = "fk_notification_users_to"))
+    private UserEntity usersToEntity;
+    
     @Builder
     private NotificationEntity(NotificationType type, NotificationStatus status, UserEntity usersToEntity, NotificationArgs args) {
         this.type = type;
