@@ -55,10 +55,7 @@ public class FeedEntity extends BaseEntity {
 
     @Column(name = "satisfaction")
     private String satisfaction;
-
-    @Column(name = "deleted_date_time")
-    private LocalDateTime deletedDateTime;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
     private UserEntity userEntity;

@@ -11,7 +11,6 @@ import world.trecord.domain.BaseEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,9 +30,6 @@ public class CommentEntity extends BaseEntity {
 
     @Column(name = "content", nullable = false)
     private String content;
-
-    @Column(name = "deleted_date_time")
-    private LocalDateTime deletedDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_user"))

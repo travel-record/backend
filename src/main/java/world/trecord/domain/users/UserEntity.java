@@ -10,7 +10,6 @@ import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.web.security.Role;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -37,10 +36,7 @@ public class UserEntity extends BaseEntity {
 
     @Column(name = "introduction")
     private String introduction;
-
-    @Column(name = "deleted_date_time")
-    private LocalDateTime deletedDateTime;
-
+    
     @Builder
     private UserEntity(String email, String nickname, String imageUrl, String introduction) {
         this.email = email;

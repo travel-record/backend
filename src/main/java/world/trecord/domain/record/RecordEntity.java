@@ -60,10 +60,7 @@ public class RecordEntity extends BaseEntity {
 
     @Column(name = "sequence", nullable = false)
     private int sequence;
-
-    @Column(name = "deleted_date_time")
-    private LocalDateTime deletedDateTime;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_record_feed"))
     private FeedEntity feedEntity;
