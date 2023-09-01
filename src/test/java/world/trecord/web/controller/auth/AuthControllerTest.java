@@ -40,19 +40,16 @@ public class AuthControllerTest extends ContainerBaseTest {
     JwtProperties jwtProperties;
 
     @Test
-    @DisplayName("POST /api/v1/auth/google-login - 실패 (파라미터 보내지 않음)")
+    @DisplayName("POST /api/v1/auth/google-login - 실패 (올바르지 않은 파라미터)")
     void googleLoginWithEmptyAccessTokenTest() throws Exception {
         //given
-        GoogleLoginRequest request = GoogleLoginRequest.builder()
-                .build();
-
-        String content = objectMapper.writeValueAsString(request);
+        GoogleLoginRequest request = GoogleLoginRequest.builder().build();
 
         //when //then
         mockMvc.perform(
                         post("/api/v1/auth/google-login")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()))
@@ -63,25 +60,22 @@ public class AuthControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/auth/token - 성공")
     void refreshTokenWithValidTokenTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
+        UserEntity savedUser = userRepository.save(UserEntity.builder()
                 .email("test@email.com")
                 .nickname("nickname")
-                .build();
-        userRepository.save(userEntity);
+                .build());
 
-        String refreshToken = jwtTokenHandler.generateToken(userEntity.getId(), jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
+        String refreshToken = jwtTokenHandler.generateToken(savedUser.getId(), jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
 
         RefreshTokenRequest request = RefreshTokenRequest.builder()
                 .refreshToken(refreshToken)
                 .build();
 
-        String content = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/auth/token")
-                                .content(content)
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
     }
@@ -90,18 +84,17 @@ public class AuthControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/auth/token - 실패 (유효하지 않은 토큰)")
     void refreshTokenWithInvalidTokenTest() throws Exception {
         //given
-        String refreshToken = "dummy";
+        String refreshToken = "invalid token";
+
         RefreshTokenRequest request = RefreshTokenRequest.builder()
                 .refreshToken(refreshToken)
                 .build();
 
-        String content = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/auth/token")
-                                .content(content)
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()))
@@ -112,16 +105,13 @@ public class AuthControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/auth/token - 실패 (파라미터 보내지 않음)")
     void refreshTokenWithEmptyTokenTest() throws Exception {
         //given
-        RefreshTokenRequest request = RefreshTokenRequest.builder()
-                .build();
-
-        String content = objectMapper.writeValueAsString(request);
+        RefreshTokenRequest request = RefreshTokenRequest.builder().build();
 
         //when //then
         mockMvc.perform(
                         post("/api/v1/auth/token")
-                                .content(content)
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()))

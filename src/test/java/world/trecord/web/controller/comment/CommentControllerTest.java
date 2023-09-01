@@ -63,25 +63,24 @@ class CommentControllerTest extends ContainerBaseTest {
     void createCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        String token = createToken(userEntity.getId());
-
         String content = "content";
+
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
                 .content(content)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header("Authorization", token)
-                                .content(body)
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
     }
@@ -91,26 +90,26 @@ class CommentControllerTest extends ContainerBaseTest {
     void createChildCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = createToken(userEntity.getId());
-
         String content = "content";
+
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
                 .parentId(parentCommentEntity.getId())
                 .content(content)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header("Authorization", token)
-                                .content(body)
+                                .header("Authorization", createToken(userEntity.getId()))
+                                .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
@@ -121,27 +120,27 @@ class CommentControllerTest extends ContainerBaseTest {
     void createChildCommentWhenOriginCommentNotExistingTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         long notExistingCommentId = 0L;
-        String token = createToken(userEntity.getId());
 
         String content = "content";
+
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
                 .parentId(notExistingCommentId)
                 .content(content)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header("Authorization", token)
-                                .content(body)
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(NOT_EXISTING_COMMENT.getErrorCode()));
@@ -152,25 +151,24 @@ class CommentControllerTest extends ContainerBaseTest {
     void createCommentWithInvalidDataTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
-        String token = createToken(userEntity.getId());
-
         String invalidContent = "";
+
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
                 .content(invalidContent)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header("Authorization", token)
-                                .content(body)
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andDo(print())
@@ -182,54 +180,54 @@ class CommentControllerTest extends ContainerBaseTest {
     void updateCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = createToken(userEntity.getId());
-
         String changeContent = "change content";
+
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .content(changeContent)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         put("/api/v1/comments/{commentId}", commentEntity.getId())
-                                .header("Authorization", token)
-                                .content(body)
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content").value(changeContent));
     }
 
     @Test
-    @DisplayName("PUT /api/v1/comments/{commentId} - 실패 (올바르지 못한 댓글 내용)")
+    @DisplayName("PUT /api/v1/comments/{commentId} - 실패 (올바르지 파라미터)")
     void updateCommentWithInvalidDataTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
         CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = createToken(userEntity.getId());
-
         String invalidContent = "";
+
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .content(invalidContent)
                 .build();
 
-        String body = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         put("/api/v1/comments/{commentId}", commentEntity.getId())
-                                .header("Authorization", token)
-                                .content(body)
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
@@ -240,17 +238,17 @@ class CommentControllerTest extends ContainerBaseTest {
     void deleteCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
-        String token = createToken(userEntity.getId());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+
+        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/comments/{commentId}", commentEntity.getId())
-                                .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Authorization", createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk());
 
@@ -263,14 +261,12 @@ class CommentControllerTest extends ContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = createToken(userEntity.getId());
         String pathVariable = "Invalid path variable";
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/comments/{commentId}", pathVariable)
-                                .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Authorization", createToken(userEntity.getId()))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));

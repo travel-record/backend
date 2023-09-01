@@ -20,7 +20,6 @@ class PingControllerTest extends ContainerBaseTest {
     @Test
     @DisplayName("GET / - 성공")
     void pingTest() throws Exception {
-
         //when //then
         mockMvc.perform(
                         get("/")

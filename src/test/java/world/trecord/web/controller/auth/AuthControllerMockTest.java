@@ -32,6 +32,7 @@ class AuthControllerMockTest {
         String token = "test token";
         String refreshToken = "test refresh token";
         String nickname = "nickname";
+
         long userId = 1L;
 
         GoogleLoginRequest request = GoogleLoginRequest.builder().authorizationCode(validAuthorizationCode).redirectionUri(redirectionUri).build();

@@ -53,21 +53,15 @@ class FeedControllerTest extends ContainerBaseTest {
     JwtProperties jwtProperties;
 
     @Test
-    @DisplayName("GET /api/v1/feeds - 성공 (빈 배열로 리턴)")
+    @DisplayName("GET /api/v1/feeds - 성공 (등록된 피드가 없을때)")
     void getEmptyFeedListByUserIdTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-
-        UserEntity savedUserEntity = userRepository.save(userEntity);
-
-        String token = createToken(savedUserEntity.getId());
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.feeds").isArray())
@@ -87,12 +81,10 @@ class FeedControllerTest extends ContainerBaseTest {
 
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
-        String token = createToken(savedUserEntity.getId());
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds")
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.feeds").isArray())
@@ -108,13 +100,9 @@ class FeedControllerTest extends ContainerBaseTest {
     @Test
     @DisplayName("GET /api/v1/feeds - 실패 (인증되지 않는 사용자)")
     void getFeedListNotExistingUserTest() throws Exception {
-        //given
-        String token = createToken(0L);
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds")
-                                .header("Authorization", token)
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
@@ -126,14 +114,13 @@ class FeedControllerTest extends ContainerBaseTest {
     void getFeedByAuthenticatedUserTest() throws Exception {
         //given
         UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        String token = createToken(savedUserEntity.getId());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk());
     }
@@ -143,6 +130,7 @@ class FeedControllerTest extends ContainerBaseTest {
     void getFeedByNotAuthenticatedUserTest() throws Exception {
         //given
         UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when //then
@@ -156,13 +144,7 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/feeds - 성공")
     void createFeedTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-
-        UserEntity savedUserEntity = userRepository.save(userEntity);
-
-        String token = createToken(savedUserEntity.getId());
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         String feedName = "feed name";
         String imageUrl = "image";
@@ -184,14 +166,12 @@ class FeedControllerTest extends ContainerBaseTest {
                 .satisfaction(satisfaction)
                 .build();
 
-        String content = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/feeds")
-                                .header("Authorization", token)
-                                .content(content)
+                                .header("Authorization", createToken(savedUserEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
     }
@@ -199,17 +179,9 @@ class FeedControllerTest extends ContainerBaseTest {
     @Test
     @DisplayName("POST /api/v1/feeds - 실패 (인증되지 않은 사용자)")
     void createFeedByNotAuthenticatedUserTest() throws Exception {
-        //given
-        FeedCreateRequest request = FeedCreateRequest.builder()
-                .build();
-
-        String content = objectMapper.writeValueAsString(request);
-
         //when //then
         mockMvc.perform(
                         post("/api/v1/feeds")
-                                .content(content)
-                                .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
@@ -220,9 +192,8 @@ class FeedControllerTest extends ContainerBaseTest {
     void updateFeedTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        String token = createToken(userEntity.getId());
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -241,9 +212,9 @@ class FeedControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", token)
-                                .content(objectMapper.writeValueAsString(request))
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
 
@@ -259,8 +230,8 @@ class FeedControllerTest extends ContainerBaseTest {
     void updateFeedWhenFeedNotExistingTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        Long notExistingFeedId = 0L;
-        String token = createToken(userEntity.getId());
+
+        long notExistingFeedId = 0L;
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -279,9 +250,9 @@ class FeedControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/feeds/{feedId}", notExistingFeedId)
-                                .header("Authorization", token)
-                                .content(objectMapper.writeValueAsString(request))
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(NOT_EXISTING_FEED.code()));
@@ -291,12 +262,10 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("PUT /api/v1/feeds/{feedId} - 실패 (피드 관리자 아님)")
     void updateFeedByFeedManagerTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        UserEntity otherUser = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-        String token = createToken(otherUser.getId());
-
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -315,9 +284,9 @@ class FeedControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", token)
-                                .content(objectMapper.writeValueAsString(request))
+                                .header("Authorization", createToken(other.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
@@ -327,7 +296,6 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("PUT /api/v1/feeds/{feedId} - 실패 (파라미터 검증 오류)")
     void updateFeedWhenRequestParaemeterErrorTest() throws Exception {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        String token = createToken(userEntity.getId());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -336,9 +304,9 @@ class FeedControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", token)
-                                .content(objectMapper.writeValueAsString(request))
+                                .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
@@ -348,24 +316,20 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("DELETE /api/v1/feeds/{feedId} - 성공 (기록과 함께 삭제)")
     void deleteFeedTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity savedUserEntity = userRepository.save(userEntity);
-
-        String token = createToken(savedUserEntity.getId());
+        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
         RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
         RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk());
 
@@ -377,17 +341,15 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("DELETE /api/v1/feeds/{feedId} - 실패 (피드 관리자 아님)")
     void deleteFeedByManagerTest() throws Exception {
         //given
-        UserEntity savedUser = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity otherUser = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
 
-        String token = createToken(otherUser.getId());
-
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUser, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(other.getId()))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
@@ -399,14 +361,12 @@ class FeedControllerTest extends ContainerBaseTest {
         //given
         UserEntity savedUser = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
-        String token = createToken(savedUser.getId());
-
         long notExistingFeedId = 0L;
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/feeds/{feedId}", notExistingFeedId)
-                                .header("Authorization", token)
+                                .header("Authorization", createToken(savedUser.getId()))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(NOT_EXISTING_FEED.code()));

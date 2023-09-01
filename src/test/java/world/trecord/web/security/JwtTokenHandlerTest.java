@@ -12,9 +12,9 @@ class JwtTokenHandlerTest {
     void extractUserIdFromValidTokenTest() {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
-        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
-        Long originalUserId = 123L;
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long originalUserId = 123L;
         long expiredTimeMs = 86400000L;
 
         String token = jwtTokenHandler.generateToken(originalUserId, secretKey, expiredTimeMs);
@@ -31,6 +31,7 @@ class JwtTokenHandlerTest {
     void extractUserIdFromInvalidTokenTest() {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
+
         String invalidToken = "invalidToken";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
@@ -46,7 +47,8 @@ class JwtTokenHandlerTest {
     void validateValidTokenTest() throws Exception {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
-        Long originalUserId = 123L;
+
+        long originalUserId = 123L;
         long expiredTimeMs = 86400000L;
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
@@ -61,6 +63,7 @@ class JwtTokenHandlerTest {
     void validateInvalidTokenTest() throws Exception {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
+
         String invalidToken = "invalid token";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
@@ -74,6 +77,7 @@ class JwtTokenHandlerTest {
     void verifyWithNullTest() throws Exception {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
+
         String nullToken = null;
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
@@ -87,6 +91,7 @@ class JwtTokenHandlerTest {
     void verifyExpiredTokenTest() {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
+
         long userId = 1L;
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = -1000L;
@@ -103,10 +108,10 @@ class JwtTokenHandlerTest {
     void generateTokenTest() {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
+
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
-
-        Long userId = 123L;
+        long userId = 123L;
 
         String tokenPattern = "^[a-zA-Z0-9-_]+(=)*$";
 
@@ -128,14 +133,15 @@ class JwtTokenHandlerTest {
     void generateAndExtractTokenTest() {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
-        Long originalUserId = 123L;
+
+        long originalUserId = 123L;
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
         String token = jwtTokenHandler.generateToken(originalUserId, secretKey, expiredTimeMs);
 
         //when
-        Long extractedUserId = Long.valueOf(jwtTokenHandler.extractUserId(secretKey, token));
+        Long extractedUserId = jwtTokenHandler.extractUserId(secretKey, token);
 
         //then
         Assertions.assertThat(extractedUserId).isEqualTo(originalUserId);
@@ -146,6 +152,7 @@ class JwtTokenHandlerTest {
     void extractUserIdWithInvalidToken() throws Exception {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
+
         String invalidToken = "-1";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
@@ -159,7 +166,8 @@ class JwtTokenHandlerTest {
     void extractUserIdWithExpiredToken() throws Exception {
         //given
         JwtTokenHandler jwtTokenHandler = new JwtTokenHandler();
-        Long originalUserId = 123L;
+
+        long originalUserId = 123L;
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         String expiredToken = jwtTokenHandler.generateToken(originalUserId, secretKey, -1000L);
 
