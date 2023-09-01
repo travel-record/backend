@@ -98,7 +98,7 @@ class JwtTokenFilterMockTest {
         jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         //then
-        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(mockPrintWriter).write(responseContentCaptor.capture());
 
         String responseBody = responseContentCaptor.getValue();
@@ -146,7 +146,7 @@ class JwtTokenFilterMockTest {
         jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         //then
-        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(mockPrintWriter).write(responseContentCaptor.capture());
 
         String responseBody = responseContentCaptor.getValue();

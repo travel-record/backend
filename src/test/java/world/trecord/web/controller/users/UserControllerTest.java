@@ -101,7 +101,7 @@ class UserControllerTest extends ContainerBaseTest {
                         get("/api/v1/users")
                                 .header("Authorization", createToken(notExistingUserId))
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
@@ -264,7 +264,7 @@ class UserControllerTest extends ContainerBaseTest {
                         get("/api/v1/users/comments")
                                 .header("Authorization", invalidToken)
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 

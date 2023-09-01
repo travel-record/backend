@@ -104,7 +104,7 @@ class FeedControllerTest extends ContainerBaseTest {
         mockMvc.perform(
                         get("/api/v1/feeds")
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
@@ -183,7 +183,7 @@ class FeedControllerTest extends ContainerBaseTest {
         mockMvc.perform(
                         post("/api/v1/feeds")
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
