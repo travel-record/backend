@@ -122,7 +122,7 @@ class RecordControllerTest extends ContainerBaseTest {
                         get("/api/v1/records/{recordId}", 0L)
                                 .header("Authorization", invalidToken)
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()))
                 .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
     }
@@ -484,7 +484,7 @@ class RecordControllerTest extends ContainerBaseTest {
         mockMvc.perform(
                         delete("/api/v1/records/{recordId}", invalidPathVariable)
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
