@@ -33,7 +33,7 @@ public class SecurityConfig {
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
     private final ObjectMapper objectMapper;
-
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -44,12 +44,12 @@ public class SecurityConfig {
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/", "/api/**").permitAll()
-                        .anyRequest().authenticated()
+                .authorizeHttpRequests(
+                        req -> req
+                                .requestMatchers("/", "/api/**").permitAll()
+                                .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter(),
-                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -57,12 +57,12 @@ public class SecurityConfig {
     public JwtTokenFilter jwtAuthFilter() {
         Map<String, List<HttpMethod>> whitelistMap = Map.of(
                 "/", List.of(GET),
-                "/api/v1/auth/google-login", List.of(POST),
-                "/api/v1/auth/token", List.of(POST),
-                "/api/v1/users/{userId}", List.of(GET),
-                "/api/v1/feeds/{feedId}", List.of(GET),
-                "/api/v1/records/{recordId}", List.of(GET),
-                "/api/v1/records/{recordId}/comments", List.of(GET)
+                "/api/*/auth/google-login", List.of(POST),
+                "/api/*/auth/token", List.of(POST),
+                "/api/*/users/{userId}", List.of(GET),
+                "/api/*/feeds/{feedId}", List.of(GET),
+                "/api/*/records/{recordId}", List.of(GET),
+                "/api/*/records/{recordId}/comments", List.of(GET)
         );
         return new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, whitelistMap);
     }

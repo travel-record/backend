@@ -22,4 +22,8 @@ public enum CustomExceptionError {
 
     private final int errorCode;
     private final String errorMsg;
+
+    public int code() {
+        return errorCode;
+    }
 }
