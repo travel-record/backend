@@ -123,7 +123,7 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .header("Authorization", invalidToken)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()))
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()))
                 .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
     }
 
@@ -137,9 +137,8 @@ class RecordControllerTest extends ContainerBaseTest {
         mockMvc.perform(
                         get("/api/v1/records/{recordId}", notExistingRecordId)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_RECORD.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(NOT_EXISTING_RECORD.getErrorMsg()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(RECORD_NOT_FOUND.code()));
     }
 
     @Test
@@ -161,7 +160,7 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()))
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()))
                 .andExpect(jsonPath("$.message").value(INVALID_ARGUMENT.getErrorMsg()));
     }
 
@@ -247,8 +246,8 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
     @Test
@@ -327,8 +326,8 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
     @Test
@@ -397,7 +396,7 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -424,8 +423,8 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(FORBIDDEN.getErrorCode()));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
     @Test
@@ -450,8 +449,8 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_RECORD.getErrorCode()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(RECORD_NOT_FOUND.code()));
     }
 
     @Test
@@ -472,7 +471,7 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -486,7 +485,7 @@ class RecordControllerTest extends ContainerBaseTest {
                         delete("/api/v1/records/{recordId}", invalidPathVariable)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test

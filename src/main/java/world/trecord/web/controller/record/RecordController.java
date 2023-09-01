@@ -6,7 +6,6 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
@@ -17,6 +16,7 @@ import world.trecord.web.service.record.response.RecordInfoResponse;
 import world.trecord.web.service.record.response.RecordSequenceSwapResponse;
 import world.trecord.web.service.userrecordlike.UserRecordLikeService;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
+import world.trecord.web.service.users.UserContext;
 
 @RequiredArgsConstructor
 @RestController

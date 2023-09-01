@@ -28,8 +28,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static world.trecord.web.exception.CustomExceptionError.COMMENT_NOT_FOUND;
 import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_COMMENT;
 
 @MockMvcTestSupport
 class CommentControllerTest extends ContainerBaseTest {
@@ -142,8 +142,8 @@ class CommentControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_COMMENT.getErrorCode()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(COMMENT_NOT_FOUND.code()));
     }
 
     @Test

@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import world.trecord.web.controller.ApiResponse;
+import world.trecord.web.service.users.UserContext;
 import world.trecord.web.service.users.UserService;
 
 import java.io.IOException;
@@ -26,6 +28,7 @@ import java.util.Map;
 
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
+@Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final String secretKey;
@@ -54,15 +57,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             jwtTokenHandler.verify(secretKey, token);
 
-            Long userId = jwtTokenHandler.extractUserId(secretKey, token);
+            Long userId = jwtTokenHandler.getUserId(secretKey, token);
 
-            UserContext userContext = userService.loadUserContext(userId);
+            UserContext userContext = userService.getUserContextOrException(userId);
 
             setAuthentication(userContext);
 
             chain.doFilter(req, res);
 
         } catch (Exception e) {
+            log.error("Error in [JwtTokenFilter] while processing the request. Cause: [{}]", e.getMessage());
             returnInvalidTokenError(res);
         }
     }

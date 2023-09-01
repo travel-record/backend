@@ -20,7 +20,7 @@ class JwtTokenHandlerTest {
         String token = jwtTokenHandler.generateToken(originalUserId, secretKey, expiredTimeMs);
 
         //when
-        Long userId = jwtTokenHandler.extractUserId(secretKey, token);
+        Long userId = jwtTokenHandler.getUserId(secretKey, token);
 
         //then
         Assertions.assertThat(userId).isEqualTo(originalUserId);
@@ -37,7 +37,7 @@ class JwtTokenHandlerTest {
 
         //when //then
         Assertions.assertThatThrownBy(() -> {
-                    jwtTokenHandler.extractUserId(secretKey, invalidToken);
+                    jwtTokenHandler.getUserId(secretKey, invalidToken);
                 })
                 .isInstanceOf(JwtException.class);
     }
@@ -141,7 +141,7 @@ class JwtTokenHandlerTest {
         String token = jwtTokenHandler.generateToken(originalUserId, secretKey, expiredTimeMs);
 
         //when
-        Long extractedUserId = jwtTokenHandler.extractUserId(secretKey, token);
+        Long extractedUserId = jwtTokenHandler.getUserId(secretKey, token);
 
         //then
         Assertions.assertThat(extractedUserId).isEqualTo(originalUserId);
@@ -157,7 +157,7 @@ class JwtTokenHandlerTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
         //when //then
-        Assertions.assertThatThrownBy(() -> jwtTokenHandler.extractUserId(secretKey, invalidToken))
+        Assertions.assertThatThrownBy(() -> jwtTokenHandler.getUserId(secretKey, invalidToken))
                 .isInstanceOf(JwtException.class);
     }
 
@@ -172,7 +172,7 @@ class JwtTokenHandlerTest {
         String expiredToken = jwtTokenHandler.generateToken(originalUserId, secretKey, -1000L);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> jwtTokenHandler.extractUserId(secretKey, expiredToken))
+        Assertions.assertThatThrownBy(() -> jwtTokenHandler.getUserId(secretKey, expiredToken))
                 .isInstanceOf(JwtException.class);
     }
 }

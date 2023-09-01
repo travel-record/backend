@@ -2,6 +2,7 @@ package world.trecord.web.exception;
 
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -14,77 +15,72 @@ import world.trecord.web.controller.ApiResponse;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @Slf4j
 @RestControllerAdvice
 public class CustomExceptionHandler {
 
+    private void logException(Exception e, String description) {
+        log.error("Error in [{}]: [{}] Cause: [{}]", e.getStackTrace()[0], description, e.getMessage());
+    }
+
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ApiResponse<Object>> customException(CustomException exception) {
-        ApiResponse<Object> apiResponse = ApiResponse.of(exception.getError().getErrorCode(), exception.getMessage(), null);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(CustomException e) {
+        logException(e, "CustomException while processing request.");
+        return ResponseEntity.status(e.getError().status()).body(ApiResponse.of(e.getError().code(), e.message(), null));
     }
 
     @ExceptionHandler(BindException.class)
-    public ResponseEntity<ApiResponse<ValidationErrorDTO>> bindException(BindException exception) {
-        ValidationErrorDTO validationErrorDTO = getFieldErrorDTO(exception);
-        ApiResponse<ValidationErrorDTO> apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), validationErrorDTO);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<ValidationErrorDTO>> handle(BindException e) {
+        logException(e, "BindException while binding request parameters.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), buildFieldErrors(e)));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Object>> illegalArgumentException(IllegalArgumentException exception) {
-        ApiResponse<Object> apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(IllegalArgumentException e) {
+        logException(e, "IllegalArgumentException while processing arguments.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Object>> httpMessageNotReadableException(HttpMessageNotReadableException exception) {
-        ApiResponse<Object> apiResponse = ApiResponse.of(INVALID_ARGUMENT.getErrorCode(), INVALID_ARGUMENT.getErrorMsg(), null);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(HttpMessageNotReadableException e) {
+        logException(e, "HttpMessageNotReadableException while reading the HTTP message.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiResponse<Object>> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
-        CustomExceptionError error = INVALID_ARGUMENT;
-        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(MethodArgumentTypeMismatchException e) {
+        logException(e, "MethodArgumentTypeMismatchException while matching argument types.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ApiResponse<Object>> noHandlerFoundException(NoHandlerFoundException exception) {
-        CustomExceptionError error = CustomExceptionError.NOT_FOUND;
-        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(NoHandlerFoundException e) {
+        logException(e, "NoHandlerFoundException for the requested route.");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.of(NOT_FOUND.code(), NOT_FOUND.message(), null));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ApiResponse<Object>> httpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
-        CustomExceptionError error = INVALID_REQUEST_METHOD;
-        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(HttpRequestMethodNotSupportedException e) {
+        logException(e, "HttpRequestMethodNotSupportedException for the requested method.");
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(ApiResponse.of(METHOD_NOT_ALLOWED.code(), METHOD_NOT_ALLOWED.message(), null));
     }
 
     @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ApiResponse<Object>> jwtException(JwtException exception) {
-        CustomExceptionError error = INVALID_TOKEN;
-        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
-        return ResponseEntity.status(BAD_REQUEST).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(JwtException e) {
+        logException(e, "JwtException while validating JWT.");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.of(INVALID_TOKEN.code(), INVALID_TOKEN.message(), null));
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<Object>> runtimeException(RuntimeException exception) {
-        log.error("[RuntimeException] {}", exception.toString());
-        CustomExceptionError error = CustomExceptionError.INTERNAL_SERVER_ERROR;
-        ApiResponse<Object> apiResponse = ApiResponse.of(error.getErrorCode(), error.getErrorMsg(), null);
-        return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(apiResponse);
+    public ResponseEntity<ApiResponse<Void>> handle(RuntimeException e) {
+        log.error("Error in [{}] Cause: [{}]", e.getStackTrace()[0], e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.of(INTERNAL_SERVER_ERROR.code(), INTERNAL_SERVER_ERROR.message(), null));
     }
 
-    private ValidationErrorDTO getFieldErrorDTO(BindException exception) {
-        List<ValidationErrorDTO.FieldError> fieldErrors = exception.getBindingResult().getFieldErrors().stream()
+    private ValidationErrorDTO buildFieldErrors(BindException e) {
+        List<ValidationErrorDTO.FieldError> fieldErrors = e.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> ValidationErrorDTO.FieldError.builder()
                         .field(fieldError.getField())
                         .message(fieldError.getDefaultMessage())

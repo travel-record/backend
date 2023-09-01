@@ -96,9 +96,8 @@ public class AuthControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test

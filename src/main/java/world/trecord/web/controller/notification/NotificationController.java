@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.notification.NotificationService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
+import world.trecord.web.service.users.UserContext;
 
 @RequiredArgsConstructor
 @RestController

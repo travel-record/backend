@@ -19,7 +19,6 @@ import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.exception.CustomExceptionError;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
@@ -30,7 +29,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
+import static world.trecord.web.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 
 @IntegrationTestSupport
 class UserServiceTest extends ContainerBaseTest {
@@ -103,7 +102,7 @@ class UserServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> userService.getUser(notExistingUserId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
     }
 
     @Test
@@ -274,7 +273,7 @@ class UserServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> userService.updateUser(userEntity.getId(), updateRequest))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(EXISTING_NICKNAME);
+                .isEqualTo(NICKNAME_DUPLICATED);
     }
 
     @Test
@@ -330,7 +329,7 @@ class UserServiceTest extends ContainerBaseTest {
         UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
 
         //when
-        UserContext userContext = userService.loadUserContext(userEntity.getId());
+        UserContext userContext = userService.getUserContextOrException(userEntity.getId());
 
         //then
         Assertions.assertThat(userContext.getId()).isEqualTo(userEntity.getId());
@@ -343,7 +342,7 @@ class UserServiceTest extends ContainerBaseTest {
         long notExistingUserId = -1L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> userService.loadUserContext(notExistingUserId))
+        Assertions.assertThatThrownBy(() -> userService.getUserContextOrException(notExistingUserId))
                 .isInstanceOf(UsernameNotFoundException.class);
     }
 

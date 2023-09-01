@@ -102,7 +102,7 @@ class UserControllerTest extends ContainerBaseTest {
                                 .header("Authorization", createToken(notExistingUserId))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -172,9 +172,8 @@ class UserControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(EXISTING_NICKNAME.getErrorCode()))
-                .andExpect(jsonPath("$.message").value(EXISTING_NICKNAME.getErrorMsg()));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(NICKNAME_DUPLICATED.code()));
     }
 
     @Test
@@ -215,8 +214,8 @@ class UserControllerTest extends ContainerBaseTest {
         mockMvc.perform(
                         get("/api/v1/users/{userId}", notExistingUserId)
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_USER.getErrorCode()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.code()));
     }
 
     @Test
@@ -266,7 +265,7 @@ class UserControllerTest extends ContainerBaseTest {
                                 .header("Authorization", invalidToken)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test

@@ -167,7 +167,7 @@ class FeedServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> feedService.getFeed(notExistingUserId, notExistingFeedId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
+                .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
     }
 
     @Test
@@ -226,7 +226,7 @@ class FeedServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> feedService.updateFeed(userId, notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_FEED);
+                .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
     }
 
     @Test

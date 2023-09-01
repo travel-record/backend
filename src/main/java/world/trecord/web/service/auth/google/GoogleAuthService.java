@@ -18,10 +18,10 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AU
 @Service
 public class GoogleAuthService {
 
-    private final GoogleProperties googleProperties;
     private static final String BEARER = "Bearer ";
     private static final String GRANT_TYPE = "authorization_code";
 
+    private final GoogleProperties googleProperties;
     private final GoogleTokenFeignClient googleTokenFeignClient;
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
@@ -31,13 +31,7 @@ public class GoogleAuthService {
     }
 
     private String getTokenOrException(String authorizationCode, String redirectionUri) {
-        GoogleTokenRequest request = GoogleTokenRequest.builder()
-                .client_id(googleProperties.getClientId())
-                .client_secret(googleProperties.getClientSecret())
-                .code(authorizationCode)
-                .redirect_uri(redirectionUri)
-                .grant_type(GRANT_TYPE)
-                .build();
+        GoogleTokenRequest request = buildTokenRequest(authorizationCode, redirectionUri);
 
         return Optional.ofNullable(googleTokenFeignClient.requestToken(request))
                 .map(GoogleTokenResponse::getAccessToken)
@@ -48,5 +42,15 @@ public class GoogleAuthService {
         return Optional.ofNullable(googleUserInfoFeignClient.fetchUserInfo(BEARER + accessToken))
                 .map(GoogleUserInfoResponse::getEmail)
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
+    }
+
+    private GoogleTokenRequest buildTokenRequest(String authorizationCode, String redirectionUri) {
+        return GoogleTokenRequest.builder()
+                .client_id(googleProperties.getClientId())
+                .client_secret(googleProperties.getClientSecret())
+                .code(authorizationCode)
+                .redirect_uri(redirectionUri)
+                .grant_type(GRANT_TYPE)
+                .build();
     }
 }

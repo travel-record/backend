@@ -254,8 +254,8 @@ class FeedControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_FEED.code()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
     }
 
     @Test
@@ -288,7 +288,7 @@ class FeedControllerTest extends ContainerBaseTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
@@ -351,7 +351,7 @@ class FeedControllerTest extends ContainerBaseTest {
                         delete("/api/v1/feeds/{feedId}", feedEntity.getId())
                                 .header("Authorization", createToken(other.getId()))
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
@@ -368,8 +368,8 @@ class FeedControllerTest extends ContainerBaseTest {
                         delete("/api/v1/feeds/{feedId}", notExistingFeedId)
                                 .header("Authorization", createToken(savedUser.getId()))
                 )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(NOT_EXISTING_FEED.code()));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
     }
 
 

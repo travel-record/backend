@@ -70,12 +70,12 @@ public class CommentService {
 
     private UserEntity getUserOrException(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private RecordEntity getRecordOrException(Long recordId) {
         return recordRepository.findById(recordId)
-                .orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+                .orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private CommentEntity getCommentOrNull(Long parentId) {
@@ -86,12 +86,12 @@ public class CommentService {
 
     private CommentEntity getCommentWithChildCommentsOrException(Long commentId) {
         return commentRepository.findWithChildCommentEntitiesById(commentId)
-                .orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
+                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
     private CommentEntity getCommentWithUserOrException(Long commentId) {
         return commentRepository.findWithUserEntityById(commentId)
-                .orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
+                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
     private void checkPermissionOverComment(CommentEntity commentEntity, Long userId) {

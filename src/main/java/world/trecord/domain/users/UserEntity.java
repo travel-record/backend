@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
-import world.trecord.web.security.Role;
 
 import java.util.Objects;
 
@@ -36,7 +35,7 @@ public class UserEntity extends BaseEntity {
 
     @Column(name = "introduction")
     private String introduction;
-    
+
     @Builder
     private UserEntity(String email, String nickname, String imageUrl, String introduction) {
         this.email = email;

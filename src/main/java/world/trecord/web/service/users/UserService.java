@@ -11,7 +11,6 @@ import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
@@ -20,8 +19,8 @@ import world.trecord.web.service.users.response.UserRecordLikeListResponse;
 import java.util.List;
 import java.util.Objects;
 
-import static world.trecord.web.exception.CustomExceptionError.EXISTING_NICKNAME;
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_USER;
+import static world.trecord.web.exception.CustomExceptionError.NICKNAME_DUPLICATED;
+import static world.trecord.web.exception.CustomExceptionError.USER_NOT_FOUND;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -54,7 +53,7 @@ public class UserService {
         UserEntity userEntity = getUserOrException(userId);
 
         if (isNicknameUpdatedAndExists(userEntity.getNickname(), updateRequest.getNickname())) {
-            throw new CustomException(EXISTING_NICKNAME);
+            throw new CustomException(NICKNAME_DUPLICATED);
         }
 
         userEntity.update(updateRequest.toUpdateEntity());
@@ -84,17 +83,18 @@ public class UserService {
                 .build();
     }
 
-    public UserContext loadUserContext(Long userId) throws UsernameNotFoundException {
+    public UserContext getUserContextOrException(Long userId) throws UsernameNotFoundException {
         return userRepository.findById(userId)
                 .map(UserContext::fromEntity)
-                .orElseThrow(() -> new UsernameNotFoundException(NOT_EXISTING_USER.name()));
+                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND.name()));
     }
 
     private UserEntity getUserOrException(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_EXISTING_USER));
+        return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
-    private boolean isNicknameUpdatedAndExists(String originNickname, String requestNickname) {
-        return !Objects.equals(originNickname, requestNickname) && (userRepository.existsByNickname(requestNickname));
+    private boolean isNicknameUpdatedAndExists(String originalNickname, String updatedNickname) {
+        // TODO 동시성 처리
+        return !Objects.equals(originalNickname, updatedNickname) && (userRepository.existsByNickname(updatedNickname));
     }
 }

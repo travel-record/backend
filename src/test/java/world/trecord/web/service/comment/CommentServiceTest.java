@@ -107,7 +107,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.createComment(notExistingUserId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_USER);
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
     }
 
     @Test
@@ -126,7 +126,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.createComment(userEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_RECORD);
+                .isEqualTo(CustomExceptionError.RECORD_NOT_FOUND);
     }
 
     @Test
@@ -169,7 +169,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.updateComment(userId, notExistingCommentId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_COMMENT);
+                .isEqualTo(CustomExceptionError.COMMENT_NOT_FOUND);
     }
 
     @Test
@@ -254,7 +254,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.deleteComment(userId, notExistingCommentId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.NOT_EXISTING_COMMENT);
+                .isEqualTo(CustomExceptionError.COMMENT_NOT_FOUND);
     }
 
     private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {

@@ -133,7 +133,7 @@ public class RecordService {
     }
 
     private FeedEntity getFeedOrException(Long feedId) {
-        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
@@ -148,7 +148,7 @@ public class RecordService {
     }
 
     private RecordEntity getRecordOrException(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private void checkPermissionOverFeed(FeedEntity feedEntity, Long userId) {

@@ -135,7 +135,7 @@ class RecordServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> recordService.getRecord(viewerId, notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_RECORD);
+                .isEqualTo(RECORD_NOT_FOUND);
     }
 
     @Test
@@ -229,7 +229,7 @@ class RecordServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> recordService.createRecord(writer.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_FEED);
+                .isEqualTo(FEED_NOT_FOUND);
     }
 
     @Test
@@ -333,7 +333,7 @@ class RecordServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> recordService.updateRecord(writer.getId(), notExistingRecordId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_RECORD);
+                .isEqualTo(RECORD_NOT_FOUND);
     }
 
     @Test
@@ -365,7 +365,7 @@ class RecordServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> recordService.deleteRecord(writer.getId(), notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(NOT_EXISTING_RECORD);
+                .isEqualTo(RECORD_NOT_FOUND);
     }
 
     @Test

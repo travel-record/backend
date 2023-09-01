@@ -112,7 +112,7 @@ class AuthServiceTest {
         ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
         ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
 
-        given(jwtTokenHandler.extractUserId(secretKey, token))
+        given(jwtTokenHandler.getUserId(secretKey, token))
                 .willReturn(userId);
 
         given(jwtTokenHandler.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))

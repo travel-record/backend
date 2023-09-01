@@ -13,8 +13,8 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.record.request.RecordCreateRequest;
 import world.trecord.web.service.record.request.RecordUpdateRequest;
 
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_FEED;
-import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_RECORD;
+import static world.trecord.web.exception.CustomExceptionError.FEED_NOT_FOUND;
+import static world.trecord.web.exception.CustomExceptionError.RECORD_NOT_FOUND;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class RecordValidator {
     private final RecordRepository recordRepository;
 
     public void verify(RecordCreateRequest request) throws BindException {
-        FeedEntity feedEntity = feedRepository.findById(request.getFeedId()).orElseThrow(() -> new CustomException(NOT_EXISTING_FEED));
+        FeedEntity feedEntity = feedRepository.findById(request.getFeedId()).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
 
         String recordCreateRequest = "recordCreateRequest";
         String fieldDate = "date";
@@ -44,7 +44,7 @@ public class RecordValidator {
 
     public void verify(Long recordId, RecordUpdateRequest request) throws BindException {
 
-        RecordEntity recordEntity = recordRepository.findWithFeedEntityById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        RecordEntity recordEntity = recordRepository.findWithFeedEntityById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
 
         FeedEntity feedEntity = recordEntity.getFeedEntity();
 

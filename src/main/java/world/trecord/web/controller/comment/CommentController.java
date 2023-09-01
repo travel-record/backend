@@ -5,11 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
-import world.trecord.web.security.UserContext;
 import world.trecord.web.service.comment.CommentService;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
+import world.trecord.web.service.users.UserContext;
 
 @RequiredArgsConstructor
 @RestController
