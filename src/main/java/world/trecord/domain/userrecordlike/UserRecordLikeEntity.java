@@ -26,7 +26,7 @@ public class UserRecordLikeEntity extends BaseEntity {
     @Column(name = "id_like")
     private Long id;
 
-    @Column(name = "deleted_date_time", nullable = true)
+    @Column(name = "deleted_date_time")
     private LocalDateTime deletedDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)

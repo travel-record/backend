@@ -35,10 +35,10 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "image_url", nullable = true, columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
-    @Column(name = "description", nullable = true)
+    @Column(name = "description")
     private String description;
 
     @Column(name = "start_at", nullable = false)
@@ -47,23 +47,23 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "end_at", nullable = false)
     private LocalDateTime endAt;
 
-    @Column(name = "companion", nullable = true)
+    @Column(name = "companion")
     private String companion;
 
-    @Column(name = "place", nullable = true)
+    @Column(name = "place")
     private String place;
 
-    @Column(name = "satisfaction", nullable = true)
+    @Column(name = "satisfaction")
     private String satisfaction;
 
-    @Column(name = "deleted_date_time", nullable = true)
+    @Column(name = "deleted_date_time")
     private LocalDateTime deletedDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
     private UserEntity userEntity;
 
-    @OneToMany(mappedBy = "feedEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "feedEntity")
     private List<RecordEntity> recordEntities = new ArrayList<>();
 
     @Builder

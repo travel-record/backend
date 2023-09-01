@@ -23,22 +23,22 @@ public class UserEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_users")
+    @Column(name = "id_users", nullable = false)
     private Long id;
 
-    @Column(name = "email", nullable = false, length = 255, unique = true, updatable = false)
+    @Column(name = "email", nullable = false, unique = true, updatable = false)
     private String email;
 
-    @Column(name = "nickname", nullable = true, length = 20, unique = true)
+    @Column(name = "nickname", length = 20, unique = true)
     private String nickname;
 
-    @Column(name = "image_url", nullable = true, columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
-    @Column(name = "introduction", nullable = true, length = 255)
+    @Column(name = "introduction")
     private String introduction;
 
-    @Column(name = "deleted_date_time", nullable = true)
+    @Column(name = "deleted_date_time")
     private LocalDateTime deletedDateTime;
 
     @Builder

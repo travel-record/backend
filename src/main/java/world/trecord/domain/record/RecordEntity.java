@@ -52,23 +52,23 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
-    @Column(name = "companion", nullable = true)
+    @Column(name = "companion")
     private String companion;
 
-    @Column(name = "image_url", nullable = true, columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(name = "sequence", nullable = false)
     private int sequence;
 
-    @Column(name = "deleted_date_time", nullable = true)
+    @Column(name = "deleted_date_time")
     private LocalDateTime deletedDateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_record_feed"))
     private FeedEntity feedEntity;
 
-    @OneToMany(mappedBy = "recordEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recordEntity")
     private List<CommentEntity> commentEntities = new ArrayList<>();
 
     @Builder

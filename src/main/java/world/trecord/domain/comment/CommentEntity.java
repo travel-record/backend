@@ -32,10 +32,10 @@ public class CommentEntity extends BaseEntity {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "deleted_date_time", nullable = true)
+    @Column(name = "deleted_date_time")
     private LocalDateTime deletedDateTime;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_user"))
     private UserEntity userEntity;
 
@@ -47,7 +47,7 @@ public class CommentEntity extends BaseEntity {
     @JoinColumn(name = "id_parent", foreignKey = @ForeignKey(name = "fk_comment_comment"))
     private CommentEntity parentCommentEntity;
 
-    @OneToMany(mappedBy = "parentCommentEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parentCommentEntity")
     private List<CommentEntity> childCommentEntities = new ArrayList<>();
 
     @Builder

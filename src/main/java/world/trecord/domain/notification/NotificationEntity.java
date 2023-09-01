@@ -37,14 +37,14 @@ public class NotificationEntity extends BaseEntity {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users_to", nullable = true, foreignKey = @ForeignKey(name = "fk_notification_users_to"))
+    @JoinColumn(name = "id_users_to", foreignKey = @ForeignKey(name = "fk_notification_users_to"))
     private UserEntity usersToEntity;
 
     @Type(JsonType.class)
-    @Column(name = "args", nullable = true, columnDefinition = "json")
+    @Column(name = "args", columnDefinition = "json")
     private NotificationArgs args;
 
-    @Column(name = "deleted_date_time", nullable = true)
+    @Column(name = "deleted_date_time")
     private LocalDateTime deletedDateTime;
 
     @Builder
