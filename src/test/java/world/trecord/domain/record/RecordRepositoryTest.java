@@ -49,7 +49,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         recordRepository.saveAll(List.of(record1, record2, record3));
 
         //when
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedEntity.getId());
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedEntity.getId());
 
         //then
         Assertions.assertThat(projectionList)
@@ -75,7 +75,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         recordRepository.saveAll(List.of(record1, record2, record3));
 
         //when
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedEntity.getId());
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedEntity.getId());
 
         //then
         Assertions.assertThat(projectionList)
@@ -101,7 +101,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         recordRepository.saveAll(List.of(record1, record2, record3));
 
         //when
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordEntityByFeedId(feedEntity.getId());
+        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedEntity.getId());
 
         //then
         Assertions.assertThat(projectionList)
@@ -123,11 +123,10 @@ class RecordRepositoryTest extends ContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
 
         //when
-        Optional<RecordEntity> optionalRecord = recordRepository.findRecordEntityWithFeedEntityById(recordEntity.getId());
+        Optional<RecordEntity> optionalRecord = recordRepository.findWithFeedEntityById(recordEntity.getId());
 
         //then
-        RecordEntity record = optionalRecord.get();
-        Assertions.assertThat(record.getFeedEntity()).isNotNull();
+        Assertions.assertThat(optionalRecord).isPresent();
     }
 
     @Test
@@ -142,7 +141,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         recordRepository.save(createRecordEntity(feedEntity, "title", "place", date, "content", "weather", "satisfaction", "feeling", sequence));
 
         //when
-        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), date);
+        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), date);
 
         //then
         Assertions.assertThat(maxSequence.orElse(0)).isEqualTo(sequence);
@@ -158,7 +157,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
         LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
 
         //when
-        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), date);
+        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), date);
 
         //then
         Assertions.assertThat(maxSequence).isEmpty();

@@ -15,10 +15,10 @@ import java.util.Optional;
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     @EntityGraph(attributePaths = "userEntity")
-    Optional<CommentEntity> findCommentEntityWithUserEntityById(Long commentId);
+    Optional<CommentEntity> findWithUserEntityById(Long commentId);
 
     @EntityGraph(attributePaths = "childCommentEntities")
-    Optional<CommentEntity> findCommentEntityWithChildCommentEntitiesById(Long commentId);
+    Optional<CommentEntity> findWithChildCommentEntitiesById(Long commentId);
 
     @Query("SELECT re.id as recordId, re.title as recordTitle, ce.id as commentId, ce.content as content " +
             "FROM CommentEntity ce " +
@@ -28,7 +28,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     List<CommentRecordProjection> findByUserEntityIdOrderByCreatedDateTimeDesc(@Param("userId") Long userId);
 
     @EntityGraph(attributePaths = "userEntity")
-    List<CommentEntity> findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(Long recordId);
+    List<CommentEntity> findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(Long recordId);
 
     @Modifying
     @Query("UPDATE CommentEntity ce " +

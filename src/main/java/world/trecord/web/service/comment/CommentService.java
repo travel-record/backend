@@ -85,12 +85,12 @@ public class CommentService {
     }
 
     private CommentEntity getCommentWithChildCommentsOrException(Long commentId) {
-        return commentRepository.findCommentEntityWithChildCommentEntitiesById(commentId)
+        return commentRepository.findWithChildCommentEntitiesById(commentId)
                 .orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
     }
 
     private CommentEntity getCommentWithUserOrException(Long commentId) {
-        return commentRepository.findCommentEntityWithUserEntityById(commentId)
+        return commentRepository.findWithUserEntityById(commentId)
                 .orElseThrow(() -> new CustomException(NOT_EXISTING_COMMENT));
     }
 

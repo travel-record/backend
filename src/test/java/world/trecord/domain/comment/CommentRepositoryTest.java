@@ -111,7 +111,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
         commentRepository.saveAll(List.of(commentEntity4, commentEntity3, commentEntity2, commentEntity1));
 
         //when
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentEntities)
@@ -130,7 +130,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
         //when
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentEntities).isEmpty();

@@ -14,18 +14,18 @@ import java.util.Optional;
 public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
 
     @EntityGraph(attributePaths = {"feedEntity"})
-    Optional<RecordEntity> findRecordEntityWithFeedEntityById(Long recordId);
+    Optional<RecordEntity> findWithFeedEntityById(Long recordId);
 
     @Query("SELECT r.id as id, r.title as title, r.place as place, r.imageUrl as imageUrl , r.date as date " +
             "FROM RecordEntity r " +
             "WHERE r.feedEntity.id = :feedId " +
             "ORDER BY r.date ASC, r.sequence ASC ,r.createdDateTime ASC")
-    List<RecordWithFeedProjection> findRecordEntityByFeedId(@Param("feedId") Long feedId);
+    List<RecordWithFeedProjection> findRecordsByFeedEntityId(@Param("feedId") Long feedId);
 
     @Query("SELECT MAX(r.sequence) " +
             "FROM RecordEntity r " +
             "WHERE r.feedEntity.id = :feedId AND r.date = :date")
-    Optional<Integer> findMaxSequenceByFeedIdAndDate(@Param("feedId") Long feedId, @Param("date") LocalDateTime date);
+    Optional<Integer> findMaxSequenceByFeedEntityIdAndDate(@Param("feedId") Long feedId, @Param("date") LocalDateTime date);
 
     @Modifying
     @Query("UPDATE RecordEntity re " +

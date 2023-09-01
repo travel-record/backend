@@ -20,7 +20,6 @@ import static world.trecord.web.exception.CustomExceptionError.NOT_EXISTING_RECO
 @RequiredArgsConstructor
 @Component
 public class RecordValidator {
-
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
 
@@ -45,7 +44,7 @@ public class RecordValidator {
 
     public void verify(Long recordId, RecordUpdateRequest request) throws BindException {
 
-        RecordEntity recordEntity = recordRepository.findRecordEntityWithFeedEntityById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
+        RecordEntity recordEntity = recordRepository.findWithFeedEntityById(recordId).orElseThrow(() -> new CustomException(NOT_EXISTING_RECORD));
 
         FeedEntity feedEntity = recordEntity.getFeedEntity();
 

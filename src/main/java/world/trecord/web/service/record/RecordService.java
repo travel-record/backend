@@ -124,7 +124,7 @@ public class RecordService {
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
         RecordEntity recordEntity = getRecordOrException(recordId);
 
-        List<CommentEntity> commentEntities = commentRepository.findCommentEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
                 .commentEntities(commentEntities)
@@ -138,7 +138,7 @@ public class RecordService {
 
     private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
         // TODO 동시성 처리
-        return recordRepository.findMaxSequenceByFeedIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
+        return recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
     }
 
     private void checkHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
