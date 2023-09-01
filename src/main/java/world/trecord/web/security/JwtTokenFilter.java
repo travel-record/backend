@@ -47,7 +47,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             String token = req.getHeader(HttpHeaders.AUTHORIZATION);
 
-            if (token == null && isRequestInWhitelist(req)) {
+            if (token == null && isWhitelistRequest(req)) {
                 chain.doFilter(req, res);
                 return;
             }
@@ -58,26 +58,25 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             UserContext userContext = userService.loadUserContext(userId);
 
-            setAuthenticationWith(userContext);
+            setAuthentication(userContext);
 
             chain.doFilter(req, res);
 
         } catch (Exception e) {
-            handleInvalidTokenResponse(res);
+            returnInvalidTokenError(res);
         }
     }
 
-    private void handleInvalidTokenResponse(HttpServletResponse res) throws IOException {
+    private void returnInvalidTokenError(HttpServletResponse res) throws IOException {
         ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
 
         res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         res.setCharacterEncoding(StandardCharsets.UTF_8.name());
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
         res.getWriter().write(objectMapper.writeValueAsString(body));
     }
 
-    private boolean isRequestInWhitelist(HttpServletRequest req) {
+    private boolean isWhitelistRequest(HttpServletRequest req) {
         return whitelistMap.entrySet().stream().anyMatch(it -> {
             RequestMatcher matcher = it.getKey();
             List<HttpMethod> allowedMethods = it.getValue();
@@ -85,7 +84,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         });
     }
 
-    private void setAuthenticationWith(UserContext userContext) {
+    private void setAuthentication(UserContext userContext) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(userContext, userContext.getPassword(), userContext.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
