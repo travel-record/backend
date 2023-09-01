@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.0.9'
+    id 'org.springframework.boot' version '3.1.3'
     id 'io.spring.dependency-management' version '1.1.2'
 }
 
@@ -18,7 +18,7 @@ configurations {
 }
 
 ext {
-    set('springCloudVersion', '2022.0.1')
+    set('springCloudVersion', '2022.0.3')
 }
 
 dependencyManagement {
@@ -48,7 +48,7 @@ dependencies {
 
     // Data
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.5.2' // for JsonType
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-62:3.5.1' // for JsonType
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
