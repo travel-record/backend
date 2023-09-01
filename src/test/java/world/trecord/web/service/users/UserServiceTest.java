@@ -74,6 +74,7 @@ class UserServiceTest extends ContainerBaseTest {
         String nickname = "nickname";
         String imageUrl = "http://localhost/pictures";
         String introduction = "hello";
+
         UserEntity userEntity = UserEntity.builder()
                 .email(email)
                 .nickname(nickname)
@@ -87,9 +88,9 @@ class UserServiceTest extends ContainerBaseTest {
         UserInfoResponse response = userService.getUser(saveUser.getId());
 
         //then
-        Assertions.assertThat(response.getNickname()).isEqualTo(nickname);
-        Assertions.assertThat(response.getIntroduction()).isEqualTo(introduction);
-        Assertions.assertThat(response.getImageUrl()).isEqualTo(imageUrl);
+        Assertions.assertThat(response)
+                .extracting("nickname", "introduction", "imageUrl")
+                .containsExactly(nickname, introduction, imageUrl);
     }
 
     @Test
@@ -114,6 +115,7 @@ class UserServiceTest extends ContainerBaseTest {
                 .build());
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
         RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
         RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
 
@@ -122,10 +124,12 @@ class UserServiceTest extends ContainerBaseTest {
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content1));
-        CommentEntity commentEntity2 = commentRepository.save(createCommentEntity(userEntity, recordEntity2, content2));
-        CommentEntity commentEntity3 = commentRepository.save(createCommentEntity(userEntity, recordEntity2, content3));
-        CommentEntity commentEntity4 = commentRepository.save(createCommentEntity(userEntity, recordEntity1, content4));
+        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, content1);
+        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, content2);
+        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, content3);
+        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, content4);
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
         UserCommentsResponse response = userService.getUserComments(userEntity.getId());
