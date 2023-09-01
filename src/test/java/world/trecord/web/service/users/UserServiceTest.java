@@ -329,7 +329,7 @@ class UserServiceTest extends ContainerBaseTest {
         UserContext userContext = userService.loadUserContext(userEntity.getId());
 
         //then
-        Assertions.assertThat(userContext.getUserEntity()).isEqualTo(userEntity);
+        Assertions.assertThat(userContext.getId()).isEqualTo(userEntity.getId());
     }
 
     @Test

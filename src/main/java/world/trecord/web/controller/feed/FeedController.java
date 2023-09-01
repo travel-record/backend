@@ -4,9 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
-import world.trecord.domain.users.UserEntity;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
+import world.trecord.web.security.UserContext;
 import world.trecord.web.service.feed.FeedService;
 import world.trecord.web.service.feed.request.FeedCreateRequest;
 import world.trecord.web.service.feed.request.FeedUpdateRequest;
@@ -26,31 +26,31 @@ public class FeedController {
     // TODO add records api
     // TODO add pageable
     @GetMapping
-    public ApiResponse<FeedListResponse> getFeedList(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(feedService.getFeedList(userEntity.getId()));
+    public ApiResponse<FeedListResponse> getFeedList(@CurrentUser UserContext userContext) {
+        return ApiResponse.ok(feedService.getFeedList(userContext.getId()));
     }
 
     @GetMapping("/{feedId}")
-    public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserEntity userEntity) {
-        Long viewerId = (userEntity != null) ? userEntity.getId() : null;
+    public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserContext userContext) {
+        Long viewerId = (userContext != null) ? userContext.getId() : null;
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
 
     @PostMapping
-    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest feedCreateRequest, @CurrentUser UserEntity userEntity) throws BindException {
+    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest feedCreateRequest, @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(feedCreateRequest);
-        return ApiResponse.ok(feedService.createFeed(userEntity.getId(), feedCreateRequest));
+        return ApiResponse.ok(feedService.createFeed(userContext.getId(), feedCreateRequest));
     }
 
     @PutMapping("/{feedId}")
-    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId, @RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @CurrentUser UserEntity userEntity) throws BindException {
+    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId, @RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(feedUpdateRequest);
-        return ApiResponse.ok(feedService.updateFeed(userEntity.getId(), feedId, feedUpdateRequest));
+        return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, feedUpdateRequest));
     }
 
     @DeleteMapping("/{feedId}")
-    public ApiResponse<Void> deleteFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserEntity userEntity) {
-        feedService.deleteFeed(userEntity.getId(), feedId);
+    public ApiResponse<Void> deleteFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserContext userContext) {
+        feedService.deleteFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
     }
 }

@@ -1,7 +1,6 @@
 package world.trecord.web.service.users;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,7 +86,7 @@ public class UserService {
 
     public UserContext loadUserContext(Long userId) throws UsernameNotFoundException {
         return userRepository.findById(userId)
-                .map(userEntity -> new UserContext(userEntity, AuthorityUtils.createAuthorityList(userEntity.getRole())))
+                .map(UserContext::fromEntity)
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_EXISTING_USER.name()));
     }
 

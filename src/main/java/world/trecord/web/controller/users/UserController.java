@@ -3,9 +3,9 @@ package world.trecord.web.controller.users;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import world.trecord.domain.users.UserEntity;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
+import world.trecord.web.security.UserContext;
 import world.trecord.web.service.users.UserService;
 import world.trecord.web.service.users.request.UserUpdateRequest;
 import world.trecord.web.service.users.response.UserCommentsResponse;
@@ -20,13 +20,13 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ApiResponse<UserInfoResponse> getUser(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUser(userEntity.getId()));
+    public ApiResponse<UserInfoResponse> getUser(@CurrentUser UserContext userContext) {
+        return ApiResponse.ok(userService.getUser(userContext.getId()));
     }
 
     @PostMapping
-    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest updateRequest, @CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.updateUser(userEntity.getId(), updateRequest));
+    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest updateRequest, @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(userService.updateUser(userContext.getId(), updateRequest));
     }
 
     @GetMapping("/{userId}")
@@ -36,13 +36,13 @@ public class UserController {
 
     // TODO add pageable
     @GetMapping("/comments")
-    public ApiResponse<UserCommentsResponse> getUserComments(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUserComments(userEntity.getId()));
+    public ApiResponse<UserCommentsResponse> getUserComments(@CurrentUser UserContext userContext) {
+        return ApiResponse.ok(userService.getUserComments(userContext.getId()));
     }
 
     // TODO add pageable
     @GetMapping("/likes")
-    public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@CurrentUser UserEntity userEntity) {
-        return ApiResponse.ok(userService.getUserRecordLikeList(userEntity.getId()));
+    public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@CurrentUser UserContext userContext) {
+        return ApiResponse.ok(userService.getUserRecordLikeList(userContext.getId()));
     }
 }
