@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -73,8 +74,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private void returnInvalidTokenError(HttpServletResponse res) throws IOException {
         ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
-
-        res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        res.setStatus(HttpStatus.UNAUTHORIZED.value());
         res.setCharacterEncoding(StandardCharsets.UTF_8.name());
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
         res.getWriter().write(objectMapper.writeValueAsString(body));
