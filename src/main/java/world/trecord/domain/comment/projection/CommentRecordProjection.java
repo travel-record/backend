@@ -1,5 +1,7 @@
 package world.trecord.domain.comment.projection;
 
+import java.time.LocalDateTime;
+
 public interface CommentRecordProjection {
 
     Long getRecordId();
@@ -9,4 +11,6 @@ public interface CommentRecordProjection {
     Long getCommentId();
 
     String getContent();
+
+    LocalDateTime getCreatedDateTime();
 }
