@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -22,6 +23,7 @@ import world.trecord.web.service.notification.response.NotificationListResponse;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.userrecordlike.UserRecordLikeService;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -63,6 +65,9 @@ class NotificationServiceTest extends ContainerBaseTest {
 
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
+
+    @Autowired
+    SseEmitterRepository sseEmitterRepository;
 
     @Test
     @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 기록 알림을 생성하여 반환한다")
@@ -389,6 +394,23 @@ class NotificationServiceTest extends ContainerBaseTest {
                 .hasSize(1)
                 .extracting("recordId")
                 .containsOnly(recordEntity1.getId());
+    }
+
+    @Test
+    @DisplayName("userId로 SseEmitter를 생성하여 반환한다")
+    void connectNotificationTest() throws Exception {
+        //given
+        Long userId = 1L;
+
+        //when
+        SseEmitter emitter = notificationService.connectNotification(userId, Duration.ofDays(1));
+
+        //then
+        Assertions.assertThat(sseEmitterRepository.findByUserId(userId))
+                .isPresent()
+                .hasValueSatisfying(it -> {
+                    Assertions.assertThat(it).isEqualTo(emitter);
+                });
     }
 
     private UserEntity createUser(String email) {

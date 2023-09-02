@@ -1,8 +1,10 @@
 package world.trecord.web.service.notification;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.notification.NotificationEntity;
@@ -10,21 +12,30 @@ import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
+import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 
+import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 
 import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.web.exception.CustomExceptionError.NOTIFICATION_CONNECT_ERROR;
 
+@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class NotificationService {
 
+    public final static String EVENT_NAME = "notification";
+
+    private final SseEmitterRepository sseEmitterRepository;
+    private final SseEmitterService sseEmitterService;
     private final NotificationRepository notificationRepository;
 
     // TODO async 처리
@@ -63,6 +74,27 @@ public class NotificationService {
         return CheckNewNotificationResponse.builder()
                 .hasNewNotification(hasNewNotification)
                 .build();
+    }
+
+    public SseEmitter connectNotification(Long userId, Duration duration) {
+        SseEmitter emitter = sseEmitterService.createSseEmitter(duration);
+
+        sseEmitterRepository.save(userId, emitter);
+
+        emitter.onCompletion(() -> sseEmitterRepository.delete(userId));
+        emitter.onTimeout(() -> sseEmitterRepository.delete(userId));
+
+        try {
+            log.info("send");
+            emitter.send(SseEmitter.event()
+                    .id("id")
+                    .name(EVENT_NAME)
+                    .data("connect completed"));
+        } catch (IOException exception) {
+            throw new CustomException(NOTIFICATION_CONNECT_ERROR);
+        }
+
+        return emitter;
     }
 
     @Transactional

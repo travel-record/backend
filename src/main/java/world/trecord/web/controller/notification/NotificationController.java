@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
@@ -13,6 +14,8 @@ import world.trecord.web.service.notification.NotificationService;
 import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 import world.trecord.web.service.users.UserContext;
+
+import java.time.Duration;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,6 +27,11 @@ public class NotificationController {
     @GetMapping("/check")
     public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.checkNewNotification(userContext.getId()));
+    }
+
+    @GetMapping("/subscribe")
+    public SseEmitter connectNotification(@CurrentUser UserContext userContext) {
+        return notificationService.connectNotification(userContext.getId(), Duration.ofDays(1));
     }
 
     // TODO add pageable
