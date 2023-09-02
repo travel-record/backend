@@ -1,6 +1,7 @@
 package world.trecord.web.service.users;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,11 +53,19 @@ public class UserService {
     public UserInfoResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
         UserEntity userEntity = getUserOrException(userId);
 
-        if (isNicknameUpdatedAndExists(userEntity.getNickname(), updateRequest.getNickname())) {
-            throw new CustomException(NICKNAME_DUPLICATED);
+        if (isNicknameUpdated(userEntity.getNickname(), updateRequest.getNickname())) {
+            try {
+                if (userRepository.existsByNickname(updateRequest.getNickname())) {
+                    throw new CustomException(NICKNAME_DUPLICATED);
+                }
+                userEntity.update(updateRequest.toUpdateEntity());
+            } catch (DataIntegrityViolationException dive) {
+                if (isNicknameConstraintViolation(dive)) {
+                    throw new CustomException(NICKNAME_DUPLICATED);
+                }
+                throw dive;
+            }
         }
-
-        userEntity.update(updateRequest.toUpdateEntity());
 
         return UserInfoResponse.builder()
                 .userEntity(userEntity)
@@ -93,8 +102,11 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
-    private boolean isNicknameUpdatedAndExists(String originalNickname, String updatedNickname) {
-        // TODO 동시성 처리
-        return !Objects.equals(originalNickname, updatedNickname) && (userRepository.existsByNickname(updatedNickname));
+    private boolean isNicknameUpdated(String originalNickname, String updatedNickname) {
+        return !Objects.equals(originalNickname, updatedNickname);
+    }
+
+    private boolean isNicknameConstraintViolation(DataIntegrityViolationException dive) {
+        return dive.getMessage().contains("uk_users_nickname");
     }
 }
