@@ -37,9 +37,9 @@ public class SseEmitterService {
 
         NotificationEntity notificationEntity = notificationService.createNotification(userToId, type, args);
 
-        sseEmitterRepository.findByUserId(userToId).ifPresentOrElse(it -> {
+        sseEmitterRepository.findByUserId(userToId).ifPresentOrElse(emitter -> {
                     try {
-                        it.send(SseEmitter.event()
+                        emitter.send(SseEmitter.event()
                                 .id(notificationEntity.getId().toString())
                                 .name(EVENT_NAME)
                                 .data(buildNotificationEvent(notificationEntity)));
@@ -82,8 +82,8 @@ public class SseEmitterService {
         return emitter;
     }
 
-    private SseEvent buildNotificationEvent(NotificationEntity notificationEntity) {
-        return SseEvent.builder()
+    private SseNotificationEvent buildNotificationEvent(NotificationEntity notificationEntity) {
+        return SseNotificationEvent.builder()
                 .notificationEntity(notificationEntity)
                 .build();
     }

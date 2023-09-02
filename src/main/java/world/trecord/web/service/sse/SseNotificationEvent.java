@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SseEvent {
+public class SseNotificationEvent {
 
     private NotificationType type;
     private NotificationStatus status;
@@ -31,7 +31,7 @@ public class SseEvent {
     private LocalDateTime date;
 
     @Builder
-    private SseEvent(NotificationEntity notificationEntity) {
+    private SseNotificationEvent(NotificationEntity notificationEntity) {
         this.type = notificationEntity.getType();
         this.status = notificationEntity.getStatus();
         this.recordId = notificationEntity.getArgs().getRecordId();
