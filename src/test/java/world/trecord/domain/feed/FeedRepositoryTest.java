@@ -29,14 +29,11 @@ class FeedRepositoryTest extends ContainerBaseTest {
     @DisplayName("유저 엔티티로 피드 리스트를 조회할 때 사용자가 등록한 피드 리스트를 여행 시작 시간 내림차순으로 조회한다")
     void findByUserEntityOrderByStartAtDescTest() throws Exception {
         //given
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .build();
-        UserEntity saveUserEntity = userRepository.save(userEntity);
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity1 = createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity feedEntity2 = createFeedEntity(saveUserEntity, "feed name2", LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
-        FeedEntity feedEntity3 = createFeedEntity(saveUserEntity, "feed name3", LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
+        FeedEntity feedEntity1 = createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
+        FeedEntity feedEntity2 = createFeed(userEntity, LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
+        FeedEntity feedEntity3 = createFeed(userEntity, LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
 
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
 
@@ -44,9 +41,10 @@ class FeedRepositoryTest extends ContainerBaseTest {
         List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userEntity.getId());
 
         //then
-        Assertions.assertThat(feedEntities).extracting("name")
+        Assertions.assertThat(feedEntities)
+                .extracting("id")
                 .containsExactly(
-                        "feed name3", "feed name2", "feed name1"
+                        feedEntity3.getId(), feedEntity2.getId(), feedEntity1.getId()
                 );
     }
 
@@ -54,12 +52,10 @@ class FeedRepositoryTest extends ContainerBaseTest {
     @DisplayName("유저 엔티티로 피드 리스트를 조회할 때 사용자가 등록한 피드가 없으면 빈 리스트가 반환된다")
     void findByUserEntityOrderByStartAtDescWithEmptyFeedListTest() throws Exception {
         //given
-        UserEntity saveUserEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(createUser());
 
         //when
-        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(saveUserEntity.getId());
+        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userEntity.getId());
 
         //then
         Assertions.assertThat(feedEntities).isEmpty();
@@ -69,21 +65,27 @@ class FeedRepositoryTest extends ContainerBaseTest {
     @DisplayName("피드를 soft delete 한다")
     void deleteFeedTest() throws Exception {
         //given
-        UserEntity saveUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity savedFeedEntity = feedRepository.save(createFeedEntity(saveUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when
-        feedRepository.softDeleteById(savedFeedEntity.getId());
+        feedRepository.softDeleteById(feedEntity.getId());
 
         //then
         Assertions.assertThat(feedRepository.findAll()).isEmpty();
     }
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
+    private UserEntity createUser() {
+        return UserEntity.builder()
+                .email("test@email.com")
+                .build();
+    }
+
+    private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
+                .userEntity(userEntity)
+                .name("name")
                 .startAt(startAt)
                 .endAt(endAt)
                 .build();

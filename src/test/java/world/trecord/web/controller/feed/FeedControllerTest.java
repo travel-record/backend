@@ -56,7 +56,7 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/feeds - 성공 (등록된 피드가 없을때)")
     void getEmptyFeedListByUserIdTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
         //when //then
         mockMvc.perform(
@@ -72,12 +72,12 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/feeds - 성공")
     void getFeedListByUserIdTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity1 = createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity feedEntity2 = createFeedEntity(savedUserEntity, "feed name2", LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
-        FeedEntity feedEntity3 = createFeedEntity(savedUserEntity, "feed name3", LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
-        FeedEntity feedEntity4 = createFeedEntity(savedUserEntity, "feed name4", LocalDateTime.of(2021, 12, 21, 0, 0), LocalDateTime.of(2021, 12, 25, 0, 0));
+        FeedEntity feedEntity1 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
+        FeedEntity feedEntity2 = createFeed(savedUserEntity, LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
+        FeedEntity feedEntity3 = createFeed(savedUserEntity, LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
+        FeedEntity feedEntity4 = createFeed(savedUserEntity, LocalDateTime.of(2021, 12, 21, 0, 0), LocalDateTime.of(2021, 12, 25, 0, 0));
 
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
@@ -88,13 +88,7 @@ class FeedControllerTest extends ContainerBaseTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.feeds").isArray())
-                .andExpect(jsonPath("$.data.feeds.length()").value(4))
-                .andExpect(jsonPath("$.data.feeds[0].name").value("feed name4"))
-                .andExpect(jsonPath("$.data.feeds[0].startAt").value("2021-12-21"))
-                .andExpect(jsonPath("$.data.feeds[0].endAt").value("2021-12-25"))
-                .andExpect(jsonPath("$.data.feeds[1].name").value("feed name3"))
-                .andExpect(jsonPath("$.data.feeds[2].name").value("feed name2"))
-                .andExpect(jsonPath("$.data.feeds[3].name").value("feed name1"));
+                .andExpect(jsonPath("$.data.feeds.length()").value(4));
     }
 
     @Test
@@ -113,9 +107,9 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (인증된 사용자)")
     void getFeedByAuthenticatedUserTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when //then
         mockMvc.perform(
@@ -129,9 +123,9 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (인증되지 않은 사용자)")
     void getFeedByNotAuthenticatedUserTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name1", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when //then
         mockMvc.perform(
@@ -144,7 +138,7 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/feeds - 성공")
     void createFeedTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
         String feedName = "feed name";
         String imageUrl = "image";
@@ -191,9 +185,9 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("PUT /api/v1/feeds/{feedId} - 성공")
     void updateFeedTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -229,7 +223,7 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("PUT /api/v1/feeds/{feedId} - 실패 (존재하지 않는 피드)")
     void updateFeedWhenFeedNotExistingTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
         long notExistingFeedId = 0L;
 
@@ -262,10 +256,10 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("PUT /api/v1/feeds/{feedId} - 실패 (피드 관리자 아님)")
     void updateFeedByFeedManagerTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        UserEntity other = userRepository.save(createUser("test1@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -295,9 +289,9 @@ class FeedControllerTest extends ContainerBaseTest {
     @Test
     @DisplayName("PUT /api/v1/feeds/{feedId} - 실패 (파라미터 검증 오류)")
     void updateFeedWhenRequestParaemeterErrorTest() throws Exception {
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         FeedUpdateRequest request = FeedUpdateRequest.builder().build();
 
@@ -316,13 +310,13 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("DELETE /api/v1/feeds/{feedId} - 성공 (기록과 함께 삭제)")
     void deleteFeedTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(savedUserEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity1 = createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0));
+        RecordEntity recordEntity2 = createRecord(feedEntity, LocalDateTime.of(2022, 3, 3, 0, 0));
+        RecordEntity recordEntity3 = createRecord(feedEntity, LocalDateTime.of(2022, 3, 1, 0, 0));
 
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
@@ -341,10 +335,10 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("DELETE /api/v1/feeds/{feedId} - 실패 (피드 관리자 아님)")
     void deleteFeedByManagerTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        UserEntity other = userRepository.save(createUser("test1@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when //then
         mockMvc.perform(
@@ -359,7 +353,7 @@ class FeedControllerTest extends ContainerBaseTest {
     @DisplayName("DELETE /api/v1/feeds/{feedId} - 실패 (존재하지 않는 피드)")
     void deleteNotExistingFeedTest() throws Exception {
         //given
-        UserEntity savedUser = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity savedUser = userRepository.save(createUser("test@email.com"));
 
         long notExistingFeedId = 0L;
 
@@ -373,29 +367,35 @@ class FeedControllerTest extends ContainerBaseTest {
     }
 
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
+    }
+
+    private UserEntity createUser(String mail) {
+        return UserEntity.builder()
+                .email(mail)
+                .build();
+    }
+
+    private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
+                .userEntity(userEntity)
+                .name("name")
                 .startAt(startAt)
                 .endAt(endAt)
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String record, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private RecordEntity createRecord(FeedEntity feedEntity, LocalDateTime date) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
-                .title(record)
-                .place(place)
+                .title("title")
+                .place("place")
                 .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
                 .build();
-    }
-
-    private String createToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
 }

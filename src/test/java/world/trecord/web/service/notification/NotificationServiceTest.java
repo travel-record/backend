@@ -68,14 +68,14 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 기록 알림을 생성하여 반환한다")
     void createNotificationTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity commenter = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        UserEntity commenter = userRepository.save(createUser("test1@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = createCommentEntity(commenter, recordEntity, "content1");
+        CommentEntity commentEntity = createComment(commenter, recordEntity, "content1");
 
         //when
         notificationService.createCommentNotification(commentEntity);
@@ -93,13 +93,13 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("기록 작성자가 자신의 기록에 댓글을 작성하면 알림이 생성되지 않는다")
     void createNotificationItselfTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = createCommentEntity(author, recordEntity, "content1");
+        CommentEntity commentEntity = createComment(author, recordEntity, "content1");
 
         //when
         notificationService.createCommentNotification(commentEntity);
@@ -112,15 +112,15 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("사용자에게 읽지 않음 알림이 있으면 새로운 알림이 있음을 반환한다")
     void checkNewUnreadNotificationReturnTrueTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = createCommentEntity(userEntity, recordEntity, "content1");
+        CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT);
+        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT);
 
         notificationRepository.save(notificationEntity);
 
@@ -135,15 +135,15 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("사용자에게 읽지 않음 알림이 없으면 새로운 알림이 없음을 반환한다")
     void checkNewUnreadNotificationReturnFalseTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = createCommentEntity(userEntity, recordEntity, "content1");
+        CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, null, recordEntity, commentEntity, READ, COMMENT);
+        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, READ, COMMENT);
 
         notificationRepository.save(notificationEntity);
 
@@ -158,25 +158,25 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("사용자가 알림 리스트를 조회하면 시간 내림차순으로 정렬된 알림 리스트를 반환한다")
     void getNotificationsByTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = userRepository.save(createUser("test@email.com"));
         UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
         UserEntity commenter3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-        CommentEntity commentEntity3 = createCommentEntity(commenter3, recordEntity, "content3");
+        CommentEntity commentEntity1 = createComment(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createComment(commenter2, recordEntity, "content2");
+        CommentEntity commentEntity3 = createComment(commenter3, recordEntity, "content3");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, recordEntity, commentEntity1, READ, COMMENT);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, recordEntity, commentEntity2, READ, RECORD_LIKE);
-        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, recordEntity, commentEntity3, READ, COMMENT);
-        NotificationEntity notificationEntity4 = createNotificationEntity(author, commenter1, recordEntity, commentEntity3, READ, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity, commentEntity1, READ, COMMENT);
+        NotificationEntity notificationEntity2 = createNotification(author, commenter2, recordEntity, commentEntity2, READ, RECORD_LIKE);
+        NotificationEntity notificationEntity3 = createNotification(author, commenter3, recordEntity, commentEntity3, READ, COMMENT);
+        NotificationEntity notificationEntity4 = createNotification(author, commenter1, recordEntity, commentEntity3, READ, RECORD_LIKE);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
@@ -199,26 +199,26 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("사용자가 알림 리스트를 조회하면 읽지 않은 알림을 모두 알림 처리 한다")
     void getNotificationsByTestUpdateUnreadToReadStatus() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = userRepository.save(createUser("test@email.com"));
 
         UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
         UserEntity commenter3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity, "content2");
-        CommentEntity commentEntity3 = createCommentEntity(commenter3, recordEntity, "content3");
+        CommentEntity commentEntity1 = createComment(commenter1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createComment(commenter2, recordEntity, "content2");
+        CommentEntity commentEntity3 = createComment(commenter3, recordEntity, "content3");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, recordEntity, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, recordEntity, commentEntity2, UNREAD, RECORD_LIKE);
-        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, recordEntity, commentEntity3, UNREAD, COMMENT);
-        NotificationEntity notificationEntity4 = createNotificationEntity(author, commenter1, recordEntity, commentEntity3, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotification(author, commenter2, recordEntity, commentEntity2, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity3 = createNotification(author, commenter3, recordEntity, commentEntity3, UNREAD, COMMENT);
+        NotificationEntity notificationEntity4 = createNotification(author, commenter1, recordEntity, commentEntity3, UNREAD, RECORD_LIKE);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
@@ -235,7 +235,7 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("알림 리스트가 없으면 알림 리스트로 조회 시 빈 배열을 반환한다")
     void getNotificationsByWithEmptyNotificationListTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
         //when
         NotificationListResponse response = notificationService.getNotifications(userEntity.getId());
@@ -248,12 +248,12 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("사용자가 다른 사용자의 기록에 좋아요하면 좋아요 알림을 생성하여 반환한다 ")
     void createRecordLikeNotificationTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-        UserEntity viewer = userRepository.save(UserEntity.builder().email("test2@email.com").build());
+        UserEntity writer = userRepository.save(createUser("test1@email.com"));
+        UserEntity viewer = userRepository.save(createUser("test2@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
         notificationService.createRecordLikeNotification(viewer, recordEntity);
@@ -271,11 +271,11 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("기록 작성자 본인이 자신의 기록에 좋아요하면 좋아요 알림이 생성되지 않는다")
     void createRecordLikeNotificationWhenAuthorLikeSelfTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity writer = userRepository.save(createUser("test1@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(writer, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
         notificationService.createRecordLikeNotification(writer, recordEntity);
@@ -287,26 +287,26 @@ class NotificationServiceTest extends ContainerBaseTest {
     @Test
     @DisplayName("알림 타입 별로 알림 리스트를 등록 시간 내림차순으로 조회하여 반환한다")
     void getNotificationsByTypeTest() throws Exception {
-        UserEntity author = UserEntity.builder().email("test@email.com").build();
+        UserEntity author = createUser("test@email.com");
         UserEntity viewer1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
         UserEntity viewer2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
         UserEntity viewer3 = UserEntity.builder().nickname("nickname3").email("test3@email.com").build();
 
         userRepository.saveAll(List.of(author, viewer1, viewer2, viewer3));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity1 = createCommentEntity(viewer1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(viewer2, recordEntity, "content2");
+        CommentEntity commentEntity1 = createComment(viewer1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createComment(viewer2, recordEntity, "content2");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
-        NotificationEntity notificationEntity3 = createNotificationEntity(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
-        NotificationEntity notificationEntity4 = createNotificationEntity(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity3 = createNotification(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity4 = createNotification(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
@@ -327,23 +327,23 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("알림 리스트에서 알림 타입에 해당하는 알림이 없을때 Reponse에 빈 배열로 반환한다")
     void getNotificationsByTypeWhenTypeIsEmptyTest() throws Exception {
         //given
-        UserEntity author = UserEntity.builder().email("test@email.com").build();
+        UserEntity author = createUser("test@email.com");
         UserEntity viewer1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
         UserEntity viewer2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
 
         userRepository.saveAll(List.of(author, viewer1, viewer2));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity1 = createCommentEntity(viewer1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(viewer2, recordEntity, "content2");
+        CommentEntity commentEntity1 = createComment(viewer1, recordEntity, "content1");
+        CommentEntity commentEntity2 = createComment(viewer2, recordEntity, "content2");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
@@ -358,24 +358,24 @@ class NotificationServiceTest extends ContainerBaseTest {
     @DisplayName("삭제된 기록에 대한 알림 리스트는 조회되지 않는다")
     void getNotificationsWhenRecordSoftDeletedTest() throws Exception {
         //given
-        UserEntity author = UserEntity.builder().email("test@email.com").build();
+        UserEntity author = createUser("test@email.com");
         UserEntity viewer1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
         UserEntity viewer2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
 
         userRepository.saveAll(List.of(author, viewer1, viewer2));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity1 = createCommentEntity(viewer1, recordEntity1, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(viewer2, recordEntity2, "content2");
+        CommentEntity commentEntity1 = createComment(viewer1, recordEntity1, "content1");
+        CommentEntity commentEntity2 = createComment(viewer2, recordEntity2, "content2");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, viewer1, recordEntity1, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, viewer2, recordEntity2, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity1, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity2, commentEntity2, UNREAD, COMMENT);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
@@ -391,20 +391,35 @@ class NotificationServiceTest extends ContainerBaseTest {
                 .containsOnly(recordEntity1.getId());
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
-                .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
+    private UserEntity createUser(String email) {
+        return UserEntity.builder()
+                .email(email)
                 .build();
     }
 
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
+    private FeedEntity createFeed(UserEntity userEntity) {
+        return FeedEntity.builder()
+                .userEntity(userEntity)
+                .name("name")
+                .startAt(LocalDateTime.of(2022, 3, 2, 0, 0))
+                .endAt(LocalDateTime.of(2022, 3, 10, 0, 0))
+                .build();
+    }
+
+    private RecordEntity createRecord(FeedEntity feedEntity) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .title("record")
+                .place("place")
+                .date(LocalDateTime.of(2022, 3, 2, 0, 0))
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
+                .build();
+    }
+
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, String content) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
@@ -412,16 +427,7 @@ class NotificationServiceTest extends ContainerBaseTest {
                 .build();
     }
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
-                .startAt(startAt)
-                .endAt(endAt)
-                .build();
-    }
-
-    private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus notificationStatus, NotificationType notificationType) {
+    private NotificationEntity createNotification(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus notificationStatus, NotificationType notificationType) {
         NotificationArgs args = NotificationArgs.builder()
                 .commentEntity(commentEntity)
                 .recordEntity(recordEntity)

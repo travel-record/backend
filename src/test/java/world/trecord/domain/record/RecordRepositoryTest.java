@@ -36,16 +36,16 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("피드 아이디로 기록 리스트를 기록 날짜 오름차순으로 projection으로 조회한다")
     void findRecordEntityByFeedIdTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
         LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
-        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
-        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
+        RecordEntity record1 = createRecord(feedEntity, 0);
+        RecordEntity record2 = createRecord(feedEntity, 1);
+        RecordEntity record3 = createRecord(feedEntity, 2);
 
         recordRepository.saveAll(List.of(record1, record2, record3));
 
@@ -63,16 +63,16 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("피드 아이디로 기록 리스트를 기록 날짜가 동일하면 기록 순서 오름차순으로 projection으로 조회한다")
     void findRecordEntityByFeedIdOrderBySequenceTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
         LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
-        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
-        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+        RecordEntity record1 = createRecord(feedEntity, 2);
+        RecordEntity record2 = createRecord(feedEntity, 1);
+        RecordEntity record3 = createRecord(feedEntity, 0);
 
         recordRepository.saveAll(List.of(record1, record2, record3));
 
@@ -90,16 +90,16 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("피드 아이디로 기록 리스트를 기록 날짜, 기록 순서가 동일하면 기록 등록 시간 오름차순으로 projection으로 조회한다")
     void findRecordEntityByFeedIdOrderByCreatedTimeTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
         LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
-        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
-        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
+        RecordEntity record1 = createRecord(feedEntity, 0);
+        RecordEntity record2 = createRecord(feedEntity, 0);
+        RecordEntity record3 = createRecord(feedEntity, 0);
 
         recordRepository.saveAll(List.of(record1, record2, record3));
 
@@ -117,14 +117,14 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("기록을 조회할 때 피드와 함께 조회한다")
     void findRecordEntityWithFeedEntityTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
         LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt, "feed name"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record", "place", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
         Optional<RecordEntity> optionalRecord = recordRepository.findWithFeedEntityById(recordEntity.getId());
@@ -137,16 +137,15 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("피드에 등록된 같은 날짜에 있는 기록 중 가장 큰 순서 번호를 조회한다")
     void findMaxSequenceByFeedAndDateTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
+        UserEntity userEntity = userRepository.save(createUser());
 
-        LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+
         int sequence = 100;
-
-        recordRepository.save(createRecordEntity(feedEntity, "title", "place", date, "content", "weather", "satisfaction", "feeling", sequence));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, sequence));
 
         //when
-        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), date);
+        Optional<Integer> maxSequence = recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), recordEntity.getDate());
 
         //then
         Assertions.assertThat(maxSequence.orElse(0)).isEqualTo(sequence);
@@ -156,8 +155,8 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("피드에 등록된 같은 날짜에 있는 기록이 없으면 0을 반환한다")
     void findMaxSequenceByFeedAndDateWhenSameDateIsEmptyTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
         LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
 
@@ -172,12 +171,12 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("피드에 등록된 기록을 모두 soft delete한다")
     void deleteAllByFeedEntityTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity record1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0);
-        RecordEntity record2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content", "weather", "satisfaction", "feeling", 1);
-        RecordEntity record3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 3, 0, 0), "content", "weather", "satisfaction", "feeling", 2);
+        RecordEntity record1 = createRecord(feedEntity, 0);
+        RecordEntity record2 = createRecord(feedEntity, 1);
+        RecordEntity record3 = createRecord(feedEntity, 2);
 
         recordRepository.saveAll(List.of(record1, record2, record3));
 
@@ -192,9 +191,9 @@ class RecordRepositoryTest extends ContainerBaseTest {
     @DisplayName("기록을 soft delete한다")
     void deleteTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, LocalDateTime.of(2022, 3, 1, 0, 0), LocalDateTime.of(2022, 3, 5, 0, 0), "feed name"));
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 1, 0, 0), "content", "weather", "satisfaction", "feeling", 0));
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
         recordRepository.softDeleteById(recordEntity.getId());
@@ -203,25 +202,31 @@ class RecordRepositoryTest extends ContainerBaseTest {
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 
-    private FeedEntity createFeedEntity(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt, String name) {
-        return FeedEntity.builder()
-                .startAt(startAt)
-                .endAt(endAt)
-                .userEntity(userEntity)
-                .name(name)
+    private UserEntity createUser() {
+        return UserEntity.builder()
+                .email("test@email.com")
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling, int sequence) {
+    private FeedEntity createFeed(UserEntity userEntity) {
+        return FeedEntity.builder()
+                .startAt(LocalDateTime.of(2023, 3, 1, 0, 0))
+                .endAt(LocalDateTime.of(2023, 3, 31, 0, 0))
+                .userEntity(userEntity)
+                .name("name")
+                .build();
+    }
+
+    private RecordEntity createRecord(FeedEntity feedEntity, int sequence) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
-                .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
+                .title("title")
+                .place("place")
+                .date(LocalDateTime.of(2022, 3, 1, 0, 0))
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
                 .sequence(sequence)
                 .build();
     }

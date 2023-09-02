@@ -38,24 +38,22 @@ class CommentRepositoryTest extends ContainerBaseTest {
     @DisplayName("사용자가 작성한 댓글 리스트를 등록 시간 내림차순으로 기록과 함께 조회하여 projection으로 반환한다")
     void findByUserEntityOrderByCreatedDateTimeDescTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity));
 
         String content1 = "content1";
         String content2 = "content2";
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, null, content1);
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, null, content2);
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, null, content3);
-        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, null, content4);
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, null, content1);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, null, content2);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, null, content3);
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, null, content4);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
@@ -77,9 +75,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
     @DisplayName("사용자가 작성한 댓글이 없으면 빈 배열을 반환한다")
     void findByUserEntityOrderByCreatedDateTimeDescWhenUserNotCommentOnRecordTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(createUser());
 
         //when
         List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
@@ -92,23 +88,21 @@ class CommentRepositoryTest extends ContainerBaseTest {
     @DisplayName("기록에 등록된 댓글 리스트를 등록 시간 오름차순으로 조회한다")
     void findCommentEntityByRecordEntityOrderByCreatedDateTimeAsc() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         String content1 = "content1";
         String content2 = "content2";
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, null, content1);
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, null, content2);
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, null, content3);
-        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity, null, content4);
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null, content1);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null, content2);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, null, content3);
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity, null, content4);
 
         commentRepository.saveAll(List.of(commentEntity4, commentEntity3, commentEntity2, commentEntity1));
 
@@ -126,11 +120,11 @@ class CommentRepositoryTest extends ContainerBaseTest {
     @DisplayName("기록에 등록된 댓글 리스트가 없으면 빈 배열을 반환한다")
     void findCommentEntityByRecordEntityOrderByCreatedDateTimeAscReturnsEmptyTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
         List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
@@ -143,16 +137,16 @@ class CommentRepositoryTest extends ContainerBaseTest {
     @DisplayName("기록에 등록된 댓글 리스트를 soft delete한다")
     void deleteAllByRecordEntityTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, null, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, null, "content2");
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, null, "content3");
-        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity, null, "content4");
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null, "content1");
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null, "content2");
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, null, "content3");
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity, null, "content4");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
@@ -167,19 +161,19 @@ class CommentRepositoryTest extends ContainerBaseTest {
     @DisplayName("원댓글로 대댓글 리스트를 soft delete한다")
     void deleteAllByCommentEntityTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity parentComment = createCommentEntity(userEntity, recordEntity, null, "content1");
+        CommentEntity parentComment = createComment(userEntity, recordEntity, null, "content1");
 
         commentRepository.save(parentComment);
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity, parentComment, "content2");
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity, parentComment, "content3");
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity, parentComment, "content4");
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, parentComment, "content2");
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, parentComment, "content3");
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, parentComment, "content4");
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
@@ -194,13 +188,13 @@ class CommentRepositoryTest extends ContainerBaseTest {
     @DisplayName("댓글을 soft delete한다")
     void softDeleteTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = createCommentEntity(userEntity, recordEntity, null, "content1");
+        CommentEntity commentEntity = createComment(userEntity, recordEntity, null, "content1");
 
         commentRepository.save(commentEntity);
 
@@ -211,20 +205,35 @@ class CommentRepositoryTest extends ContainerBaseTest {
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
-                .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
+    private UserEntity createUser() {
+        return UserEntity.builder()
+                .email("test@email.com")
                 .build();
     }
 
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity, String content) {
+    private FeedEntity createFeed(UserEntity userEntity) {
+        return FeedEntity.builder()
+                .userEntity(userEntity)
+                .name("name")
+                .startAt(LocalDateTime.of(2023, 3, 1, 0, 0))
+                .endAt(LocalDateTime.of(2023, 3, 31, 0, 0))
+                .build();
+    }
+
+    private RecordEntity createRecord(FeedEntity feedEntity) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .title("title")
+                .place("place")
+                .date(LocalDateTime.of(2023, 3, 1, 0, 0))
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
+                .build();
+    }
+
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity, String content) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
@@ -232,14 +241,4 @@ class CommentRepositoryTest extends ContainerBaseTest {
                 .content(content)
                 .build();
     }
-
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
-                .startAt(startAt)
-                .endAt(endAt)
-                .build();
-    }
-
 }
