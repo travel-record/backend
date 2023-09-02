@@ -13,6 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.web.properties.JwtProperties;
@@ -37,10 +38,10 @@ class JwtTokenFilterMockTest {
     UserService userService;
 
     @Mock
-    HttpServletRequest request;
+    HttpServletRequest req;
 
     @Mock
-    HttpServletResponse response;
+    HttpServletResponse res;
 
     @Mock
     FilterChain filterChain;
@@ -54,25 +55,24 @@ class JwtTokenFilterMockTest {
     JwtTokenFilter jwtTokenFilter;
 
     @Test
-    @DisplayName("올바른 토큰을 가지고 요청하면 filterchain.doFilter이 호출된다")
+    @DisplayName("올바른 토큰을 가지고 요청하면 whitelist 상관없이 filterchain.doFilter이 호출된다")
     void doFilterInternalWithValidTokenTest() throws Exception {
         //given
-        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
-
         String validToken = "validToken";
-        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        String whitelistPath = "/whitelist";
 
-        ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
+        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of(whitelistPath, List.of(HttpMethod.GET)));
 
-        when(request.getHeader("Authorization")).thenReturn(validToken);
-        when(jwtTokenHandler.getUserId(secretKey, validToken)).thenReturn(1L);
-        when(userService.getUserContextOrException(1L)).thenReturn(mock(UserContext.class));
+        when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
+        when(req.getRequestURI()).thenReturn(whitelistPath);
+        when(jwtTokenHandler.getUserId(any(), any())).thenReturn(1L);
+        when(userService.getUserContextOrException(any())).thenReturn(mock(UserContext.class));
 
         //when
-        jwtTokenFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(req, res, filterChain);
 
         //then
-        verify(filterChain).doFilter(request, response);
+        verify(filterChain).doFilter(req, res);
     }
 
     @Test
@@ -83,22 +83,24 @@ class JwtTokenFilterMockTest {
 
         String invalidToken = "invalidToken";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        String requestUri = "/request";
 
         ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
-        when(request.getHeader("Authorization")).thenReturn(invalidToken);
+        when(req.getRequestURI()).thenReturn(requestUri);
+        when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(invalidToken);
         doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, invalidToken);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
-        when(response.getWriter()).thenReturn(mockPrintWriter);
+        when(res.getWriter()).thenReturn(mockPrintWriter);
 
         ArgumentCaptor<String> responseContentCaptor = ArgumentCaptor.forClass(String.class);
 
         //when
-        jwtTokenFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(req, res, filterChain);
 
         //then
-        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(res).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(mockPrintWriter).write(responseContentCaptor.capture());
 
         String responseBody = responseContentCaptor.getValue();
@@ -112,15 +114,16 @@ class JwtTokenFilterMockTest {
         String whiteListPath = "/whitelist";
         jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of(whiteListPath, List.of(HttpMethod.GET)));
 
-        when(request.getHeader("Authorization")).thenReturn(null);
-        when(request.getServletPath()).thenReturn(whiteListPath);
-        when(request.getMethod()).thenReturn(HttpMethod.GET.toString());
+        when(req.getHeader("Authorization")).thenReturn(null);
+        when(req.getRequestURI()).thenReturn(whiteListPath);
+        when(req.getServletPath()).thenReturn(whiteListPath);
+        when(req.getMethod()).thenReturn(HttpMethod.GET.toString());
 
         //when
-        jwtTokenFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(req, res, filterChain);
 
         //then
-        verify(filterChain).doFilter(request, response);
+        verify(filterChain).doFilter(req, res);
     }
 
     @Test
@@ -129,24 +132,26 @@ class JwtTokenFilterMockTest {
         //given
         jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)));
 
+        String requestUri = "/security";
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
 
         ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
-        when(request.getHeader("Authorization")).thenReturn(null);
-        when(request.getServletPath()).thenReturn("/security");
+        when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+        when(req.getRequestURI()).thenReturn(requestUri);
+        when(req.getServletPath()).thenReturn(requestUri);
         doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, null);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
-        when(response.getWriter()).thenReturn(mockPrintWriter);
+        when(res.getWriter()).thenReturn(mockPrintWriter);
 
         ArgumentCaptor<String> responseContentCaptor = ArgumentCaptor.forClass(String.class);
 
         //when
-        jwtTokenFilter.doFilterInternal(request, response, filterChain);
+        jwtTokenFilter.doFilterInternal(req, res, filterChain);
 
         //then
-        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(res).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(mockPrintWriter).write(responseContentCaptor.capture());
 
         String responseBody = responseContentCaptor.getValue();

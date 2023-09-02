@@ -81,16 +81,27 @@ public class NotificationService {
 
         sseEmitterRepository.save(userId, emitter);
 
-        emitter.onCompletion(() -> sseEmitterRepository.delete(userId));
-        emitter.onTimeout(() -> sseEmitterRepository.delete(userId));
+        emitter.onCompletion(() -> {
+            log.info("SSE connection for user {} has been completed.", userId);
+            sseEmitterRepository.delete(userId);
+        });
+
+        emitter.onTimeout(() -> {
+            log.warn("SSE connection for user {} has timed out.", userId);
+            sseEmitterRepository.delete(userId);
+        });
+
 
         try {
-            log.info("send");
+            log.info("Attempting to send connection completion event for user {}.", userId);
+            String eventID = String.valueOf(System.currentTimeMillis());
             emitter.send(SseEmitter.event()
-                    .id("id")
+                    .id(eventID)
                     .name(EVENT_NAME)
-                    .data("connect completed"));
+                    .data("Connection completed"));
+            log.info("Connection completion event for user {} has been sent successfully.", userId);
         } catch (IOException exception) {
+            log.error("Error sending connection completion event for user {}: {}", userId, exception.getMessage());
             throw new CustomException(NOTIFICATION_CONNECT_ERROR);
         }
 

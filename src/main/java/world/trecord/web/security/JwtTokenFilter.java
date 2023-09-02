@@ -32,6 +32,8 @@ import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
 
+    private final static List<String> TOKEN_IN_PARAM_URLS = List.of("/api/v1/notifications/subscribe");
+
     private final String secretKey;
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
@@ -50,6 +52,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
         try {
             String token = req.getHeader(HttpHeaders.AUTHORIZATION);
+
+            if (TOKEN_IN_PARAM_URLS.contains(req.getRequestURI())) {
+                log.info("Request with {} check the query param", req.getRequestURI());
+                token = req.getQueryString().split("=")[1].trim();
+            }
 
             if (token == null && isWhitelistRequest(req)) {
                 chain.doFilter(req, res);
