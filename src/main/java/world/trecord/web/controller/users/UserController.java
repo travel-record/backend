@@ -2,6 +2,9 @@ package world.trecord.web.controller.users;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
@@ -34,15 +37,15 @@ public class UserController {
         return ApiResponse.ok(userService.getUser(userId));
     }
 
-    // TODO add pageable
     @GetMapping("/comments")
-    public ApiResponse<UserCommentsResponse> getUserComments(@CurrentUser UserContext userContext) {
+    public ApiResponse<UserCommentsResponse> getUserComments(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
+                                                             @CurrentUser UserContext userContext) {
         return ApiResponse.ok(userService.getUserComments(userContext.getId()));
     }
 
-    // TODO add pageable
     @GetMapping("/likes")
-    public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@CurrentUser UserContext userContext) {
+    public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
+                                                                      @CurrentUser UserContext userContext) {
         return ApiResponse.ok(userService.getUserRecordLikeList(userContext.getId()));
     }
 }

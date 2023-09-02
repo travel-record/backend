@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
@@ -63,13 +64,52 @@ class NotificationControllerTest extends ContainerBaseTest {
     JwtProperties jwtProperties;
 
     @Test
+    @DisplayName("GET /api/v1/notifications/check - 성공")
+    void checkExistingNewNotificationTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
+
+        NotificationEntity notificationEntity = createNotification(userEntity, UNREAD);
+
+        notificationRepository.save(notificationEntity);
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/notifications/check")
+                                .header("Authorization", createToken(userEntity.getId()))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.hasNewNotification").value(true));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/notifications/check - 성공 (새로운 알림이 없을 때)")
+    void checkNotExistingNewNotificationTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
+
+        NotificationEntity notificationEntity = createNotification(userEntity, READ);
+
+        notificationRepository.save(notificationEntity);
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/notifications/check")
+                                .header("Authorization", createToken(userEntity.getId()))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.hasNewNotification").value(false));
+    }
+
+
+    @Test
     @DisplayName("GET /api/v1/notifications - 성공")
     void getNotificationsTest() throws Exception {
         //given
-        UserEntity author = UserEntity.builder().email("test@email.com").build();
-        UserEntity commenter1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
-        UserEntity commenter2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
-        UserEntity commenter3 = UserEntity.builder().nickname("nickname3").email("test3@email.com").build();
+        UserEntity author = createUser("test@email.com", "nickname");
+        UserEntity commenter1 = createUser("test1@email.com", "nickname1");
+        UserEntity commenter2 = createUser("test2@email.com", "nickname2");
+        UserEntity commenter3 = createUser("test3@email.com", "nickname3");
 
         userRepository.saveAll(List.of(author, commenter1, commenter2, commenter3));
 
@@ -106,10 +146,12 @@ class NotificationControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/notifications/{type} - 성공")
     void getNotificationsByTypeTest() throws Exception {
         //given
-        UserEntity author = createUser();
-        UserEntity viewer1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
-        UserEntity viewer2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
-        UserEntity viewer3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
+        UserEntity author = createUser("test@email.com", "nickname");
+        UserEntity viewer1 = createUser("test1@email.com", "nickname1");
+        UserEntity viewer2 = createUser("test2@email.com", "nickname2");
+        UserEntity viewer3 = createUser("test3@email.com", "nickname3");
+
+        userRepository.saveAll(List.of(author, viewer1, viewer2, viewer3));
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(author));
 
@@ -140,7 +182,7 @@ class NotificationControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/notifications/{type} - 실패(존재하지 않는 타입)")
     void getNotificationsByNotExistingTypeTest() throws Exception {
         //given
-        UserEntity author = createUser();
+        UserEntity author = userRepository.save(createUser("test@email.com", "nickname"));
 
         String notExistingType = "NOT_EXISTING_TYPE";
 
@@ -157,7 +199,7 @@ class NotificationControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/notifications/subscribe - 성공 (SseEmitter 반환)")
     void connectNotificationTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
 
         //when //then
         mockMvc.perform(
@@ -198,10 +240,10 @@ class NotificationControllerTest extends ContainerBaseTest {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
 
-    private UserEntity createUser() {
-        return userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+    private UserEntity createUser(String email, String nickname) {
+        return UserEntity.builder()
+                .email(email)
+                .nickname(nickname).build();
     }
 
     private FeedEntity createFeedEntity(UserEntity userEntity) {

@@ -1,6 +1,8 @@
 package world.trecord.web.service.comment;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
@@ -13,6 +15,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
+import world.trecord.web.service.comment.response.CommentResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
 import world.trecord.web.service.sse.SseEmitterService;
 
@@ -72,6 +75,16 @@ public class CommentService {
         commentRepository.softDeleteById(commentId);
     }
 
+    public Page<CommentResponse> getReplies(Long commentId, Long viewerId, Pageable pageable) {
+        CommentEntity parentComment = getCommentOrException(commentId);
+
+        return commentRepository.findByParentCommentEntityId(parentComment.getId(), pageable)
+                .map(it -> CommentResponse.builder()
+                        .commentEntity(it)
+                        .viewerId(viewerId)
+                        .build());
+    }
+
     private UserEntity getUserOrException(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
@@ -80,6 +93,11 @@ public class CommentService {
     private RecordEntity getRecordOrException(Long recordId) {
         return recordRepository.findById(recordId)
                 .orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    }
+
+    private CommentEntity getCommentOrException(Long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
     private CommentEntity getCommentOrNull(Long parentId) {

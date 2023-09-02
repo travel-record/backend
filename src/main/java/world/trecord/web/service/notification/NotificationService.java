@@ -11,6 +11,7 @@ import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
+import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 
 import java.util.List;
@@ -27,6 +28,14 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+
+    public CheckNewNotificationResponse checkUnreadNotifications(Long userId) {
+        boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userId, UNREAD);
+
+        return CheckNewNotificationResponse.builder()
+                .hasNewNotification(hasNewNotification)
+                .build();
+    }
 
     @Transactional
     public NotificationEntity createNotification(Long userToId, NotificationType type, NotificationArgs args) {
@@ -50,17 +59,25 @@ public class NotificationService {
                 .notificationEntities(notificationList)
                 .build();
 
-        // TODO async 처리
-        notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
+        markNotificationsAsRead(userId);
 
         return response;
     }
 
-    public NotificationListResponse getNotificationsOrException(Long userId, NotificationType type) {
+    @Transactional
+    public NotificationListResponse getNotificationsByType(Long userId, NotificationType type) {
         List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userId, type);
 
-        return NotificationListResponse.builder()
+        NotificationListResponse response = NotificationListResponse.builder()
                 .notificationEntities(notificationList)
                 .build();
+
+        markNotificationsAsRead(userId);
+
+        return response;
+    }
+
+    private void markNotificationsAsRead(Long userId) {
+        notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
     }
 }

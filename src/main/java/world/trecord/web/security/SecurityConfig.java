@@ -61,7 +61,8 @@ public class SecurityConfig {
                 "/api/*/users/{userId}", List.of(GET),
                 "/api/*/feeds/{feedId}", List.of(GET),
                 "/api/*/records/{recordId}", List.of(GET),
-                "/api/*/records/{recordId}/comments", List.of(GET)
+                "/api/*/records/{recordId}/comments", List.of(GET),
+                "/api/*/comments/{commentId}/replies", List.of(GET)
         );
 
         List<String> tokenInParamUrls = List.of("/api/*/notifications/subscribe");

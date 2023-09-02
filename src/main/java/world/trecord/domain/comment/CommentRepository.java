@@ -1,5 +1,7 @@
 package world.trecord.domain.comment;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -29,6 +31,8 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     @EntityGraph(attributePaths = "userEntity")
     List<CommentEntity> findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(Long recordId);
+
+    Page<CommentEntity> findByParentCommentEntityId(Long parentCommentEntityId, Pageable pageable);
 
     @Modifying
     @Query("UPDATE CommentEntity ce " +

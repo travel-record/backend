@@ -17,6 +17,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.service.comment.CommentService;
+import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 import world.trecord.web.service.record.RecordService;
 import world.trecord.web.service.sse.SseEmitterRepository;
@@ -146,6 +147,22 @@ class NotificationServiceTest extends ContainerBaseTest {
     }
 
     @Test
+    @DisplayName("알림 엔티티를 저장한 후 반환한다")
+    void createNotificationTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        NotificationArgs args = NotificationArgs.builder()
+                .build();
+
+        //when
+        notificationService.createNotification(userEntity.getId(), COMMENT, args);
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll()).hasSize(1);
+    }
+
+    @Test
     @DisplayName("알림 리스트가 없으면 알림 리스트로 조회 시 빈 배열을 반환한다")
     void getNotificationsByWithEmptyNotificationListTest() throws Exception {
         //given
@@ -157,6 +174,53 @@ class NotificationServiceTest extends ContainerBaseTest {
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
     }
+
+    @Test
+    @DisplayName("사용자에게 읽지 않음 알림이 있으면 새로운 알림이 있음을 반환한다")
+    void checkNewUnreadNotificationReturnTrueTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+
+        CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
+
+        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT);
+
+        notificationRepository.save(notificationEntity);
+
+        //when
+        CheckNewNotificationResponse response = notificationService.checkUnreadNotifications(userEntity.getId());
+
+        //then
+        Assertions.assertThat(response.isHasNewNotification()).isTrue();
+    }
+
+    @Test
+    @DisplayName("사용자에게 읽지 않음 알림이 없으면 새로운 알림이 없음을 반환한다")
+    void checkNewUnreadNotificationReturnFalseTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+
+        CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
+
+        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, READ, COMMENT);
+
+        notificationRepository.save(notificationEntity);
+
+        //when
+        CheckNewNotificationResponse response = notificationService.checkUnreadNotifications(userEntity.getId());
+
+        //then
+        Assertions.assertThat(response.isHasNewNotification()).isFalse();
+    }
+
 
     @Test
     @DisplayName("알림 타입 별로 알림 리스트를 등록 시간 내림차순으로 조회하여 반환한다")
@@ -185,7 +249,7 @@ class NotificationServiceTest extends ContainerBaseTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
-        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId(), RECORD_LIKE);
+        NotificationListResponse response = notificationService.getNotificationsByType(author.getId(), RECORD_LIKE);
 
         //then
         Assertions.assertThat(response.notifications)
@@ -222,7 +286,7 @@ class NotificationServiceTest extends ContainerBaseTest {
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
         //when
-        NotificationListResponse response = notificationService.getNotificationsOrException(author.getId(), RECORD_LIKE);
+        NotificationListResponse response = notificationService.getNotificationsByType(author.getId(), RECORD_LIKE);
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();

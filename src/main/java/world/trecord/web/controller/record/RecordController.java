@@ -2,6 +2,9 @@ package world.trecord.web.controller.record;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
@@ -33,9 +36,10 @@ public class RecordController {
         return ApiResponse.ok(recordService.getRecord(viewerId, recordId));
     }
 
-    // TODO add pageable
     @GetMapping("/{recordId}/comments")
-    public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") Long recordId, @CurrentUser UserContext userContext) {
+    public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") Long recordId,
+                                                                 @PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
+                                                                 @CurrentUser UserContext userContext) {
         Long viewerId = (userContext != null) ? userContext.getId() : null;
         return ApiResponse.ok(recordService.getRecordComments(recordId, viewerId));
     }
