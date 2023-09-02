@@ -1,4 +1,4 @@
-package world.trecord.web.service.notification;
+package world.trecord.web.service.sse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

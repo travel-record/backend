@@ -27,7 +27,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
@@ -62,44 +61,6 @@ class NotificationControllerTest extends ContainerBaseTest {
 
     @Autowired
     JwtProperties jwtProperties;
-
-    @Test
-    @DisplayName("GET /api/v1/notifications/check - 성공")
-    void checkExistingNewNotificationTest() throws Exception {
-        //given
-        UserEntity userEntity = createUser();
-
-        NotificationEntity notificationEntity = createNotification(userEntity, UNREAD);
-
-        notificationRepository.save(notificationEntity);
-
-        //when //then
-        mockMvc.perform(
-                        get("/api/v1/notifications/check")
-                                .header("Authorization", createToken(userEntity.getId()))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.hasNewNotification").value(true));
-    }
-
-    @Test
-    @DisplayName("GET /api/v1/notifications/check - 성공 (새로운 알림이 없을 때)")
-    void checkNotExistingNewNotificationTest() throws Exception {
-        //given
-        UserEntity userEntity = createUser();
-
-        NotificationEntity notificationEntity = createNotification(userEntity, READ);
-
-        notificationRepository.save(notificationEntity);
-
-        //when //then
-        mockMvc.perform(
-                        get("/api/v1/notifications/check")
-                                .header("Authorization", createToken(userEntity.getId()))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.hasNewNotification").value(false));
-    }
 
     @Test
     @DisplayName("GET /api/v1/notifications - 성공")

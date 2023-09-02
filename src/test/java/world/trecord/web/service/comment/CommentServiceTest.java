@@ -8,6 +8,7 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -41,6 +42,9 @@ class CommentServiceTest extends ContainerBaseTest {
     @Autowired
     CommentService commentService;
 
+    @Autowired
+    NotificationRepository notificationRepository;
+
     @Test
     @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 상세 정보를 반환한다")
     void createCommentTest() throws Exception {
@@ -49,7 +53,7 @@ class CommentServiceTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         String content = "content";
 
@@ -69,6 +73,51 @@ class CommentServiceTest extends ContainerBaseTest {
     }
 
     @Test
+    @DisplayName("다른 사람의 기록에 댓글을 작성하면 알림이 생성된다")
+    void createCommentNotificationWhenCommentOnOtherRecordTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        UserEntity commenter = userRepository.save(createUser("test1@email.com"));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
+
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .content("content")
+                .build();
+
+        //when
+        commentService.createComment(commenter.getId(), request);
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("자신의 기록에 댓글을 작성하면 알림이 생성되지 않는다")
+    void createCommentNotificationWhenCommentOnSelfTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
+
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .content("content")
+                .build();
+
+        //when
+        commentService.createComment(author.getId(), request);
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    @Test
     @DisplayName("대댓글을 작성하여 생성된 댓글 상세 정보를 반환한다")
     void createChildCommentTest() throws Exception {
         //given
@@ -76,7 +125,7 @@ class CommentServiceTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity parentCommentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
@@ -136,7 +185,7 @@ class CommentServiceTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
@@ -181,7 +230,7 @@ class CommentServiceTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(commenter));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity = commentRepository.save(createComment(commenter, recordEntity, null));
 
@@ -205,7 +254,7 @@ class CommentServiceTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity parentCommentEntity = commentRepository.save(createComment(commenter, recordEntity, null));
 
@@ -231,7 +280,7 @@ class CommentServiceTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
@@ -271,12 +320,12 @@ class CommentServiceTest extends ContainerBaseTest {
                 .build();
     }
 
-    private RecordEntity createRecord(FeedEntity feedEntity, LocalDateTime date) {
+    private RecordEntity createRecord(FeedEntity feedEntity) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
                 .title("record")
                 .place("place")
-                .date(date)
+                .date(LocalDateTime.of(2022, 10, 10, 0, 0))
                 .content("content")
                 .weather("weather")
                 .transportation("satisfaction")

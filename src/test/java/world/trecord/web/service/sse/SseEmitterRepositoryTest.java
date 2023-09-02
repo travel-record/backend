@@ -1,4 +1,4 @@
-package world.trecord.web.service.notification;
+package world.trecord.web.service.sse;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;

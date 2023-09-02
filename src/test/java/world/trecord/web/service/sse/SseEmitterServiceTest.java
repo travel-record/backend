@@ -1,4 +1,4 @@
-package world.trecord.web.service.notification;
+package world.trecord.web.service.sse;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -20,15 +20,20 @@ class SseEmitterServiceTest extends ContainerBaseTest {
     SseEmitterService sseEmitterService;
 
     @Test
-    @DisplayName("새로운 SseEmitter를 생성한다")
-    void createSseEmitterTest() throws Exception {
+    @DisplayName("userId로 SseEmitter를 repository에 저장한다")
+    void connectNotificationTest() throws Exception {
         //given
-        Duration duration = Duration.ofDays(1);
+        Long userId = 1L;
+        SseEmitter sseEmitter = new SseEmitter(Duration.ofDays(1).toMillis());
 
         //when
-        SseEmitter emitter = sseEmitterService.createSseEmitter(duration);
+        SseEmitter emitter = sseEmitterService.connect(userId, sseEmitter);
 
         //then
-        Assertions.assertThat(emitter.getTimeout()).isEqualTo(duration.toMillis());
+        Assertions.assertThat(sseEmitterRepository.findByUserId(userId))
+                .isPresent()
+                .hasValueSatisfying(it -> {
+                    Assertions.assertThat(it).isEqualTo(emitter);
+                });
     }
 }

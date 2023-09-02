@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
+import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -13,10 +14,11 @@ import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
-import world.trecord.web.service.notification.NotificationService;
+import world.trecord.web.service.sse.SseEmitterService;
 
 import java.util.Optional;
 
+import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.web.exception.CustomExceptionError.*;
 
 @Transactional(readOnly = true)
@@ -27,11 +29,11 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final RecordRepository recordRepository;
-    private final NotificationService notificationService;
+    private final SseEmitterService sseEmitterService;
 
     @Transactional
-    public void createComment(Long userId, CommentCreateRequest request) {
-        UserEntity userEntity = getUserOrException(userId);
+    public void createComment(Long userFromId, CommentCreateRequest request) {
+        UserEntity userEntity = getUserOrException(userFromId);
 
         RecordEntity recordEntity = getRecordOrException(request.getRecordId());
 
@@ -39,7 +41,9 @@ public class CommentService {
 
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
 
-        notificationService.createCommentNotification(commentEntity);
+        Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
+
+        sseEmitterService.send(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity));
     }
 
     @Transactional
@@ -98,5 +102,13 @@ public class CommentService {
         if (!commentEntity.isCommenter(userId)) {
             throw new CustomException(FORBIDDEN);
         }
+    }
+
+    private NotificationArgs buildNotificationArgs(CommentEntity commentEntity, UserEntity userEntity) {
+        return NotificationArgs.builder()
+                .commentEntity(commentEntity)
+                .recordEntity(commentEntity.getRecordEntity())
+                .userFromEntity(userEntity)
+                .build();
     }
 }

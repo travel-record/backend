@@ -89,7 +89,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
     }
 
     @Test
-    @DisplayName("기록 작성자가 아닌 사용자가 좋아요하지 않은 기록에 좋아요를 하면 기록 작성자를 향한 좋아요 알림을 생성한다")
+    @DisplayName("기록 작성자가 아닌 사용자가 기록에 좋아요를 하면 기록 작성자를 향한 좋아요 알림을 생성한다")
     void createNotificationTestWhenViewerLikeOnRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test1@email.com"));
@@ -127,7 +127,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();
     }
-
+    
     private UserEntity createUser(String email) {
         return UserEntity.builder()
                 .email(email)
