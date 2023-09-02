@@ -45,11 +45,11 @@ class CommentServiceTest extends ContainerBaseTest {
     @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 상세 정보를 반환한다")
     void createCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
 
         String content = "content";
 
@@ -72,13 +72,13 @@ class CommentServiceTest extends ContainerBaseTest {
     @DisplayName("대댓글을 작성하여 생성된 댓글 상세 정보를 반환한다")
     void createChildCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
 
-        CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
+        CommentEntity parentCommentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
@@ -116,7 +116,7 @@ class CommentServiceTest extends ContainerBaseTest {
         //given
         long notExistingRecordId = 0L;
 
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(notExistingRecordId)
@@ -132,13 +132,13 @@ class CommentServiceTest extends ContainerBaseTest {
     @Test
     @DisplayName("댓글 작성자가 댓글을 수정하면 수정된 댓글 내용을 반환한다")
     void updateCommentTest() throws Exception {
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
 
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
+        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         String changedContent = "changed content";
 
@@ -176,14 +176,14 @@ class CommentServiceTest extends ContainerBaseTest {
     @DisplayName("댓글 작성자가 아닌 사용자가 댓글을 수정하려고 하면 예외가 발생한다")
     void updateCommentWithNotCommenterTest() throws Exception {
         //given
-        UserEntity commenter = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity other = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity commenter = userRepository.save(createUser("test@email.com"));
+        UserEntity other = userRepository.save(createUser("test1@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(commenter, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(commenter));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
 
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(commenter, recordEntity, null, "content"));
+        CommentEntity commentEntity = commentRepository.save(createComment(commenter, recordEntity, null));
 
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .content("change content")
@@ -200,18 +200,18 @@ class CommentServiceTest extends ContainerBaseTest {
     @DisplayName("원댓글 작성자가 원댓글을 삭제하면 하위 댓글들도 함께 삭제된다")
     void deleteParentCommentTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
-        UserEntity commenter = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        UserEntity commenter = userRepository.save(createUser("test1@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
 
-        CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(commenter, recordEntity, null, "content"));
+        CommentEntity parentCommentEntity = commentRepository.save(createComment(commenter, recordEntity, null));
 
-        CommentEntity childCommentEntity1 = createCommentEntity(author, recordEntity, parentCommentEntity, "content");
-        CommentEntity childCommentEntity2 = createCommentEntity(author, recordEntity, parentCommentEntity, "content");
-        CommentEntity childCommentEntity3 = createCommentEntity(author, recordEntity, parentCommentEntity, "content");
+        CommentEntity childCommentEntity1 = createComment(author, recordEntity, parentCommentEntity);
+        CommentEntity childCommentEntity2 = createComment(author, recordEntity, parentCommentEntity);
+        CommentEntity childCommentEntity3 = createComment(author, recordEntity, parentCommentEntity);
 
         commentRepository.saveAll(List.of(childCommentEntity1, childCommentEntity2, childCommentEntity3));
 
@@ -226,15 +226,14 @@ class CommentServiceTest extends ContainerBaseTest {
     @DisplayName("댓글 작성자가 아닌 사용자가 댓글을 삭제하려고 하면 예외가 발생한다")
     void deleteCommentWithNotCommenterTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity otherEntity = userRepository.save(createUser("test1@email.com"));
 
-        UserEntity otherEntity = userRepository.save(UserEntity.builder().email("test1@email.com").build());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, null, "content"));
+        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         //when //then
         Assertions.assertThatThrownBy(() -> commentService.deleteComment(otherEntity.getId(), commentEntity.getId()))
@@ -257,34 +256,40 @@ class CommentServiceTest extends ContainerBaseTest {
                 .isEqualTo(CustomExceptionError.COMMENT_NOT_FOUND);
     }
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
-                .startAt(startAt)
-                .endAt(endAt)
+    private UserEntity createUser(String email) {
+        return UserEntity.builder()
+                .email(email)
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private FeedEntity createFeed(UserEntity userEntity) {
+        return FeedEntity.builder()
+                .userEntity(userEntity)
+                .name("feed name")
+                .startAt(LocalDateTime.of(2022, 9, 30, 0, 0))
+                .endAt(LocalDateTime.of(2022, 10, 2, 0, 0))
+                .build();
+    }
+
+    private RecordEntity createRecord(FeedEntity feedEntity, LocalDateTime date) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
+                .title("record")
+                .place("place")
                 .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
                 .build();
     }
 
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity, String content) {
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
                 .parentCommentEntity(parentCommentEntity)
-                .content(content)
+                .content("content")
                 .build();
     }
 

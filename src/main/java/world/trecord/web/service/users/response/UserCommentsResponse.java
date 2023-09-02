@@ -1,11 +1,13 @@
 package world.trecord.web.service.users.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -28,11 +30,15 @@ public class UserCommentsResponse {
         private Long commentId;
         private String content;
 
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+        private LocalDateTime commentCreatedDateTime;
+
         public Comment(CommentRecordProjection projection) {
             this.recordId = projection.getRecordId();
             this.recordTitle = projection.getRecordTitle();
             this.commentId = projection.getCommentId();
             this.content = projection.getContent();
+            this.commentCreatedDateTime = projection.getCreatedDateTime();
         }
     }
 }

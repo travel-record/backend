@@ -79,6 +79,7 @@ class UserControllerTest extends ContainerBaseTest {
 
         UserEntity saveUser = userRepository.save(userEntity);
 
+
         //when //then
         mockMvc.perform(
                         get("/api/v1/users")
@@ -222,24 +223,22 @@ class UserControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/users/comments - 성공")
     void getUserCommentsTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .email("test@email.com")
-                .build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = recordRepository.save(createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
-        RecordEntity recordEntity2 = recordRepository.save(createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0)));
 
         String content1 = "content1";
         String content2 = "content2";
         String content3 = "content3";
         String content4 = "content4";
 
-        CommentEntity commentEntity1 = createCommentEntity(userEntity, recordEntity1, content1);
-        CommentEntity commentEntity2 = createCommentEntity(userEntity, recordEntity2, content2);
-        CommentEntity commentEntity3 = createCommentEntity(userEntity, recordEntity2, content3);
-        CommentEntity commentEntity4 = createCommentEntity(userEntity, recordEntity1, content4);
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, content1);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, content2);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, content3);
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, content4);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
@@ -272,19 +271,19 @@ class UserControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/users/likes - 성공")
     void getUserRecordLikesTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity3 = createRecordEntity(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity4 = createRecordEntity(feedEntity, "record4", "place4", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0));
+        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0));
+        RecordEntity recordEntity3 = createRecord(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 2, 0, 0));
+        RecordEntity recordEntity4 = createRecord(feedEntity, "record4", "place4", LocalDateTime.of(2022, 3, 2, 0, 0));
 
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
 
-        UserRecordLikeEntity userRecordLikeEntity1 = createUserRecordLikeEntity(userEntity, recordEntity1);
-        UserRecordLikeEntity userRecordLikeEntity2 = createUserRecordLikeEntity(userEntity, recordEntity4);
+        UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(userEntity, recordEntity1);
+        UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(userEntity, recordEntity4);
 
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
@@ -303,20 +302,39 @@ class UserControllerTest extends ContainerBaseTest {
     }
 
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
+    }
+
+    private UserEntity createUser() {
+        return UserEntity.builder()
+                .email("test@email.com")
+                .build();
+    }
+
+    private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {
+        return FeedEntity.builder()
+                .userEntity(userEntity)
+                .name("name")
+                .startAt(startAt)
+                .endAt(endAt)
+                .build();
+    }
+
+    private RecordEntity createRecord(FeedEntity feedEntity, String title, String place, LocalDateTime date) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
                 .title(title)
                 .place(place)
                 .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
                 .build();
     }
 
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, String content) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
@@ -324,20 +342,7 @@ class UserControllerTest extends ContainerBaseTest {
                 .build();
     }
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
-                .startAt(startAt)
-                .endAt(endAt)
-                .build();
-    }
-
-    private String createToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
-    }
-
-    private UserRecordLikeEntity createUserRecordLikeEntity(UserEntity userEntity, RecordEntity recordEntity) {
+    private UserRecordLikeEntity createRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
         return UserRecordLikeEntity
                 .builder()
                 .userEntity(userEntity)

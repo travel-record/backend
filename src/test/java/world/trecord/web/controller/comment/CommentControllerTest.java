@@ -62,11 +62,11 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/comments - 성공")
     void createCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         String content = "content";
 
@@ -89,13 +89,13 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/comments - 성공 (대댓글 생성)")
     void createChildCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity parentCommentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity parentCommentEntity = commentRepository.save(createComment(userEntity, recordEntity));
 
         String content = "content";
 
@@ -119,11 +119,11 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/comments - 실패 (원댓글 존재하지 않음)")
     void createChildCommentWhenOriginCommentNotExistingTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         long notExistingCommentId = 0L;
 
@@ -150,11 +150,11 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("POST /api/v1/comments - 실패 (올바르지 못한 댓글)")
     void createCommentWithInvalidDataTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         String invalidContent = "";
 
@@ -179,13 +179,13 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("PUT /api/v1/comments/{commentId} - 성공")
     void updateCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity));
 
         String changeContent = "change content";
 
@@ -208,13 +208,13 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("PUT /api/v1/comments/{commentId} - 실패 (올바르지 파라미터)")
     void updateCommentWithInvalidDataTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity));
 
         String invalidContent = "";
 
@@ -237,13 +237,13 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("DELETE /api/v1/comments/{commentId} - 성공")
     void deleteCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = commentRepository.save(createCommentEntity(userEntity, recordEntity, "content"));
+        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity));
 
         //when //then
         mockMvc.perform(
@@ -259,7 +259,7 @@ class CommentControllerTest extends ContainerBaseTest {
     @DisplayName("DELETE /api/v1/comments/{commentId} - 실패 (올바르지 않은 경로 변수)")
     void deleteCommentWithCommentIdNullTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = userRepository.save(createUser());
 
         String pathVariable = "Invalid path variable";
 
@@ -272,38 +272,44 @@ class CommentControllerTest extends ContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
     }
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
-                .startAt(startAt)
-                .endAt(endAt)
-                .build();
-    }
-
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
-                .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
-                .build();
-    }
-
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
-        return CommentEntity.builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
-                .content(content)
-                .build();
-    }
-
-
     private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
+
+    private UserEntity createUser() {
+        return UserEntity.builder()
+                .email("test@email.com")
+                .build();
+    }
+
+    private FeedEntity createFeed(UserEntity userEntity) {
+        return FeedEntity.builder()
+                .userEntity(userEntity)
+                .name("name")
+                .startAt(LocalDateTime.of(2021, 9, 30, 0, 0))
+                .endAt(LocalDateTime.of(2021, 10, 2, 0, 0))
+                .build();
+    }
+
+    private RecordEntity createRecord(FeedEntity feedEntity) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .title("record")
+                .place("place")
+                .date(LocalDateTime.of(2022, 3, 2, 0, 0))
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
+                .build();
+    }
+
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity) {
+        return CommentEntity.builder()
+                .userEntity(userEntity)
+                .recordEntity(recordEntity)
+                .content("content")
+                .build();
+    }
+
 }

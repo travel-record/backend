@@ -66,9 +66,9 @@ class NotificationControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/notifications/check - 성공")
     void checkExistingNewNotificationTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = createUser();
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, UNREAD);
+        NotificationEntity notificationEntity = createNotification(userEntity, UNREAD);
 
         notificationRepository.save(notificationEntity);
 
@@ -85,9 +85,9 @@ class NotificationControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/notifications/check - 성공 (새로운 알림이 없을 때)")
     void checkNotExistingNewNotificationTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity userEntity = createUser();
 
-        NotificationEntity notificationEntity = createNotificationEntity(userEntity, READ);
+        NotificationEntity notificationEntity = createNotification(userEntity, READ);
 
         notificationRepository.save(notificationEntity);
 
@@ -111,21 +111,21 @@ class NotificationControllerTest extends ContainerBaseTest {
 
         userRepository.saveAll(List.of(author, commenter1, commenter2, commenter3));
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author));
 
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1");
+        RecordEntity recordEntity1 = createRecordEntity(feedEntity);
+        RecordEntity recordEntity2 = createRecordEntity(feedEntity);
 
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
 
-        CommentEntity commentEntity1 = createCommentEntity(commenter1, recordEntity1, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(commenter2, recordEntity2, "content2");
+        CommentEntity commentEntity1 = createComment(commenter1, recordEntity1);
+        CommentEntity commentEntity2 = createComment(commenter2, recordEntity2);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, commenter1, recordEntity1, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, commenter2, recordEntity2, commentEntity2, UNREAD, COMMENT);
-        NotificationEntity notificationEntity3 = createNotificationEntity(author, commenter3, recordEntity2, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity1, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotification(author, commenter2, recordEntity2, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity3 = createNotification(author, commenter3, recordEntity2, null, UNREAD, RECORD_LIKE);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
@@ -144,24 +144,24 @@ class NotificationControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/notifications/{type} - 성공")
     void getNotificationsByTypeTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = createUser();
         UserEntity viewer1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity viewer2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
         UserEntity viewer3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author, "feed name", LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(author));
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity));
 
-        CommentEntity commentEntity1 = createCommentEntity(viewer1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createCommentEntity(viewer2, recordEntity, "content2");
+        CommentEntity commentEntity1 = createComment(viewer1, recordEntity);
+        CommentEntity commentEntity2 = createComment(viewer2, recordEntity);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotificationEntity(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotificationEntity(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
-        NotificationEntity notificationEntity3 = createNotificationEntity(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
-        NotificationEntity notificationEntity4 = createNotificationEntity(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity3 = createNotification(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity4 = createNotification(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
@@ -178,7 +178,7 @@ class NotificationControllerTest extends ContainerBaseTest {
     @DisplayName("GET /api/v1/notifications/{type} - 실패(존재하지 않는 타입)")
     void getNotificationsByNotExistingTypeTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(UserEntity.builder().email("test@email.com").build());
+        UserEntity author = createUser();
 
         String notExistingType = "NOT_EXISTING_TYPE";
 
@@ -191,7 +191,47 @@ class NotificationControllerTest extends ContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
     }
 
-    private NotificationEntity createNotificationEntity(UserEntity userEntity, NotificationStatus notificationStatus) {
+    private String createToken(Long userId) {
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
+    }
+
+    private UserEntity createUser() {
+        return userRepository.save(UserEntity.builder()
+                .email("test@email.com")
+                .build());
+    }
+
+    private FeedEntity createFeedEntity(UserEntity userEntity) {
+        return FeedEntity.builder()
+                .userEntity(userEntity)
+                .name("name")
+                .startAt(LocalDateTime.of(2022, 9, 30, 0, 0))
+                .endAt(LocalDateTime.of(2022, 10, 2, 0, 0))
+                .build();
+    }
+
+    private RecordEntity createRecordEntity(FeedEntity feedEntity) {
+        return RecordEntity.builder()
+                .feedEntity(feedEntity)
+                .title("title")
+                .place("place")
+                .date(LocalDateTime.of(2022, 3, 2, 0, 0))
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
+                .build();
+    }
+
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity) {
+        return CommentEntity.builder()
+                .userEntity(userEntity)
+                .recordEntity(recordEntity)
+                .content("content")
+                .build();
+    }
+
+    private NotificationEntity createNotification(UserEntity userEntity, NotificationStatus notificationStatus) {
         return NotificationEntity.builder()
                 .usersToEntity(userEntity)
                 .type(COMMENT)
@@ -199,37 +239,7 @@ class NotificationControllerTest extends ContainerBaseTest {
                 .build();
     }
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(saveUserEntity)
-                .name(name)
-                .startAt(startAt)
-                .endAt(endAt)
-                .build();
-    }
-
-    private CommentEntity createCommentEntity(UserEntity userEntity, RecordEntity recordEntity, String content) {
-        return CommentEntity.builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
-                .content(content)
-                .build();
-    }
-
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
-                .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
-                .build();
-    }
-
-    private NotificationEntity createNotificationEntity(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus status, NotificationType type) {
+    private NotificationEntity createNotification(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus status, NotificationType type) {
         NotificationArgs args = NotificationArgs.builder()
                 .commentEntity(commentEntity)
                 .recordEntity(recordEntity)
@@ -244,8 +254,4 @@ class NotificationControllerTest extends ContainerBaseTest {
                 .build();
     }
 
-
-    private String createToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
-    }
 }
