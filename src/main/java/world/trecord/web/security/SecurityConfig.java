@@ -63,7 +63,10 @@ public class SecurityConfig {
                 "/api/*/records/{recordId}", List.of(GET),
                 "/api/*/records/{recordId}/comments", List.of(GET)
         );
-        return new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, whitelistMap);
+
+        List<String> tokenInParamUrls = List.of("/api/*/notifications/subscribe");
+
+        return new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, whitelistMap, tokenInParamUrls);
     }
 
     @Bean

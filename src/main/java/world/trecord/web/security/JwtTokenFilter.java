@@ -23,29 +23,27 @@ import world.trecord.web.service.users.UserService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private final static List<String> TOKEN_IN_PARAM_URLS = List.of("/api/v1/notifications/subscribe");
-
     private final String secretKey;
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
     private final ObjectMapper objectMapper;
     private final Map<RequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
+    private final Set<RequestMatcher> tokenInParamSet = new HashSet<>();
 
-    public JwtTokenFilter(String secretKey, JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap) {
+    public JwtTokenFilter(String secretKey, JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap, List<String> tokenInParamUrls) {
         this.secretKey = secretKey;
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
         this.objectMapper = objectMapper;
         whitelistMap.forEach((url, methods) -> this.whitelistMap.put(new AntPathRequestMatcher(url), methods));
+        tokenInParamUrls.forEach(url -> this.tokenInParamSet.add(new AntPathRequestMatcher(url)));
     }
 
     @Override
@@ -53,7 +51,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             String token = req.getHeader(HttpHeaders.AUTHORIZATION);
 
-            if (TOKEN_IN_PARAM_URLS.contains(req.getRequestURI())) {
+            if (isTokenInRequestQueryParam(req)) {
                 log.info("Request with {} check the query param", req.getRequestURI());
                 token = req.getQueryString().split("=")[1].trim();
             }
@@ -93,6 +91,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             List<HttpMethod> allowedMethods = it.getValue();
             return matcher.matches(req) && allowedMethods.contains(HttpMethod.valueOf(req.getMethod()));
         });
+    }
+
+    private boolean isTokenInRequestQueryParam(HttpServletRequest req) {
+        return tokenInParamSet.stream().anyMatch(r -> r.matches(req));
     }
 
     private void setAuthentication(UserContext userContext) {
