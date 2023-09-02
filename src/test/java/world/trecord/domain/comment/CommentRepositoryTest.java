@@ -45,15 +45,10 @@ class CommentRepositoryTest extends ContainerBaseTest {
         RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity));
         RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity));
 
-        String content1 = "content1";
-        String content2 = "content2";
-        String content3 = "content3";
-        String content4 = "content4";
-
-        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, null, content1);
-        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, null, content2);
-        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, null, content3);
-        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, null, content4);
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, null);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, null);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, null);
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, null);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
@@ -94,15 +89,10 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        String content1 = "content1";
-        String content2 = "content2";
-        String content3 = "content3";
-        String content4 = "content4";
-
-        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null, content1);
-        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null, content2);
-        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, null, content3);
-        CommentEntity commentEntity4 = createComment(userEntity, recordEntity, null, content4);
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, null);
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity, null);
 
         commentRepository.saveAll(List.of(commentEntity4, commentEntity3, commentEntity2, commentEntity1));
 
@@ -112,8 +102,8 @@ class CommentRepositoryTest extends ContainerBaseTest {
         //then
         Assertions.assertThat(commentEntities)
                 .hasSize(4)
-                .extracting("content")
-                .containsExactly(content4, content3, content2, content1);
+                .extracting("id")
+                .containsExactly(commentEntity4.getId(), commentEntity3.getId(), commentEntity2.getId(), commentEntity1.getId());
     }
 
     @Test
@@ -143,10 +133,10 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null, "content1");
-        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null, "content2");
-        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, null, "content3");
-        CommentEntity commentEntity4 = createComment(userEntity, recordEntity, null, "content4");
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, null);
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity, null);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
@@ -167,13 +157,13 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity parentComment = createComment(userEntity, recordEntity, null, "content1");
+        CommentEntity parentComment = createComment(userEntity, recordEntity, null);
 
         commentRepository.save(parentComment);
 
-        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, parentComment, "content2");
-        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, parentComment, "content3");
-        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, parentComment, "content4");
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity, parentComment);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity, parentComment);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity, parentComment);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
@@ -194,7 +184,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        CommentEntity commentEntity = createComment(userEntity, recordEntity, null, "content1");
+        CommentEntity commentEntity = createComment(userEntity, recordEntity, null);
 
         commentRepository.save(commentEntity);
 
@@ -233,12 +223,12 @@ class CommentRepositoryTest extends ContainerBaseTest {
                 .build();
     }
 
-    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity, String content) {
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
                 .parentCommentEntity(parentCommentEntity)
-                .content(content)
+                .content("content")
                 .build();
     }
 }
