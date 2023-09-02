@@ -1,68 +1,45 @@
 package world.trecord.web.service.notification;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationType;
-import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
+import world.trecord.domain.users.UserRepository;
+import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 
 import java.util.List;
 
 import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
-import static world.trecord.domain.notification.NotificationType.COMMENT;
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.web.exception.CustomExceptionError.USER_NOT_FOUND;
 
+@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
-    // TODO async 처리
     @Transactional
-    public void createCommentNotification(CommentEntity commentEntity) {
-        UserEntity userToEntity = commentEntity.getRecordEntity().getFeedEntity().getUserEntity();
+    public NotificationEntity createNotification(Long userToId, NotificationType type, NotificationArgs args) {
+        UserEntity userToEntity = userRepository.findById(userToId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
-        UserEntity userFromEntity = commentEntity.getUserEntity();
-
-        if (userToEntity.isEqualTo(userFromEntity)) {
-            return;
-        }
-
-        NotificationEntity notificationEntity = createCommentNotificationEntity(commentEntity, userToEntity, userFromEntity);
-
-        notificationRepository.save(notificationEntity);
-    }
-
-    // TODO async 처리
-    @Transactional
-    public void createRecordLikeNotification(UserEntity userFromEntity, RecordEntity recordEntity) {
-        UserEntity userToEntity = recordEntity.getFeedEntity().getUserEntity();
-
-        if (userToEntity.isEqualTo(userFromEntity)) {
-            return;
-        }
-
-        NotificationEntity notificationEntity = createRecordLikeNotificationEntity(recordEntity, userToEntity, userFromEntity);
-
-        notificationRepository.save(notificationEntity);
-    }
-
-    public CheckNewNotificationResponse checkNewNotification(Long userId) {
-        boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userId, UNREAD);
-
-        return CheckNewNotificationResponse.builder()
-                .hasNewNotification(hasNewNotification)
+        NotificationEntity notificationEntity = NotificationEntity.builder()
+                .usersToEntity(userToEntity)
+                .args(args)
+                .status(UNREAD)
+                .type(type)
                 .build();
+
+        return notificationRepository.save(notificationEntity);
     }
 
     @Transactional
@@ -84,35 +61,6 @@ public class NotificationService {
 
         return NotificationListResponse.builder()
                 .notificationEntities(notificationList)
-                .build();
-    }
-
-    private NotificationEntity createRecordLikeNotificationEntity(RecordEntity recordEntity, UserEntity userToEntity, UserEntity userFromEntity) {
-        NotificationArgs args = NotificationArgs.builder()
-                .recordEntity(recordEntity)
-                .userFromEntity(userFromEntity)
-                .build();
-
-        return NotificationEntity.builder()
-                .usersToEntity(userToEntity)
-                .args(args)
-                .type(RECORD_LIKE)
-                .status(UNREAD)
-                .build();
-    }
-
-    private NotificationEntity createCommentNotificationEntity(CommentEntity commentEntity, UserEntity userToEntity, UserEntity userFromEntity) {
-        NotificationArgs args = NotificationArgs.builder()
-                .commentEntity(commentEntity)
-                .recordEntity(commentEntity.getRecordEntity())
-                .userFromEntity(userFromEntity)
-                .build();
-
-        return NotificationEntity.builder()
-                .usersToEntity(userToEntity)
-                .type(COMMENT)
-                .status(UNREAD)
-                .args(args)
                 .build();
     }
 }

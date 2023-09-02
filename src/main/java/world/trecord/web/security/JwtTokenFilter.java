@@ -23,9 +23,7 @@ import world.trecord.web.service.users.UserService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
 
@@ -37,19 +35,26 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final ObjectMapper objectMapper;
     private final Map<RequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
+    private final Set<RequestMatcher> tokenInParamSet = new HashSet<>();
 
-    public JwtTokenFilter(String secretKey, JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap) {
+    public JwtTokenFilter(String secretKey, JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap, List<String> tokenInParamUrls) {
         this.secretKey = secretKey;
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
         this.objectMapper = objectMapper;
         whitelistMap.forEach((url, methods) -> this.whitelistMap.put(new AntPathRequestMatcher(url), methods));
+        tokenInParamUrls.forEach(url -> this.tokenInParamSet.add(new AntPathRequestMatcher(url)));
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
         try {
             String token = req.getHeader(HttpHeaders.AUTHORIZATION);
+
+            if (isTokenInRequestQueryParam(req)) {
+                log.info("Request with {} check the query param", req.getRequestURI());
+                token = req.getQueryString().split("=")[1].trim();
+            }
 
             if (token == null && isWhitelistRequest(req)) {
                 chain.doFilter(req, res);
@@ -86,6 +91,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             List<HttpMethod> allowedMethods = it.getValue();
             return matcher.matches(req) && allowedMethods.contains(HttpMethod.valueOf(req.getMethod()));
         });
+    }
+
+    private boolean isTokenInRequestQueryParam(HttpServletRequest req) {
+        return tokenInParamSet.stream().anyMatch(r -> r.matches(req));
     }
 
     private void setAuthentication(UserContext userContext) {

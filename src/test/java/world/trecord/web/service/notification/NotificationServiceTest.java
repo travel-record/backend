@@ -17,9 +17,9 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.web.service.comment.CommentService;
-import world.trecord.web.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.web.service.notification.response.NotificationListResponse;
 import world.trecord.web.service.record.RecordService;
+import world.trecord.web.service.sse.SseEmitterRepository;
 import world.trecord.web.service.userrecordlike.UserRecordLikeService;
 
 import java.time.LocalDateTime;
@@ -64,95 +64,9 @@ class NotificationServiceTest extends ContainerBaseTest {
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
 
-    @Test
-    @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 기록 알림을 생성하여 반환한다")
-    void createNotificationTest() throws Exception {
-        //given
-        UserEntity author = userRepository.save(createUser("test@email.com"));
-        UserEntity commenter = userRepository.save(createUser("test1@email.com"));
+    @Autowired
+    SseEmitterRepository sseEmitterRepository;
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        CommentEntity commentEntity = createComment(commenter, recordEntity, "content1");
-
-        //when
-        notificationService.createCommentNotification(commentEntity);
-
-        //then
-        Assertions.assertThat(notificationRepository.findAll())
-                .hasSize(1)
-                .extracting("type", "status")
-                .containsExactly(
-                        tuple(COMMENT, UNREAD)
-                );
-    }
-
-    @Test
-    @DisplayName("기록 작성자가 자신의 기록에 댓글을 작성하면 알림이 생성되지 않는다")
-    void createNotificationItselfTest() throws Exception {
-        //given
-        UserEntity author = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        CommentEntity commentEntity = createComment(author, recordEntity, "content1");
-
-        //when
-        notificationService.createCommentNotification(commentEntity);
-
-        //then
-        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("사용자에게 읽지 않음 알림이 있으면 새로운 알림이 있음을 반환한다")
-    void checkNewUnreadNotificationReturnTrueTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
-
-        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT);
-
-        notificationRepository.save(notificationEntity);
-
-        //when
-        CheckNewNotificationResponse response = notificationService.checkNewNotification(userEntity.getId());
-
-        //then
-        Assertions.assertThat(response.isHasNewNotification()).isTrue();
-    }
-
-    @Test
-    @DisplayName("사용자에게 읽지 않음 알림이 없으면 새로운 알림이 없음을 반환한다")
-    void checkNewUnreadNotificationReturnFalseTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
-
-        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, READ, COMMENT);
-
-        notificationRepository.save(notificationEntity);
-
-        //when
-        CheckNewNotificationResponse response = notificationService.checkNewNotification(userEntity.getId());
-
-        //then
-        Assertions.assertThat(response.isHasNewNotification()).isFalse();
-    }
 
     @Test
     @DisplayName("사용자가 알림 리스트를 조회하면 시간 내림차순으로 정렬된 알림 리스트를 반환한다")
@@ -242,46 +156,6 @@ class NotificationServiceTest extends ContainerBaseTest {
 
         //then
         Assertions.assertThat(response.getNotifications()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("사용자가 다른 사용자의 기록에 좋아요하면 좋아요 알림을 생성하여 반환한다 ")
-    void createRecordLikeNotificationTest() throws Exception {
-        //given
-        UserEntity writer = userRepository.save(createUser("test1@email.com"));
-        UserEntity viewer = userRepository.save(createUser("test2@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        //when
-        notificationService.createRecordLikeNotification(viewer, recordEntity);
-
-        //then
-        Assertions.assertThat(notificationRepository.findAll())
-                .hasSize(1)
-                .extracting("type", "status")
-                .containsExactly(
-                        tuple(RECORD_LIKE, UNREAD)
-                );
-    }
-
-    @Test
-    @DisplayName("기록 작성자 본인이 자신의 기록에 좋아요하면 좋아요 알림이 생성되지 않는다")
-    void createRecordLikeNotificationWhenAuthorLikeSelfTest() throws Exception {
-        //given
-        UserEntity writer = userRepository.save(createUser("test1@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        //when
-        notificationService.createRecordLikeNotification(writer, recordEntity);
-
-        //then
-        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
     }
 
     @Test

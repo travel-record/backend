@@ -3,6 +3,7 @@ package world.trecord.web.service.userrecordlike;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
@@ -10,9 +11,10 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
-import world.trecord.web.service.notification.NotificationService;
+import world.trecord.web.service.sse.SseEmitterService;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
+import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 import static world.trecord.web.exception.CustomExceptionError.RECORD_NOT_FOUND;
 import static world.trecord.web.exception.CustomExceptionError.USER_NOT_FOUND;
 
@@ -24,7 +26,7 @@ public class UserRecordLikeService {
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final RecordRepository recordRepository;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
+    private final SseEmitterService sseEmitterService;
 
     @Transactional
     public UserRecordLikeResponse toggleLike(Long userId, Long recordId) {
@@ -44,7 +46,8 @@ public class UserRecordLikeService {
 
     private UserRecordLikeResponse like(UserEntity userEntity, RecordEntity recordEntity) {
         saveRecordLike(userEntity, recordEntity);
-        notificationService.createRecordLikeNotification(userEntity, recordEntity);
+        Long userToId = recordEntity.getFeedEntity().getUserEntity().getId();
+        sseEmitterService.send(userToId, userEntity.getId(), RECORD_LIKE, buildNotificationArgs(userEntity, recordEntity));
         return buildLikeResponse(true);
     }
 
@@ -69,5 +72,12 @@ public class UserRecordLikeService {
 
     private UserEntity getUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+    }
+
+    private NotificationArgs buildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {
+        return NotificationArgs.builder()
+                .recordEntity(recordEntity)
+                .userFromEntity(userEntity)
+                .build();
     }
 }

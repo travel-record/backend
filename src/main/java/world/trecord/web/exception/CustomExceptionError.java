@@ -19,7 +19,8 @@ public enum CustomExceptionError {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, 701, "존재하지 않는 사용자입니다"),
     FEED_NOT_FOUND(HttpStatus.NOT_FOUND, 702, "존재하지 않는 피드입니다"),
     RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, 703, "존재하지 않는 기록입니다"),
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, 704, "존재하지 않는 댓글입니다");
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, 704, "존재하지 않는 댓글입니다"),
+    NOTIFICATION_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 800, "알림 연결에 실패하였습니다");
 
     private final HttpStatus httpStatus;
     private final int errorCode;

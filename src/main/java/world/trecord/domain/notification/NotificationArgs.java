@@ -16,6 +16,7 @@ public class NotificationArgs {
     private Long userFromId;
     private String userFromNickname;
     private Long commentId;
+    private Long parentCommentId;
     private String commentContent;
     private Long recordId;
 
@@ -32,6 +33,7 @@ public class NotificationArgs {
 
         if (commentEntity != null) {
             this.commentId = commentEntity.getId();
+            this.parentCommentId = commentEntity.getParentCommentEntity() != null ? commentEntity.getParentCommentEntity().getId() : null;
             this.commentContent = commentEntity.getContent();
         }
     }
