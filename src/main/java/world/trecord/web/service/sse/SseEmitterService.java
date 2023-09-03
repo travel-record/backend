@@ -55,15 +55,18 @@ public class SseEmitterService {
     }
 
     public SseEmitter connect(Long userId, SseEmitter emitter) {
-        if (currentConnections.get() >= MAX_CONNECTIONS) {
-            throw new CustomException(MAX_CONNECTIONS_EXCEEDED_ERROR);
+        synchronized (this) {
+            if (currentConnections.get() >= MAX_CONNECTIONS) {
+                throw new CustomException(MAX_CONNECTIONS_EXCEEDED_ERROR);
+            }
+            doIncrementConnection();
         }
 
         try {
-            incrementConnection();
-            establishConnection(userId, emitter);
+            doEstablishConnection(userId, emitter);
+            doSendConnectionCompletionEvent(userId, emitter);
         } catch (Exception e) {
-            decrementConnection();
+            doDecrementConnection();
             log.error("Error establishing SSE connection for user {}: {}", userId, e.getMessage());
             throw new CustomException(NOTIFICATION_CONNECT_ERROR);
         }
@@ -71,30 +74,35 @@ public class SseEmitterService {
         return emitter;
     }
 
-    private void establishConnection(Long userId, SseEmitter emitter) throws IOException {
+    private void doEstablishConnection(Long userId, SseEmitter emitter) {
         sseEmitterRepository.save(userId, emitter);
+
         emitter.onCompletion(() -> {
             log.info("SSE connection for user {} has been completed.", userId);
-            sseEmitterRepository.delete(userId);
-            decrementConnection();
+            doReleaseExternalResources(userId);
+            doDecrementConnection();
         });
 
         emitter.onTimeout(() -> {
             log.warn("SSE connection for user {} has timed out.", userId);
-            sseEmitterRepository.delete(userId);
-            decrementConnection();
+            doReleaseExternalResources(userId);
+            doDecrementConnection();
         });
 
         emitter.onError((throwable) -> {
             log.error("Error with SSE connection for user {}: {}", userId, throwable.getMessage());
-            sseEmitterRepository.delete(userId);
-            decrementConnection();
+            doReleaseExternalResources(userId);
+            doDecrementConnection();
         });
 
-        sendConnectionCompletionEvent(userId, emitter);
+        // 연결이 끊어진 경우도 처리해줘야함
     }
 
-    private void sendConnectionCompletionEvent(Long userId, SseEmitter emitter) throws IOException {
+    private void doReleaseExternalResources(Long userId) {
+        sseEmitterRepository.delete(userId);
+    }
+
+    private void doSendConnectionCompletionEvent(Long userId, SseEmitter emitter) throws IOException {
         log.info("Attempting to send connection completion event for user {}.", userId);
         String eventID = String.valueOf(System.currentTimeMillis());
         emitter.send(SseEmitter.event()
@@ -104,11 +112,11 @@ public class SseEmitterService {
         log.info("Connection completion event for user {} has been sent successfully.", userId);
     }
 
-    private void incrementConnection() {
+    private void doIncrementConnection() {
         currentConnections.incrementAndGet();
     }
 
-    private void decrementConnection() {
+    private void doDecrementConnection() {
         currentConnections.decrementAndGet();
     }
 
