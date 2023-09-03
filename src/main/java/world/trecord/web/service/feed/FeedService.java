@@ -40,8 +40,7 @@ public class FeedService {
     }
 
     public FeedInfoResponse getFeed(Long viewerId, Long feedId) {
-        FeedEntity feedEntity = getFeedOrException(feedId);
-
+        FeedEntity feedEntity = findFeedOrException(feedId);
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedId);
 
         return FeedInfoResponse.builder()
@@ -54,7 +53,6 @@ public class FeedService {
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
 
         return FeedCreateResponse.builder()
@@ -64,9 +62,9 @@ public class FeedService {
 
     @Transactional
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
-        FeedEntity feedEntity = getFeedOrException(feedId);
+        FeedEntity feedEntity = findFeedOrException(feedId);
 
-        checkPermissionOverFeed(feedEntity, userId);
+        doCheckPermissionOverFeed(feedEntity, userId);
 
         feedEntity.update(request.toUpdateEntity());
 
@@ -79,22 +77,22 @@ public class FeedService {
 
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = getFeedOrException(feedId);
+        FeedEntity feedEntity = findFeedOrException(feedId);
 
-        checkPermissionOverFeed(feedEntity, userId);
+        doCheckPermissionOverFeed(feedEntity, userId);
 
         recordRepository.deleteAllByFeedEntityId(feedId);
 
         feedRepository.softDeleteById(feedId);
     }
 
-    private void checkPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+    private void doCheckPermissionOverFeed(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isManagedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }
 
-    private FeedEntity getFeedOrException(Long feedId) {
+    private FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 }

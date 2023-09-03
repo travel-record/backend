@@ -39,14 +39,10 @@ public class CommentService {
 
     @Transactional
     public void createComment(Long userFromId, CommentCreateRequest request) {
-        UserEntity userEntity = getUserOrException(userFromId);
-
-        RecordEntity recordEntity = getRecordOrException(request.getRecordId());
-
-        CommentEntity parentCommentEntity = getCommentOrNull(request.getParentId());
-
+        UserEntity userEntity = findUserOrException(userFromId);
+        RecordEntity recordEntity = findRecordOrException(request.getRecordId());
+        CommentEntity parentCommentEntity = findCommentOrNull(request.getParentId());
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
-
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
         sseEmitterService.send(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity));
@@ -54,12 +50,11 @@ public class CommentService {
 
     @Transactional
     public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
-        CommentEntity commentEntity = getCommentWithUserOrException(commentId);
+        CommentEntity commentEntity = findCommentWithUserOrException(commentId);
 
-        checkPermissionOverComment(commentEntity, userId);
+        doCheckPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
-
         commentRepository.saveAndFlush(commentEntity);
 
         return CommentUpdateResponse.builder()
@@ -69,9 +64,9 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
-        CommentEntity commentEntity = getCommentWithChildCommentsOrException(commentId);
+        CommentEntity commentEntity = findCommentWithChildCommentsOrException(commentId);
 
-        checkPermissionOverComment(commentEntity, userId);
+        doCheckPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntityId(commentId);
 
@@ -79,7 +74,7 @@ public class CommentService {
     }
 
     public Page<CommentResponse> getReplies(Long commentId, Long viewerId, Pageable pageable) {
-        CommentEntity parentComment = getCommentOrException(commentId);
+        CommentEntity parentComment = findCommentOrException(commentId);
 
         return commentRepository.findByParentCommentEntityId(parentComment.getId(), pageable)
                 .map(it -> CommentResponse.builder()
@@ -89,8 +84,7 @@ public class CommentService {
     }
 
     public UserCommentsResponse getUserComments(Long userId) {
-        UserEntity userEntity = getUserOrException(userId);
-
+        UserEntity userEntity = findUserOrException(userId);
         List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
 
         return UserCommentsResponse.builder()
@@ -98,38 +92,38 @@ public class CommentService {
                 .build();
     }
 
-    private UserEntity getUserOrException(Long userId) {
+    private UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
-    private RecordEntity getRecordOrException(Long recordId) {
+    private RecordEntity findRecordOrException(Long recordId) {
         return recordRepository.findById(recordId)
                 .orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
-    private CommentEntity getCommentOrException(Long commentId) {
+    private CommentEntity findCommentOrException(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
-    private CommentEntity getCommentOrNull(Long parentId) {
+    private CommentEntity findCommentOrNull(Long parentId) {
         return Optional.ofNullable(parentId)
-                .map(this::getCommentWithUserOrException)
+                .map(this::findCommentWithUserOrException)
                 .orElse(null);
     }
 
-    private CommentEntity getCommentWithChildCommentsOrException(Long commentId) {
+    private CommentEntity findCommentWithChildCommentsOrException(Long commentId) {
         return commentRepository.findWithChildCommentEntitiesById(commentId)
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
-    private CommentEntity getCommentWithUserOrException(Long commentId) {
+    private CommentEntity findCommentWithUserOrException(Long commentId) {
         return commentRepository.findWithUserEntityById(commentId)
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
-    private void checkPermissionOverComment(CommentEntity commentEntity, Long userId) {
+    private void doCheckPermissionOverComment(CommentEntity commentEntity, Long userId) {
         if (!commentEntity.isCommenter(userId)) {
             throw new CustomException(FORBIDDEN);
         }

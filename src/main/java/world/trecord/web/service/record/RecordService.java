@@ -38,7 +38,7 @@ public class RecordService {
     private final CommentRepository commentRepository;
 
     public RecordInfoResponse getRecord(Long viewerId, Long recordId) {
-        RecordEntity recordEntity = getRecordOrException(recordId);
+        RecordEntity recordEntity = findRecordOrException(recordId);
         boolean liked = userLiked(recordEntity, viewerId);
 
         return RecordInfoResponse.builder()
@@ -50,7 +50,7 @@ public class RecordService {
 
     @Transactional
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest recordCreateRequest) {
-        FeedEntity feedEntity = getFeedOrException(recordCreateRequest.getFeedId());
+        FeedEntity feedEntity = findFeedOrException(recordCreateRequest.getFeedId());
 
         doCheckPermissionOverFeed(feedEntity, userId);
 
@@ -65,8 +65,8 @@ public class RecordService {
 
     @Transactional
     public RecordInfoResponse updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
-        RecordEntity recordEntity = getRecordOrException(recordId);
-        FeedEntity feedEntity = getFeedOrException(recordEntity.getFeedEntity().getId());
+        RecordEntity recordEntity = findRecordOrException(recordId);
+        FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
         doCheckPermissionOverFeed(feedEntity, userId);
 
@@ -82,12 +82,12 @@ public class RecordService {
     // TODO 로직 변경
     @Transactional
     public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
-        RecordEntity originalRecord = getRecordForUpdateOrException(request.getOriginalRecordId());
-        RecordEntity targetRecord = getRecordForUpdateOrException(request.getTargetRecordId());
+        RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
+        RecordEntity targetRecord = findRecordForUpdateOrException(request.getTargetRecordId());
 
         doCheckHasSameFeed(originalRecord, targetRecord);
 
-        FeedEntity feedEntity = getFeedOrException(originalRecord.getFeedEntity().getId());
+        FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
         doCheckPermissionOverFeed(feedEntity, userId);
 
         originalRecord.swapSequenceWith(targetRecord);
@@ -102,8 +102,8 @@ public class RecordService {
 
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
-        RecordEntity recordEntity = getRecordOrException(recordId);
-        FeedEntity feedEntity = getFeedOrException(recordEntity.getFeedEntity().getId());
+        RecordEntity recordEntity = findRecordOrException(recordId);
+        FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
         doCheckPermissionOverFeed(feedEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
@@ -114,7 +114,7 @@ public class RecordService {
     }
 
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
-        RecordEntity recordEntity = getRecordOrException(recordId);
+        RecordEntity recordEntity = findRecordOrException(recordId);
         List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
@@ -123,7 +123,7 @@ public class RecordService {
                 .build();
     }
 
-    private FeedEntity getFeedOrException(Long feedId) {
+    private FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
@@ -138,11 +138,11 @@ public class RecordService {
         }
     }
 
-    private RecordEntity getRecordOrException(Long recordId) {
+    private RecordEntity findRecordOrException(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
-    private RecordEntity getRecordForUpdateOrException(Long recordId) {
+    private RecordEntity findRecordForUpdateOrException(Long recordId) {
         return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 

@@ -53,13 +53,10 @@ class CommentServiceTest extends ContainerBaseTest {
     void createCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         String content = "content";
-
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .recordId(recordEntity.getId())
                 .content(content)
@@ -81,9 +78,7 @@ class CommentServiceTest extends ContainerBaseTest {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com"));
         UserEntity commenter = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -103,9 +98,7 @@ class CommentServiceTest extends ContainerBaseTest {
     void createCommentNotificationWhenCommentOnSelfTest() throws Exception {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -125,11 +118,8 @@ class CommentServiceTest extends ContainerBaseTest {
     void createChildCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity parentCommentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -151,13 +141,9 @@ class CommentServiceTest extends ContainerBaseTest {
     void getUserCommentsByTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity));
         RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity));
-
-
         CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, null);
         CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, null);
         CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, null);
@@ -214,7 +200,6 @@ class CommentServiceTest extends ContainerBaseTest {
     void createCommentWithNotExistingRecordIdTest() throws Exception {
         //given
         long notExistingRecordId = 0L;
-
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -232,15 +217,11 @@ class CommentServiceTest extends ContainerBaseTest {
     @DisplayName("댓글 작성자가 댓글을 수정하면 수정된 댓글 내용을 반환한다")
     void updateCommentTest() throws Exception {
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         String changedContent = "changed content";
-
         CommentUpdateRequest request = CommentUpdateRequest.builder()
                 .content(changedContent)
                 .build();
@@ -277,11 +258,8 @@ class CommentServiceTest extends ContainerBaseTest {
         //given
         UserEntity commenter = userRepository.save(createUser("test@email.com"));
         UserEntity other = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(commenter));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity commentEntity = commentRepository.save(createComment(commenter, recordEntity, null));
 
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -301,13 +279,9 @@ class CommentServiceTest extends ContainerBaseTest {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com"));
         UserEntity commenter = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity parentCommentEntity = commentRepository.save(createComment(commenter, recordEntity, null));
-
         CommentEntity childCommentEntity1 = createComment(author, recordEntity, parentCommentEntity);
         CommentEntity childCommentEntity2 = createComment(author, recordEntity, parentCommentEntity);
         CommentEntity childCommentEntity3 = createComment(author, recordEntity, parentCommentEntity);
@@ -327,11 +301,8 @@ class CommentServiceTest extends ContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
         UserEntity otherEntity = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         //when //then
@@ -391,5 +362,4 @@ class CommentServiceTest extends ContainerBaseTest {
                 .content("content")
                 .build();
     }
-
 }
