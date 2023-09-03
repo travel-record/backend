@@ -15,9 +15,11 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.web.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
@@ -127,7 +129,85 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();
     }
-    
+
+    @Test
+    @DisplayName("사용자가 좋아요한 기록 리스트를 조회하여 UserRecordLikeListResponse로 반환한다")
+    void getUserRecordLikeListByTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+
+        RecordEntity recordEntity1 = createRecord(feedEntity);
+        RecordEntity recordEntity2 = createRecord(feedEntity);
+        RecordEntity recordEntity3 = createRecord(feedEntity);
+        RecordEntity recordEntity4 = createRecord(feedEntity);
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
+
+        UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(userEntity, recordEntity1);
+        UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(userEntity, recordEntity4);
+
+        userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
+
+        //when
+        UserRecordLikeListResponse response = userRecordLikeService.getUserRecordLikeList(userEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getRecords())
+                .hasSize(2)
+                .extracting("recordId", "title", "authorNickname", "imageUrl")
+                .containsExactly(
+                        tuple(recordEntity4.getId(), recordEntity4.getTitle(), userEntity.getNickname(), recordEntity4.getImageUrl()),
+                        tuple(recordEntity1.getId(), recordEntity1.getTitle(), userEntity.getNickname(), recordEntity1.getImageUrl())
+                );
+    }
+
+    @Test
+    @DisplayName("사용자가 좋아요한 기록이 없으면 UserRecordLikeListResponse의 records 필드를 빈 배열로 반환한다")
+    void getUserRecordLikeListWithEmptyListByTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        //when
+        UserRecordLikeListResponse response = userRecordLikeService.getUserRecordLikeList(userEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getRecords()).isEmpty();
+    }
+
+
+    @Test
+    @DisplayName("사용자가 좋아요한 기록 리스트에서 soft delete한 좋아요 리스트를 제외한 UserRecordLikeListResponse로 반환한다")
+    void getUserRecordLikeListByWhenUserLikedCancelTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity other = userRepository.save(createUser("test1@email.com"));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+
+        RecordEntity recordEntity1 = createRecord(feedEntity);
+        RecordEntity recordEntity2 = createRecord(feedEntity);
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
+
+        UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(other, recordEntity1);
+        UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(other, recordEntity2);
+
+        userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
+
+        userRecordLikeRepository.softDeleteById(userRecordLikeEntity2.getId());
+
+        //when
+        UserRecordLikeListResponse response = userRecordLikeService.getUserRecordLikeList(other.getId());
+
+        //then
+        Assertions.assertThat(response.getRecords())
+                .hasSize(1)
+                .extracting("recordId")
+                .containsOnly(recordEntity1.getId());
+    }
+
     private UserEntity createUser(String email) {
         return UserEntity.builder()
                 .email(email)

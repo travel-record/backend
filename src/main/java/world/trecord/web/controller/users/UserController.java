@@ -8,12 +8,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
+import world.trecord.web.service.comment.CommentService;
+import world.trecord.web.service.comment.response.UserCommentsResponse;
+import world.trecord.web.service.userrecordlike.UserRecordLikeService;
+import world.trecord.web.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.web.service.users.UserContext;
 import world.trecord.web.service.users.UserService;
 import world.trecord.web.service.users.request.UserUpdateRequest;
-import world.trecord.web.service.users.response.UserCommentsResponse;
 import world.trecord.web.service.users.response.UserInfoResponse;
-import world.trecord.web.service.users.response.UserRecordLikeListResponse;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,6 +23,8 @@ import world.trecord.web.service.users.response.UserRecordLikeListResponse;
 public class UserController {
 
     private final UserService userService;
+    private final CommentService commentService;
+    private final UserRecordLikeService userRecordLikeService;
 
     @GetMapping
     public ApiResponse<UserInfoResponse> getUser(@CurrentUser UserContext userContext) {
@@ -40,12 +44,12 @@ public class UserController {
     @GetMapping("/comments")
     public ApiResponse<UserCommentsResponse> getUserComments(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                              @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(userService.getUserComments(userContext.getId()));
+        return ApiResponse.ok(commentService.getUserComments(userContext.getId()));
     }
 
     @GetMapping("/likes")
     public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                                       @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(userService.getUserRecordLikeList(userContext.getId()));
+        return ApiResponse.ok(userRecordLikeService.getUserRecordLikeList(userContext.getId()));
     }
 }

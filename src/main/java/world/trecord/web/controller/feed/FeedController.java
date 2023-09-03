@@ -27,7 +27,8 @@ public class FeedController {
     private final FeedValidator feedValidator;
 
     @GetMapping
-    public ApiResponse<FeedListResponse> getFeedList(@PageableDefault(sort = "startAt", direction = Sort.Direction.DESC) Pageable pageable, @CurrentUser UserContext userContext) {
+    public ApiResponse<FeedListResponse> getFeedList(@PageableDefault(sort = "startAt", direction = Sort.Direction.DESC) Pageable pageable,
+                                                     @CurrentUser UserContext userContext) {
         return ApiResponse.ok(feedService.getFeedList(userContext.getId()));
     }
 

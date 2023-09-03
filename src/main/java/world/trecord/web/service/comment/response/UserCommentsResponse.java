@@ -1,4 +1,4 @@
-package world.trecord.web.service.users.response;
+package world.trecord.web.service.comment.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;

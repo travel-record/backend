@@ -20,9 +20,12 @@ import world.trecord.web.exception.CustomExceptionError;
 import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
+import world.trecord.web.service.comment.response.UserCommentsResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @IntegrationTestSupport
 class CommentServiceTest extends ContainerBaseTest {
@@ -141,6 +144,53 @@ class CommentServiceTest extends ContainerBaseTest {
         //then
         Assertions.assertThat(commentRepository.findAll())
                 .hasSize(2);
+    }
+
+    @Test
+    @DisplayName("사용자가 작성한 댓글을 등록 시간 내림차순으로 조회하여 반환한다")
+    void getUserCommentsByTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity));
+
+
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, null);
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, null);
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, null);
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, null);
+
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
+
+        //when
+        UserCommentsResponse response = commentService.getUserComments(userEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getComments())
+                .hasSize(4)
+                .extracting("recordId", "commentId", "content")
+                .containsExactly(
+                        tuple(recordEntity1.getId(), commentEntity4.getId(), commentEntity4.getContent()),
+                        tuple(recordEntity2.getId(), commentEntity3.getId(), commentEntity3.getContent()),
+                        tuple(recordEntity2.getId(), commentEntity2.getId(), commentEntity2.getContent()),
+                        tuple(recordEntity1.getId(), commentEntity1.getId(), commentEntity1.getContent())
+                );
+    }
+
+    @Test
+    @DisplayName("사용자가 등록한 댓글이 없으면 빈 배열을 반환한다")
+    void getUserEmptyCommentsByTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        //when
+        UserCommentsResponse response = commentService.getUserComments(userEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getComments()).isEmpty();
     }
 
     @Test

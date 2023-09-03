@@ -1,4 +1,4 @@
-package world.trecord.web.service.users.response;
+package world.trecord.web.service.userrecordlike.response;
 
 import lombok.Builder;
 import lombok.Getter;

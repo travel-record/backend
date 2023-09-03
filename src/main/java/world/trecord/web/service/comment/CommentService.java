@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
+import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
@@ -17,8 +18,10 @@ import world.trecord.web.service.comment.request.CommentCreateRequest;
 import world.trecord.web.service.comment.request.CommentUpdateRequest;
 import world.trecord.web.service.comment.response.CommentResponse;
 import world.trecord.web.service.comment.response.CommentUpdateResponse;
+import world.trecord.web.service.comment.response.UserCommentsResponse;
 import world.trecord.web.service.sse.SseEmitterService;
 
+import java.util.List;
 import java.util.Optional;
 
 import static world.trecord.domain.notification.NotificationType.COMMENT;
@@ -83,6 +86,16 @@ public class CommentService {
                         .commentEntity(it)
                         .viewerId(viewerId)
                         .build());
+    }
+
+    public UserCommentsResponse getUserComments(Long userId) {
+        UserEntity userEntity = getUserOrException(userId);
+
+        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
+
+        return UserCommentsResponse.builder()
+                .projectionList(projectionList)
+                .build();
     }
 
     private UserEntity getUserOrException(Long userId) {

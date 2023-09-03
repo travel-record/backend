@@ -8,11 +8,15 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
+import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.service.sse.SseEmitterService;
+import world.trecord.web.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
+
+import java.util.List;
 
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 import static world.trecord.web.exception.CustomExceptionError.RECORD_NOT_FOUND;
@@ -37,6 +41,16 @@ public class UserRecordLikeService {
         return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
                 .map(this::unlike)
                 .orElseGet(() -> like(userEntity, recordEntity));
+    }
+
+    public UserRecordLikeListResponse getUserRecordLikeList(Long userId) {
+        UserEntity userEntity = getUserOrException(userId);
+
+        List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
+
+        return UserRecordLikeListResponse.builder()
+                .projectionList(projectionList)
+                .build();
     }
 
     private UserRecordLikeResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
