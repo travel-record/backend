@@ -1,6 +1,7 @@
 package world.trecord.web.service.users;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import static world.trecord.web.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 import static world.trecord.web.exception.CustomExceptionError.USER_NOT_FOUND;
 
+@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
@@ -33,7 +35,7 @@ public class UserService {
     }
 
     public UserInfoResponse getUser(Long userId) {
-        UserEntity userEntity = getUserOrException(userId);
+        UserEntity userEntity = findUserOrThrowException(userId);
 
         return UserInfoResponse.builder()
                 .userEntity(userEntity)
@@ -42,7 +44,7 @@ public class UserService {
 
     @Transactional
     public UserInfoResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
-        UserEntity userEntity = getUserOrException(userId);
+        UserEntity userEntity = findUserOrThrowException(userId);
 
         if (isNicknameUpdated(userEntity.getNickname(), updateRequest.getNickname()) && isNicknameAlreadyInUse(updateRequest.getNickname())) {
             throw new CustomException(NICKNAME_DUPLICATED);
@@ -66,10 +68,13 @@ public class UserService {
     public UserContext getUserContextOrException(Long userId) throws UsernameNotFoundException {
         return userRepository.findById(userId)
                 .map(UserContext::fromEntity)
-                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND.name()));
+                .orElseThrow(() -> {
+                    log.warn("Error in method [getUserContextOrException] - User not found with ID: {}", userId);
+                    throw new UsernameNotFoundException(USER_NOT_FOUND.name());
+                });
     }
 
-    private UserEntity getUserOrException(Long userId) {
+    private UserEntity findUserOrThrowException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
@@ -81,7 +86,7 @@ public class UserService {
         return userRepository.existsByNickname(nickname);
     }
 
-    private boolean isNicknameConstraintViolation(DataIntegrityViolationException dive) {
-        return dive.getMessage().contains("uk_users_nickname");
+    private boolean isNicknameConstraintViolation(DataIntegrityViolationException ex) {
+        return ex.getMessage().contains("uk_users_nickname");
     }
 }
