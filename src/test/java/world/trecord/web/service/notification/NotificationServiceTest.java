@@ -77,22 +77,18 @@ class NotificationServiceTest extends ContainerBaseTest {
         UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
         UserEntity commenter3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity1 = createComment(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createComment(commenter2, recordEntity, "content2");
         CommentEntity commentEntity3 = createComment(commenter3, recordEntity, "content3");
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
         NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity, commentEntity1, READ, COMMENT);
         NotificationEntity notificationEntity2 = createNotification(author, commenter2, recordEntity, commentEntity2, READ, RECORD_LIKE);
         NotificationEntity notificationEntity3 = createNotification(author, commenter3, recordEntity, commentEntity3, READ, COMMENT);
         NotificationEntity notificationEntity4 = createNotification(author, commenter1, recordEntity, commentEntity3, READ, RECORD_LIKE);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
@@ -115,19 +111,15 @@ class NotificationServiceTest extends ContainerBaseTest {
     void getNotificationsByTestUpdateUnreadToReadStatus() throws Exception {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com"));
-
         UserEntity commenter1 = userRepository.save(UserEntity.builder().nickname("nickname1").email("test1@email.com").build());
         UserEntity commenter2 = userRepository.save(UserEntity.builder().nickname("nickname2").email("test2@email.com").build());
         UserEntity commenter3 = userRepository.save(UserEntity.builder().nickname("nickname3").email("test3@email.com").build());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity1 = createComment(commenter1, recordEntity, "content1");
         CommentEntity commentEntity2 = createComment(commenter2, recordEntity, "content2");
         CommentEntity commentEntity3 = createComment(commenter3, recordEntity, "content3");
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
         NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity, commentEntity1, UNREAD, COMMENT);
@@ -180,16 +172,11 @@ class NotificationServiceTest extends ContainerBaseTest {
     void checkNewUnreadNotificationReturnTrueTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
 
-        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT);
-
-        notificationRepository.save(notificationEntity);
+        notificationRepository.save(createNotification(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT));
 
         //when
         CheckNewNotificationResponse response = notificationService.checkUnreadNotifications(userEntity.getId());
@@ -203,16 +190,11 @@ class NotificationServiceTest extends ContainerBaseTest {
     void checkNewUnreadNotificationReturnFalseTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity commentEntity = createComment(userEntity, recordEntity, "content1");
 
-        NotificationEntity notificationEntity = createNotification(userEntity, null, recordEntity, commentEntity, READ, COMMENT);
-
-        notificationRepository.save(notificationEntity);
+        notificationRepository.save(createNotification(userEntity, null, recordEntity, commentEntity, READ, COMMENT));
 
         //when
         CheckNewNotificationResponse response = notificationService.checkUnreadNotifications(userEntity.getId());
@@ -229,23 +211,19 @@ class NotificationServiceTest extends ContainerBaseTest {
         UserEntity viewer1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
         UserEntity viewer2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
         UserEntity viewer3 = UserEntity.builder().nickname("nickname3").email("test3@email.com").build();
-
         userRepository.saveAll(List.of(author, viewer1, viewer2, viewer3));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity1 = createComment(viewer1, recordEntity, "content1");
         CommentEntity commentEntity2 = createComment(viewer2, recordEntity, "content2");
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
         NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
         NotificationEntity notificationEntity3 = createNotification(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
         NotificationEntity notificationEntity4 = createNotification(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when
@@ -272,17 +250,14 @@ class NotificationServiceTest extends ContainerBaseTest {
         userRepository.saveAll(List.of(author, viewer1, viewer2));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity1 = createComment(viewer1, recordEntity, "content1");
         CommentEntity commentEntity2 = createComment(viewer2, recordEntity, "content2");
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
         NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
         //when
@@ -299,22 +274,18 @@ class NotificationServiceTest extends ContainerBaseTest {
         UserEntity author = createUser("test@email.com");
         UserEntity viewer1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
         UserEntity viewer2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
-
         userRepository.saveAll(List.of(author, viewer1, viewer2));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
-
         RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity));
         RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity));
 
         CommentEntity commentEntity1 = createComment(viewer1, recordEntity1, "content1");
         CommentEntity commentEntity2 = createComment(viewer2, recordEntity2, "content2");
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity1, commentEntity1, UNREAD, COMMENT);
         NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity2, commentEntity2, UNREAD, COMMENT);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
         recordService.deleteRecord(author.getId(), recordEntity2.getId());
