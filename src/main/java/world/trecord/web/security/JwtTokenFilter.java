@@ -16,8 +16,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import world.trecord.web.controller.ApiResponse;
-import world.trecord.web.service.users.UserContext;
-import world.trecord.web.service.users.UserService;
+import world.trecord.service.users.UserContext;
+import world.trecord.service.users.UserService;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,7 +25,7 @@ import java.util.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {

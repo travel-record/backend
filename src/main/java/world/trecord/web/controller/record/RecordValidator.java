@@ -9,12 +9,12 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
-import world.trecord.web.exception.CustomException;
-import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordUpdateRequest;
+import world.trecord.exception.CustomException;
+import world.trecord.service.record.request.RecordCreateRequest;
+import world.trecord.service.record.request.RecordUpdateRequest;
 
-import static world.trecord.web.exception.CustomExceptionError.FEED_NOT_FOUND;
-import static world.trecord.web.exception.CustomExceptionError.RECORD_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.RECORD_NOT_FOUND;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor

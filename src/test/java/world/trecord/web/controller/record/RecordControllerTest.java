@@ -19,12 +19,12 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.web.properties.JwtProperties;
+import world.trecord.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
-import world.trecord.web.service.record.RecordService;
-import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
-import world.trecord.web.service.record.request.RecordUpdateRequest;
+import world.trecord.service.record.RecordService;
+import world.trecord.service.record.request.RecordCreateRequest;
+import world.trecord.service.record.request.RecordSequenceSwapRequest;
+import world.trecord.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.web.exception.CustomExceptionError.*;
+import static world.trecord.exception.CustomExceptionError.*;
 
 @MockMvcTestSupport
 class RecordControllerTest extends ContainerBaseTest {

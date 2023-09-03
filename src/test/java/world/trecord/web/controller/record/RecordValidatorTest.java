@@ -13,8 +13,8 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordUpdateRequest;
+import world.trecord.service.record.request.RecordCreateRequest;
+import world.trecord.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
 

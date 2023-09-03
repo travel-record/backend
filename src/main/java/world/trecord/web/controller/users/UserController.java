@@ -8,14 +8,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
-import world.trecord.web.service.comment.CommentService;
-import world.trecord.web.service.comment.response.UserCommentsResponse;
-import world.trecord.web.service.userrecordlike.UserRecordLikeService;
-import world.trecord.web.service.userrecordlike.response.UserRecordLikeListResponse;
-import world.trecord.web.service.users.UserContext;
-import world.trecord.web.service.users.UserService;
-import world.trecord.web.service.users.request.UserUpdateRequest;
-import world.trecord.web.service.users.response.UserInfoResponse;
+import world.trecord.service.comment.CommentService;
+import world.trecord.service.comment.response.UserCommentsResponse;
+import world.trecord.service.userrecordlike.UserRecordLikeService;
+import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
+import world.trecord.service.users.UserContext;
+import world.trecord.service.users.UserService;
+import world.trecord.service.users.request.UserUpdateRequest;
+import world.trecord.service.users.response.UserInfoResponse;
 
 @RequiredArgsConstructor
 @RestController

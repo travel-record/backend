@@ -12,14 +12,14 @@ import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
-import world.trecord.web.properties.JwtProperties;
+import world.trecord.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
+import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @MockMvcTestSupport
 public class AuthControllerTest extends ContainerBaseTest {

@@ -9,14 +9,14 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
-import world.trecord.web.service.feed.FeedService;
-import world.trecord.web.service.feed.request.FeedCreateRequest;
-import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.FeedCreateResponse;
-import world.trecord.web.service.feed.response.FeedInfoResponse;
-import world.trecord.web.service.feed.response.FeedListResponse;
-import world.trecord.web.service.feed.response.FeedUpdateResponse;
-import world.trecord.web.service.users.UserContext;
+import world.trecord.service.feed.FeedService;
+import world.trecord.service.feed.request.FeedCreateRequest;
+import world.trecord.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.feed.response.FeedCreateResponse;
+import world.trecord.service.feed.response.FeedInfoResponse;
+import world.trecord.service.feed.response.FeedListResponse;
+import world.trecord.service.feed.response.FeedUpdateResponse;
+import world.trecord.service.users.UserContext;
 
 @RequiredArgsConstructor
 @RestController

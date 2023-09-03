@@ -16,7 +16,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.web.properties.JwtProperties;
+import world.trecord.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
@@ -31,7 +31,7 @@ import static world.trecord.domain.notification.NotificationStatus.READ;
 import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
+import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 
 @MockMvcTestSupport
 class NotificationControllerTest extends ContainerBaseTest {

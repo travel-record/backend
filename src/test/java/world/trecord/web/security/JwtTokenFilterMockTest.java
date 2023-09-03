@@ -16,9 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
-import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.service.users.UserContext;
-import world.trecord.web.service.users.UserService;
+import world.trecord.properties.JwtProperties;
+import world.trecord.service.users.UserContext;
+import world.trecord.service.users.UserService;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.Map;
 
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mock;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @ExtendWith(MockitoExtension.class)
 class JwtTokenFilterMockTest {

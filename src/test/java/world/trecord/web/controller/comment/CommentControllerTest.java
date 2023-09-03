@@ -16,10 +16,10 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.web.properties.JwtProperties;
+import world.trecord.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
-import world.trecord.web.service.comment.request.CommentCreateRequest;
-import world.trecord.web.service.comment.request.CommentUpdateRequest;
+import world.trecord.service.comment.request.CommentCreateRequest;
+import world.trecord.service.comment.request.CommentUpdateRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,8 +30,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.web.exception.CustomExceptionError.COMMENT_NOT_FOUND;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_ARGUMENT;
+import static world.trecord.exception.CustomExceptionError.COMMENT_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 
 @MockMvcTestSupport
 class CommentControllerTest extends ContainerBaseTest {

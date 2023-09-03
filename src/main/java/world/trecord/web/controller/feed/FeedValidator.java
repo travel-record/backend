@@ -3,8 +3,8 @@ package world.trecord.web.controller.feed;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
-import world.trecord.web.service.feed.request.FeedCreateRequest;
-import world.trecord.web.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.feed.request.FeedCreateRequest;
+import world.trecord.service.feed.request.FeedUpdateRequest;
 
 @Component
 public class FeedValidator {
