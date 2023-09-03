@@ -52,9 +52,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
     void toggleLikeTestWhenUserAlreadyLikeRecord() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         userRecordLikeRepository.save(createRecordLike(userEntity, recordEntity));
@@ -72,9 +70,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
     void toggleLikeTestWhenUserNotLikeRecord() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
@@ -96,9 +92,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
         //given
         UserEntity writer = userRepository.save(createUser("test1@email.com"));
         UserEntity viewer = userRepository.save(createUser("test2@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
@@ -118,9 +112,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
     void createNotificationTestWhenWriterLikeOnRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
@@ -135,9 +127,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
     void getUserRecordLikeListByTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity1 = createRecord(feedEntity);
         RecordEntity recordEntity2 = createRecord(feedEntity);
         RecordEntity recordEntity3 = createRecord(feedEntity);
@@ -183,9 +173,7 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
         UserEntity other = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity1 = createRecord(feedEntity);
         RecordEntity recordEntity2 = createRecord(feedEntity);
 
@@ -243,5 +231,4 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
                 .recordEntity(recordEntity)
                 .build();
     }
-
 }

@@ -34,9 +34,8 @@ public class UserRecordLikeService {
 
     @Transactional
     public UserRecordLikeResponse toggleLike(Long userId, Long recordId) {
-        UserEntity userEntity = getUserOrException(userId);
-
-        RecordEntity recordEntity = getRecordOrException(recordId);
+        UserEntity userEntity = findUserOrException(userId);
+        RecordEntity recordEntity = findRecordOrException(recordId);
 
         return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
                 .map(this::unlike)
@@ -44,7 +43,7 @@ public class UserRecordLikeService {
     }
 
     public UserRecordLikeListResponse getUserRecordLikeList(Long userId) {
-        UserEntity userEntity = getUserOrException(userId);
+        UserEntity userEntity = findUserOrException(userId);
 
         List<UserRecordProjection> projectionList = userRecordLikeRepository.findLikeRecordsByUserEntityId(userEntity.getId());
 
@@ -80,11 +79,11 @@ public class UserRecordLikeService {
                 .build();
     }
 
-    private RecordEntity getRecordOrException(Long recordId) {
+    private RecordEntity findRecordOrException(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
-    private UserEntity getUserOrException(Long userId) {
+    private UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
