@@ -19,11 +19,11 @@ import world.trecord.web.security.JwtTokenHandler;
 import world.trecord.web.service.auth.google.GoogleAuthService;
 import world.trecord.web.service.auth.response.LoginResponse;
 import world.trecord.web.service.auth.response.RefreshResponse;
+import world.trecord.web.service.users.UserService;
 
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 
@@ -38,6 +38,9 @@ class AuthServiceTest {
 
     @Mock
     JwtTokenHandler jwtTokenHandler;
+
+    @Mock
+    UserService userService;
 
     @Spy
     JwtProperties jwtProperties;
@@ -57,8 +60,8 @@ class AuthServiceTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
-        ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "tokenExpiredTimeMs", expiredTimeMs);
 
         given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willReturn("test@email.com");
@@ -81,6 +84,62 @@ class AuthServiceTest {
         Assertions.assertThat(loginResponse)
                 .extracting("user.nickname", "token.token", "token.refreshToken")
                 .containsExactly(nickname, token, token);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이메일로 로그인 시도 시 새로운 사용자 생성한다")
+    void googleLoginWithNonExistingEmailTest() {
+        //given
+        String redirectionUri = "redirection uri";
+        String accessToken = "dummy access token";
+
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long expiredTimeMs = 86400000L;
+
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "tokenExpiredTimeMs", expiredTimeMs);
+
+        given(googleAuthService.getUserEmail(anyString(), anyString()))
+                .willReturn("nonexisting@email.com");
+
+        given(userRepository.findByEmail(anyString()))
+                .willReturn(Optional.empty());
+
+        given(userService.createNewUser(anyString()))
+                .willReturn(UserEntity.builder().email("nonexisting@email.com").nickname("newUser").build());
+
+        //when
+        LoginResponse loginResponse = authService.googleLogin(accessToken, redirectionUri);
+
+        //then
+        Assertions.assertThat(loginResponse.getUser().getNickname()).isEqualTo("newUser");
+    }
+
+    @Test
+    @DisplayName("JWT 토큰 생성 실패 시 예외 발생")
+    void generateTokenFailureTest() {
+        //given
+        String invalidSecretKey = "invalidSecretKey";
+        long expiredTimeMs = 86400000L;
+
+        ReflectionTestUtils.setField(authService, "secretKey", invalidSecretKey);
+        ReflectionTestUtils.setField(authService, "tokenExpiredTimeMs", expiredTimeMs);
+
+        given(googleAuthService.getUserEmail(anyString(), anyString()))
+                .willReturn("nonexisting@email.com");
+
+        given(userRepository.findByEmail(anyString()))
+                .willReturn(Optional.empty());
+
+        given(userService.createNewUser(anyString()))
+                .willReturn(UserEntity.builder().email("nonexisting@email.com").nickname("newUser").build());
+
+        given(jwtTokenHandler.generateToken(any(), eq(invalidSecretKey), anyLong()))
+                .willThrow(new JwtException("Token generation failed"));
+
+        //when // then
+        Assertions.assertThatThrownBy(() -> authService.googleLogin("dummy", "dummy"))
+                .isInstanceOf(JwtException.class);
     }
 
     @Test
@@ -109,10 +168,10 @@ class AuthServiceTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
-        ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "tokenExpiredTimeMs", expiredTimeMs);
 
-        given(jwtTokenHandler.getUserId(secretKey, token))
+        given(jwtTokenHandler.getUserIdFromToken(secretKey, token))
                 .willReturn(userId);
 
         given(jwtTokenHandler.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))
@@ -133,11 +192,11 @@ class AuthServiceTest {
         String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
         long expiredTimeMs = 86400000L;
 
-        ReflectionTestUtils.setField(jwtProperties, "secretKey", secretKey);
-        ReflectionTestUtils.setField(jwtProperties, "tokenExpiredTimeMs", expiredTimeMs);
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "tokenExpiredTimeMs", expiredTimeMs);
 
         doThrow(new JwtException("Invalid Token"))
-                .when(jwtTokenHandler).verify(secretKey, invalidToken);
+                .when(jwtTokenHandler).verifyToken(secretKey, invalidToken);
 
         //when //then
         Assertions.assertThatThrownBy(() -> authService.reissueToken(invalidToken))
