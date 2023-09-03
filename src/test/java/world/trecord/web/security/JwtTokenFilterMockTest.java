@@ -66,8 +66,8 @@ class JwtTokenFilterMockTest {
         jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of(whitelistPath, List.of(HttpMethod.GET)), new ArrayList<>());
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
-        when(jwtTokenHandler.getUserId(any(), any())).thenReturn(1L);
-        when(userService.getUserContextOrException(any())).thenReturn(mock(UserContext.class));
+        when(jwtTokenHandler.getUserIdFromToken(any(), any())).thenReturn(1L);
+        when(userService.getUserContextOrThrowException(any())).thenReturn(mock(UserContext.class));
 
         //when
         jwtTokenFilter.doFilterInternal(req, res, filterChain);
@@ -88,7 +88,7 @@ class JwtTokenFilterMockTest {
         ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(invalidToken);
-        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, invalidToken);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verifyToken(secretKey, invalidToken);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(res.getWriter()).thenReturn(mockPrintWriter);
@@ -135,7 +135,7 @@ class JwtTokenFilterMockTest {
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(req.getServletPath()).thenReturn(requestUri);
-        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, null);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verifyToken(secretKey, null);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(res.getWriter()).thenReturn(mockPrintWriter);
@@ -165,8 +165,8 @@ class JwtTokenFilterMockTest {
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(req.getServletPath()).thenReturn(tokenInUrl + "?token=" + validToken);
 
-        when(jwtTokenHandler.getUserId(any(), any())).thenReturn(1L);
-        when(userService.getUserContextOrException(any())).thenReturn(mock(UserContext.class));
+        when(jwtTokenHandler.getUserIdFromToken(any(), any())).thenReturn(1L);
+        when(userService.getUserContextOrThrowException(any())).thenReturn(mock(UserContext.class));
 
         //when
         jwtTokenFilter.doFilterInternal(req, res, filterChain);
@@ -187,7 +187,7 @@ class JwtTokenFilterMockTest {
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(req.getServletPath()).thenReturn(tokenInUrl + "?token=" + invalidToken);
 
-        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(any(), any());
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verifyToken(any(), any());
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(res.getWriter()).thenReturn(mockPrintWriter);
