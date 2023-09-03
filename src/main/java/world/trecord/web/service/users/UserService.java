@@ -27,11 +27,9 @@ public class UserService {
 
     @Transactional
     public UserEntity createNewUser(String email) {
-        UserEntity userEntity = UserEntity.builder()
+        return userRepository.save(UserEntity.builder()
                 .email(email)
-                .build();
-
-        return userRepository.save(userEntity);
+                .build());
     }
 
     public UserInfoResponse getUser(Long userId) {

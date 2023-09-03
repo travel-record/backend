@@ -40,14 +40,7 @@ public class NotificationService {
     @Transactional
     public NotificationEntity createNotification(Long userToId, NotificationType type, NotificationArgs args) {
         UserEntity userToEntity = userRepository.findById(userToId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-
-        NotificationEntity notificationEntity = NotificationEntity.builder()
-                .usersToEntity(userToEntity)
-                .args(args)
-                .status(UNREAD)
-                .type(type)
-                .build();
-
+        NotificationEntity notificationEntity = doBuildNotification(type, args, userToEntity);
         return notificationRepository.save(notificationEntity);
     }
 
@@ -79,5 +72,14 @@ public class NotificationService {
 
     private void markNotificationsAsRead(Long userId) {
         notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
+    }
+
+    private NotificationEntity doBuildNotification(NotificationType type, NotificationArgs args, UserEntity userToEntity) {
+        return NotificationEntity.builder()
+                .usersToEntity(userToEntity)
+                .args(args)
+                .status(UNREAD)
+                .type(type)
+                .build();
     }
 }

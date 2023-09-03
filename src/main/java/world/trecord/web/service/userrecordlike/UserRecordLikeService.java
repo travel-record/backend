@@ -54,14 +54,14 @@ public class UserRecordLikeService {
 
     private UserRecordLikeResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
         userRecordLikeRepository.softDeleteById(userRecordLikeEntity.getId());
-        return buildLikeResponse(false);
+        return doBuildLikeResponse(false);
     }
 
     private UserRecordLikeResponse like(UserEntity userEntity, RecordEntity recordEntity) {
         saveRecordLike(userEntity, recordEntity);
         Long userToId = recordEntity.getFeedEntity().getUserEntity().getId();
-        sseEmitterService.send(userToId, userEntity.getId(), RECORD_LIKE, buildNotificationArgs(userEntity, recordEntity));
-        return buildLikeResponse(true);
+        sseEmitterService.send(userToId, userEntity.getId(), RECORD_LIKE, doBuildNotificationArgs(userEntity, recordEntity));
+        return doBuildLikeResponse(true);
     }
 
     private void saveRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
@@ -73,7 +73,7 @@ public class UserRecordLikeService {
         userRecordLikeRepository.save(userRecordLikeEntity);
     }
 
-    private UserRecordLikeResponse buildLikeResponse(boolean liked) {
+    private UserRecordLikeResponse doBuildLikeResponse(boolean liked) {
         return UserRecordLikeResponse.builder()
                 .liked(liked)
                 .build();
@@ -87,7 +87,7 @@ public class UserRecordLikeService {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
-    private NotificationArgs buildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {
+    private NotificationArgs doBuildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {
         return NotificationArgs.builder()
                 .recordEntity(recordEntity)
                 .userFromEntity(userEntity)

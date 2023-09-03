@@ -44,7 +44,7 @@ public class SseEmitterService {
                         emitter.send(SseEmitter.event()
                                 .id(notificationEntity.getId().toString())
                                 .name(EVENT_NAME)
-                                .data(buildNotificationEvent(notificationEntity)));
+                                .data(doBuildNotificationEvent(notificationEntity)));
                     } catch (IOException exception) {
                         sseEmitterRepository.delete(userToId);
                         throw new CustomException(NOTIFICATION_CONNECT_ERROR);
@@ -63,7 +63,7 @@ public class SseEmitterService {
         }
 
         try {
-            doEstablishConnection(userId, emitter);
+            establishConnection(userId, emitter);
             doSendConnectionCompletionEvent(userId, emitter);
         } catch (Exception e) {
             doDecrementConnection();
@@ -74,31 +74,31 @@ public class SseEmitterService {
         return emitter;
     }
 
-    private void doEstablishConnection(Long userId, SseEmitter emitter) {
+    private void establishConnection(Long userId, SseEmitter emitter) {
         sseEmitterRepository.save(userId, emitter);
 
         emitter.onCompletion(() -> {
             log.info("SSE connection for user {} has been completed.", userId);
-            doReleaseExternalResources(userId);
+            releaseExternalResources(userId);
             doDecrementConnection();
         });
 
         emitter.onTimeout(() -> {
             log.warn("SSE connection for user {} has timed out.", userId);
-            doReleaseExternalResources(userId);
+            releaseExternalResources(userId);
             doDecrementConnection();
         });
 
         emitter.onError((throwable) -> {
             log.error("Error with SSE connection for user {}: {}", userId, throwable.getMessage());
-            doReleaseExternalResources(userId);
+            releaseExternalResources(userId);
             doDecrementConnection();
         });
 
         // 연결이 끊어진 경우도 처리해줘야함
     }
 
-    private void doReleaseExternalResources(Long userId) {
+    private void releaseExternalResources(Long userId) {
         sseEmitterRepository.delete(userId);
     }
 
@@ -120,7 +120,7 @@ public class SseEmitterService {
         currentConnections.decrementAndGet();
     }
 
-    private SseNotificationEvent buildNotificationEvent(NotificationEntity notificationEntity) {
+    private SseNotificationEvent doBuildNotificationEvent(NotificationEntity notificationEntity) {
         return SseNotificationEvent.builder()
                 .notificationEntity(notificationEntity)
                 .build();

@@ -35,6 +35,7 @@ public class GoogleAuthService {
         GoogleTokenRequest request = doBuildTokenRequest(authorizationCode, redirectionUri);
 
         return Optional.ofNullable(googleTokenFeignClient.requestToken(request))
+                .filter(Objects::nonNull)
                 .map(GoogleTokenResponse::getAccessToken)
                 .filter(Objects::nonNull)
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
@@ -42,6 +43,7 @@ public class GoogleAuthService {
 
     private String fetchEmailOrException(String accessToken) {
         return Optional.ofNullable(googleUserInfoFeignClient.fetchUserInfo(BEARER + accessToken))
+                .filter(Objects::nonNull)
                 .map(GoogleUserInfoResponse::getEmail)
                 .filter(Objects::nonNull)
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
