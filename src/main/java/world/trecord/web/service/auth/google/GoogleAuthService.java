@@ -10,6 +10,7 @@ import world.trecord.web.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.web.exception.CustomException;
 import world.trecord.web.properties.GoogleProperties;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static world.trecord.web.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
@@ -26,25 +27,27 @@ public class GoogleAuthService {
     private final GoogleUserInfoFeignClient googleUserInfoFeignClient;
 
     public String getUserEmail(String authorizationCode, String redirectionUri) {
-        String token = getTokenOrException(authorizationCode, redirectionUri);
-        return getEmailOrException(token);
+        String token = requestTokenOrException(authorizationCode, redirectionUri);
+        return fetchEmailOrException(token);
     }
 
-    private String getTokenOrException(String authorizationCode, String redirectionUri) {
-        GoogleTokenRequest request = buildTokenRequest(authorizationCode, redirectionUri);
+    private String requestTokenOrException(String authorizationCode, String redirectionUri) {
+        GoogleTokenRequest request = doBuildTokenRequest(authorizationCode, redirectionUri);
 
         return Optional.ofNullable(googleTokenFeignClient.requestToken(request))
                 .map(GoogleTokenResponse::getAccessToken)
+                .filter(Objects::nonNull)
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
     }
 
-    private String getEmailOrException(String accessToken) {
+    private String fetchEmailOrException(String accessToken) {
         return Optional.ofNullable(googleUserInfoFeignClient.fetchUserInfo(BEARER + accessToken))
                 .map(GoogleUserInfoResponse::getEmail)
+                .filter(Objects::nonNull)
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
     }
 
-    private GoogleTokenRequest buildTokenRequest(String authorizationCode, String redirectionUri) {
+    private GoogleTokenRequest doBuildTokenRequest(String authorizationCode, String redirectionUri) {
         return GoogleTokenRequest.builder()
                 .client_id(googleProperties.getClientId())
                 .client_secret(googleProperties.getClientSecret())

@@ -67,7 +67,7 @@ class JwtTokenFilterMockTest {
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
         when(jwtTokenHandler.getUserIdFromToken(any(), any())).thenReturn(1L);
-        when(userService.getUserContextOrThrowException(any())).thenReturn(mock(UserContext.class));
+        when(userService.getUserContextOrException(any())).thenReturn(mock(UserContext.class));
 
         //when
         jwtTokenFilter.doFilterInternal(req, res, filterChain);
@@ -166,7 +166,7 @@ class JwtTokenFilterMockTest {
         when(req.getServletPath()).thenReturn(tokenInUrl + "?token=" + validToken);
 
         when(jwtTokenHandler.getUserIdFromToken(any(), any())).thenReturn(1L);
-        when(userService.getUserContextOrThrowException(any())).thenReturn(mock(UserContext.class));
+        when(userService.getUserContextOrException(any())).thenReturn(mock(UserContext.class));
 
         //when
         jwtTokenFilter.doFilterInternal(req, res, filterChain);

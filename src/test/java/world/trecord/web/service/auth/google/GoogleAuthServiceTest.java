@@ -79,6 +79,21 @@ class GoogleAuthServiceTest {
     }
 
     @Test
+    @DisplayName("Feign 호출 중 에러 발생 시 예외를 핸들링한다")
+    void feignErrorHandlingTest() {
+        //given
+        String authorizationCode = "testCode";
+        String redirectionUri = "http://test.com";
+
+        when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class)))
+                .thenThrow(CustomException.class);
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
+                .isInstanceOf(CustomException.class); // or whatever exception you handle the FeignException with
+    }
+
+    @Test
     @DisplayName("엑세스 토큰으로 사용자 정보를 얻어오지 못하면 예외를 던진다")
     void getUserEmailWithInvalidAccessTokenTest() {
         //given

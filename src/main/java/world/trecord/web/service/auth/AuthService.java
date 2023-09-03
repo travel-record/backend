@@ -33,8 +33,8 @@ public class AuthService {
     public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
         String email = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
         UserEntity userEntity = findOrCreateUser(email);
-        String issuedToken = doCreateToken(userEntity.getId());
-        String issuedRefreshToken = doCreateRefreshToken(userEntity.getId());
+        String issuedToken = createToken(userEntity.getId());
+        String issuedRefreshToken = createRefreshToken(userEntity.getId());
 
         return LoginResponse.builder()
                 .userId(userEntity.getId())
@@ -47,8 +47,9 @@ public class AuthService {
     public RefreshResponse reissueToken(String refreshToken) {
         jwtTokenHandler.verifyToken(secretKey, refreshToken);
         Long userId = jwtTokenHandler.getUserIdFromToken(secretKey, refreshToken);
-        String reissuedToken = doCreateToken(userId);
-        String reissuedRefreshToken = doCreateRefreshToken(userId);
+        // TODO userId 없으면 exception
+        String reissuedToken = createToken(userId);
+        String reissuedRefreshToken = createRefreshToken(userId);
 
         return RefreshResponse.builder()
                 .token(reissuedToken)
@@ -61,11 +62,11 @@ public class AuthService {
                 .orElseGet(() -> userService.createNewUser(email));
     }
 
-    private String doCreateToken(Long userId) {
+    private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, secretKey, tokenExpiredTimeMs);
     }
 
-    private String doCreateRefreshToken(Long userId) {
+    private String createRefreshToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, secretKey, tokenExpiredTimeMs * REFRESH_TOKEN_MULTIPLIER);
     }
 }
