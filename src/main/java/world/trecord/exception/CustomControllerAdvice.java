@@ -19,7 +19,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Slf4j
 @RestControllerAdvice
-public class CustomExceptionHandler {
+public class CustomControllerAdvice {
 
     private void logException(Exception e, String description) {
         log.error("Error in [{}]: [{}] Cause: [{}]", e.getStackTrace()[0], description, e.getMessage());
