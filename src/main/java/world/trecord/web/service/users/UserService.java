@@ -35,7 +35,7 @@ public class UserService {
     }
 
     public UserInfoResponse getUser(Long userId) {
-        UserEntity userEntity = findUserOrThrowException(userId);
+        UserEntity userEntity = findUserOrException(userId);
 
         return UserInfoResponse.builder()
                 .userEntity(userEntity)
@@ -44,7 +44,7 @@ public class UserService {
 
     @Transactional
     public UserInfoResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
-        UserEntity userEntity = findUserOrThrowException(userId);
+        UserEntity userEntity = findUserOrException(userId);
 
         if (isNicknameUpdated(userEntity.getNickname(), updateRequest.getNickname()) && isNicknameAlreadyInUse(updateRequest.getNickname())) {
             throw new CustomException(NICKNAME_DUPLICATED);
@@ -70,11 +70,11 @@ public class UserService {
                 .map(UserContext::fromEntity)
                 .orElseThrow(() -> {
                     log.warn("Error in method [getUserContextOrException] - User not found with ID: {}", userId);
-                    throw new UsernameNotFoundException(USER_NOT_FOUND.name());
+                    return new UsernameNotFoundException(USER_NOT_FOUND.name());
                 });
     }
 
-    private UserEntity findUserOrThrowException(Long userId) {
+    private UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 

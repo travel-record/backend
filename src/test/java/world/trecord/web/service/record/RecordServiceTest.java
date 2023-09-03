@@ -56,9 +56,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void getRecordInfoByRecordWriterIdTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
@@ -78,9 +76,7 @@ class RecordServiceTest extends ContainerBaseTest {
         UserEntity writer = userRepository.save(createUser("test@email.com"));
         UserEntity commenter1 = userRepository.save(createUser("test1@email.com"));
         UserEntity commenter2 = userRepository.save(createUser("test2@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         CommentEntity commentEntity1 = createComment(commenter1, recordEntity);
@@ -105,9 +101,7 @@ class RecordServiceTest extends ContainerBaseTest {
         UserEntity writer = userRepository.save(createUser("test@email.com"));
         UserEntity commenter1 = userRepository.save(createUser("test1@email.com"));
         UserEntity commenter2 = userRepository.save(createUser("test2@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         CommentEntity commentEntity1 = createComment(commenter1, recordEntity);
@@ -177,9 +171,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void createRecordSequenceNumberTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         int sequence = 1;
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, sequence));
 
@@ -218,7 +210,6 @@ class RecordServiceTest extends ContainerBaseTest {
     void createRecordWithNotExistingFeedIdTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .feedId(0L)
                 .build();
@@ -235,9 +226,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void createRecordWithNotWriterIdTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test1@email.com"));
-
         UserEntity other = userRepository.save(createUser("test2@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
 
         RecordCreateRequest request = RecordCreateRequest.builder()
@@ -256,9 +245,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void updateRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         String changedTitle = "change title";
@@ -299,13 +286,9 @@ class RecordServiceTest extends ContainerBaseTest {
     void updateRecordWithNotFeedWriterTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         UserEntity other = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
-
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .build();
 
@@ -321,9 +304,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void updateRecordWithNotExistingRecordIdTest() throws Exception {
         //given
         Long notExistingRecordId = 0L;
-
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .build();
 
@@ -339,9 +320,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void deleteRecordTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
@@ -356,7 +335,6 @@ class RecordServiceTest extends ContainerBaseTest {
     void deleteRecordWithNotExistingFeedIdTest() throws Exception {
         //given
         Long notExistingRecordId = 0L;
-
         UserEntity writer = userRepository.save(createUser("test@email.com"));
 
         //when //then
@@ -370,11 +348,8 @@ class RecordServiceTest extends ContainerBaseTest {
     @DisplayName("피드 작성자가 아닌 사용자가 기록을 삭제하려고 하면 예외가 발생한다")
     void deleteRecordWithNotFeedWriterTest() throws Exception {
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         UserEntity viewer = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when //then
@@ -389,11 +364,8 @@ class RecordServiceTest extends ContainerBaseTest {
     void getRecordInfoByTestByUserWhoLikedOnRecord() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         UserEntity viewer = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         userRecordLikeRepository.save(createRecordLike(viewer, recordEntity));
@@ -411,9 +383,7 @@ class RecordServiceTest extends ContainerBaseTest {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
         UserEntity viewer = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
@@ -428,9 +398,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void getRecordInfoByTestByUserWhoNotAuthenticatedOnRecord() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
@@ -445,17 +413,11 @@ class RecordServiceTest extends ContainerBaseTest {
     void getRecordCommentsTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         UserEntity viewer = userRepository.save(createUser("viewer@email.com"));
-
         UserEntity commenter1 = userRepository.save(createUser("test1@email.com"));
-
         UserEntity commenter2 = userRepository.save(createUser("test2@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
-
         CommentEntity commentEntity1 = createComment(commenter1, recordEntity);
         CommentEntity commentEntity2 = createComment(commenter2, recordEntity);
 
@@ -480,11 +442,8 @@ class RecordServiceTest extends ContainerBaseTest {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
         UserEntity commenter = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
-
         CommentEntity commentEntity1 = createComment(commenter, recordEntity);
         CommentEntity commentEntity2 = createComment(commenter, recordEntity);
         CommentEntity commentEntity3 = createComment(commenter, recordEntity);
@@ -508,9 +467,7 @@ class RecordServiceTest extends ContainerBaseTest {
     void getRecordCommentsReturnsCommentsEmptyTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
@@ -525,12 +482,9 @@ class RecordServiceTest extends ContainerBaseTest {
     void updateRecordSequenceTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         int recordEntitySeq1 = 1;
         int recordEntitySeq2 = 2;
-
         RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, recordEntitySeq1));
         RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, recordEntitySeq2));
 
@@ -561,10 +515,8 @@ class RecordServiceTest extends ContainerBaseTest {
     void updateRecordSequenceWhenNotSameFeedTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity1 = feedRepository.save(createFeed(writer));
         FeedEntity feedEntity2 = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity1, 0));
         RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity2, 0));
 
@@ -586,9 +538,7 @@ class RecordServiceTest extends ContainerBaseTest {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
         UserEntity other = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-
         RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, 0));
         RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, 0));
 

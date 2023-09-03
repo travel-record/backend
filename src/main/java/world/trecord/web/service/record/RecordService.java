@@ -39,7 +39,6 @@ public class RecordService {
 
     public RecordInfoResponse getRecord(Long viewerId, Long recordId) {
         RecordEntity recordEntity = getRecordOrException(recordId);
-
         boolean liked = userLiked(recordEntity, viewerId);
 
         return RecordInfoResponse.builder()
@@ -53,10 +52,9 @@ public class RecordService {
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest recordCreateRequest) {
         FeedEntity feedEntity = getFeedOrException(recordCreateRequest.getFeedId());
 
-        checkPermissionOverFeed(feedEntity, userId);
+        doCheckPermissionOverFeed(feedEntity, userId);
 
         int nextSequence = getNextSequence(recordCreateRequest, feedEntity);
-
         RecordEntity savedRecordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity, nextSequence));
 
         return RecordCreateResponse.builder()
@@ -68,13 +66,11 @@ public class RecordService {
     @Transactional
     public RecordInfoResponse updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         RecordEntity recordEntity = getRecordOrException(recordId);
-
         FeedEntity feedEntity = getFeedOrException(recordEntity.getFeedEntity().getId());
 
-        checkPermissionOverFeed(feedEntity, userId);
+        doCheckPermissionOverFeed(feedEntity, userId);
 
         recordEntity.update(request.toUpdateEntity());
-
         recordRepository.saveAndFlush(recordEntity);
 
         return RecordInfoResponse.builder()
@@ -86,15 +82,13 @@ public class RecordService {
     // TODO 로직 변경
     @Transactional
     public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
-        RecordEntity originalRecord = getRecordOrException(request.getOriginalRecordId());
+        RecordEntity originalRecord = getRecordForUpdateOrException(request.getOriginalRecordId());
+        RecordEntity targetRecord = getRecordForUpdateOrException(request.getTargetRecordId());
 
-        RecordEntity targetRecord = getRecordOrException(request.getTargetRecordId());
-
-        checkHasSameFeed(originalRecord, targetRecord);
+        doCheckHasSameFeed(originalRecord, targetRecord);
 
         FeedEntity feedEntity = getFeedOrException(originalRecord.getFeedEntity().getId());
-
-        checkPermissionOverFeed(feedEntity, userId);
+        doCheckPermissionOverFeed(feedEntity, userId);
 
         originalRecord.swapSequenceWith(targetRecord);
 
@@ -109,10 +103,8 @@ public class RecordService {
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = getRecordOrException(recordId);
-
         FeedEntity feedEntity = getFeedOrException(recordEntity.getFeedEntity().getId());
-
-        checkPermissionOverFeed(feedEntity, userId);
+        doCheckPermissionOverFeed(feedEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
         userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
@@ -123,7 +115,6 @@ public class RecordService {
 
     public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
         RecordEntity recordEntity = getRecordOrException(recordId);
-
         List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
@@ -141,7 +132,7 @@ public class RecordService {
         return recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
     }
 
-    private void checkHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
+    private void doCheckHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
         if (!originalRecord.hasSameFeed(targetRecord)) {
             throw new CustomException(INVALID_ARGUMENT);
         }
@@ -151,7 +142,11 @@ public class RecordService {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
-    private void checkPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+    private RecordEntity getRecordForUpdateOrException(Long recordId) {
+        return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    }
+
+    private void doCheckPermissionOverFeed(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isManagedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
