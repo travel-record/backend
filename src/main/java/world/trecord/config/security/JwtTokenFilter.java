@@ -54,7 +54,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             if (isTokenInRequestQueryParam(req)) {
                 log.info("Request with {} check the query param", req.getRequestURI());
-                token = req.getQueryString().split("=")[1].trim();
+                if (req.getQueryString().contains("token")) {
+                    token = req.getQueryString().split("=")[1].trim();
+                }
             }
 
             if (token == null && isWhitelistRequest(req)) {
