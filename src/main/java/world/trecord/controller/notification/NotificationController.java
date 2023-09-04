@@ -21,6 +21,8 @@ import world.trecord.service.users.UserContext;
 
 import java.time.Duration;
 
+import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/notifications")
@@ -34,7 +36,7 @@ public class NotificationController {
         return ApiResponse.ok(notificationService.checkUnreadNotifications(userContext.getId()));
     }
 
-    @GetMapping("/subscribe")
+    @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
     public SseEmitter connectNotification(@CurrentUser UserContext userContext) {
         return sseEmitterService.connect(userContext.getId(), new SseEmitter(Duration.ofHours(6).toMillis()));
     }
@@ -45,7 +47,7 @@ public class NotificationController {
         return ApiResponse.ok(notificationService.getNotifications(userContext.getId()));
     }
 
-    @GetMapping("/{type}")
+    @GetMapping("/type/{type}")
     public ApiResponse<NotificationListResponse> getNotificationsByType(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                                         @PathVariable("type") NotificationType type,
                                                                         @CurrentUser UserContext userContext) {

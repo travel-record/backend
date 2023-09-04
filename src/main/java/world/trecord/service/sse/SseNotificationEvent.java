@@ -36,8 +36,8 @@ public class SseNotificationEvent {
         this.status = notificationEntity.getStatus();
         this.recordId = notificationEntity.getArgs().getRecordId();
         this.commentId = notificationEntity.getArgs().getCommentId();
-        this.senderId = notificationEntity.getArgs().getUserFromId();
         this.parentCommentId = notificationEntity.getArgs().getParentCommentId();
+        this.senderId = notificationEntity.getArgs().getUserFromId();
         this.senderNickname = notificationEntity.getArgs().getUserFromNickname();
         this.content = notificationEntity.getNotificationContent();
         this.date = notificationEntity.getCreatedDateTime();

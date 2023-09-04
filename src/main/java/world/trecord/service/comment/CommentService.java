@@ -13,12 +13,12 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.exception.CustomException;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
+import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
-import world.trecord.exception.CustomException;
-import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.sse.SseEmitterService;
 
 import java.util.List;
@@ -42,6 +42,11 @@ public class CommentService {
         UserEntity userEntity = findUserOrException(userFromId);
         RecordEntity recordEntity = findRecordOrException(request.getRecordId());
         CommentEntity parentCommentEntity = findCommentOrNull(request.getParentId());
+
+        if (request.getParentId() != null && parentCommentEntity == null) {
+            throw new CustomException(COMMENT_NOT_FOUND);
+        }
+
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 

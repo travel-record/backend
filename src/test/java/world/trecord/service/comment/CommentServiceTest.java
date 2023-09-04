@@ -17,7 +17,6 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
-import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @IntegrationTestSupport
@@ -221,7 +221,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.createComment(notExistingUserId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
+                .isEqualTo(USER_NOT_FOUND);
     }
 
     @Test
@@ -239,7 +239,30 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.createComment(userEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.RECORD_NOT_FOUND);
+                .isEqualTo(RECORD_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 댓글에 답글을 달려고 하면 예외가 발생한다")
+    void createCommentWhenCommentNotExistingTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        long notExistingCommentId = 0L;
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .content("content")
+                .recordId(recordEntity.getId())
+                .parentId(notExistingCommentId)
+                .build();
+
+        //when //then
+
+        Assertions.assertThatThrownBy(() -> commentService.createComment(author.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(COMMENT_NOT_FOUND);
     }
 
     @Test
@@ -278,7 +301,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.updateComment(userId, notExistingCommentId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.COMMENT_NOT_FOUND);
+                .isEqualTo(COMMENT_NOT_FOUND);
     }
 
     @Test
@@ -299,7 +322,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.updateComment(other.getId(), commentEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FORBIDDEN);
+                .isEqualTo(FORBIDDEN);
     }
 
     @Test
@@ -339,7 +362,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.deleteComment(otherEntity.getId(), commentEntity.getId()))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FORBIDDEN);
+                .isEqualTo(FORBIDDEN);
     }
 
     @Test
@@ -353,7 +376,7 @@ class CommentServiceTest extends ContainerBaseTest {
         Assertions.assertThatThrownBy(() -> commentService.deleteComment(userId, notExistingCommentId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.COMMENT_NOT_FOUND);
+                .isEqualTo(COMMENT_NOT_FOUND);
     }
 
     private UserEntity createUser(String email) {
