@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -13,7 +14,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
@@ -27,7 +28,8 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@RollbackIntegrationTestSupport
+@Transactional
+@IntegrationTestSupport
 class FeedServiceTest extends ContainerBaseTest {
 
     @Autowired

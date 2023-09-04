@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 
-@RollbackIntegrationTestSupport
+@IntegrationTestSupport
 class SseEmitterRepositoryTest extends ContainerBaseTest {
 
     @Autowired
