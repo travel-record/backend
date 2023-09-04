@@ -7,7 +7,7 @@ import world.trecord.service.auth.google.GoogleAuthService;
 import world.trecord.service.auth.response.RefreshResponse;
 import world.trecord.service.users.UserService;
 import world.trecord.properties.JwtProperties;
-import world.trecord.web.security.JwtTokenHandler;
+import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.service.auth.response.LoginResponse;
 
 @Service

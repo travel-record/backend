@@ -15,7 +15,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.properties.JwtProperties;
-import world.trecord.web.security.JwtTokenHandler;
+import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.service.auth.google.GoogleAuthService;
 import world.trecord.service.auth.response.LoginResponse;
 import world.trecord.service.auth.response.RefreshResponse;
