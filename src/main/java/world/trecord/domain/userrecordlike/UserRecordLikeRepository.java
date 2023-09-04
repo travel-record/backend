@@ -39,10 +39,4 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
             "SET urle.deletedDateTime = NOW() " +
             "where urle.id = :userRecordLikeId")
     void softDeleteById(@Param("userRecordLikeId") Long userRecordLikeId);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE UserRecordLikeEntity urle " +
-            "SET urle.deletedDateTime = NOW()")
-    void softDeleteAll();
 }
