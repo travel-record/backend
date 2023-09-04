@@ -12,7 +12,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +23,8 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
-@RollbackIntegrationTestSupport
+@Transactional
+@IntegrationTestSupport
 class NotificationRepositoryTest extends ContainerBaseTest {
 
     @Autowired

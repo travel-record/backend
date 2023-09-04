@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
@@ -12,13 +13,14 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
 
-@RollbackIntegrationTestSupport
+@Transactional
+@IntegrationTestSupport
 class RecordValidatorTest extends ContainerBaseTest {
 
     @Autowired

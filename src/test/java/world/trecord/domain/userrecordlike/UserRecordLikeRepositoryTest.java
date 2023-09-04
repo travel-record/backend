@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -12,7 +13,7 @@ import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +21,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@RollbackIntegrationTestSupport
+@Transactional
+@IntegrationTestSupport
 class UserRecordLikeRepositoryTest extends ContainerBaseTest {
 
     @Autowired
