@@ -41,17 +41,16 @@ class CommentRepositoryTest extends ContainerBaseTest {
     void findByUserEntityOrderByCreatedDateTimeDescTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity));
-        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity1 = createRecord(feedEntity, 1);
+        RecordEntity recordEntity2 = createRecord(feedEntity, 2);
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
 
         CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, null);
         CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, null);
         CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, null);
         CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, null);
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when
@@ -89,7 +88,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null);
         CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null);
@@ -116,7 +115,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         //when
         List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
@@ -133,7 +132,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null);
         CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null);
@@ -157,7 +156,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         CommentEntity parentComment = createComment(userEntity, recordEntity, null);
 
@@ -184,7 +183,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         CommentEntity commentEntity = createComment(userEntity, recordEntity, null);
 
@@ -212,7 +211,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
                 .build();
     }
 
-    private RecordEntity createRecord(FeedEntity feedEntity) {
+    private RecordEntity createRecord(FeedEntity feedEntity, int sequence) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
                 .title("title")
@@ -222,6 +221,7 @@ class CommentRepositoryTest extends ContainerBaseTest {
                 .weather("weather")
                 .transportation("satisfaction")
                 .feeling("feeling")
+                .sequence(sequence)
                 .build();
     }
 

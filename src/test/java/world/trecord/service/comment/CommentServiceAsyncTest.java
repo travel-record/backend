@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @IntegrationTestSupport
-public class CommentServiceAsyncTest {
+class CommentServiceAsyncTest {
 
     @Autowired
     UserRepository userRepository;
@@ -72,7 +72,6 @@ public class CommentServiceAsyncTest {
         final CountDownLatch latch = new CountDownLatch(1);
 
         commentService.createComment(commenter.getId(), request);
-
         latch.await(1, TimeUnit.SECONDS);
         log.info("createComment ended in thread: {}", Thread.currentThread().getName());
 

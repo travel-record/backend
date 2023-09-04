@@ -50,12 +50,12 @@ public class CommentService {
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
-        sseEmitterService.send(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity));
+        sseEmitterService.send(userToId, userFromId, COMMENT, doBuildNotificationArgs(commentEntity, userEntity));
     }
 
     @Transactional
     public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
-        CommentEntity commentEntity = findCommentWithUserOrException(commentId);
+        CommentEntity commentEntity = findCommentOrException(commentId);
 
         doCheckPermissionOverComment(commentEntity, userId);
 
@@ -69,12 +69,11 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
-        CommentEntity commentEntity = findCommentWithChildCommentsOrException(commentId);
+        CommentEntity commentEntity = findCommentOrException(commentId);
 
         doCheckPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntityId(commentId);
-
         commentRepository.softDeleteById(commentId);
     }
 
@@ -114,18 +113,8 @@ public class CommentService {
 
     private CommentEntity findCommentOrNull(Long parentId) {
         return Optional.ofNullable(parentId)
-                .map(this::findCommentWithUserOrException)
+                .map(this::findCommentOrException)
                 .orElse(null);
-    }
-
-    private CommentEntity findCommentWithChildCommentsOrException(Long commentId) {
-        return commentRepository.findWithChildCommentEntitiesById(commentId)
-                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
-    }
-
-    private CommentEntity findCommentWithUserOrException(Long commentId) {
-        return commentRepository.findWithUserEntityById(commentId)
-                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
     private void doCheckPermissionOverComment(CommentEntity commentEntity, Long userId) {
@@ -134,7 +123,7 @@ public class CommentService {
         }
     }
 
-    private NotificationArgs buildNotificationArgs(CommentEntity commentEntity, UserEntity userEntity) {
+    private NotificationArgs doBuildNotificationArgs(CommentEntity commentEntity, UserEntity userEntity) {
         return NotificationArgs.builder()
                 .commentEntity(commentEntity)
                 .recordEntity(commentEntity.getRecordEntity())
