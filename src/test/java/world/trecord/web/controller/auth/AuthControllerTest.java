@@ -6,10 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTest;
+import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.properties.JwtProperties;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
@@ -21,8 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
-@MockMvcTest
-public class AuthControllerTest extends ContainerBaseTest {
+@Transactional
+@MockMvcTestSupport
+class AuthControllerTest extends ContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

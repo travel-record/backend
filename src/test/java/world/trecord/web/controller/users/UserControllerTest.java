@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -17,7 +18,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTest;
+import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.properties.JwtProperties;
 import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.web.security.JwtTokenHandler;
@@ -31,7 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.exception.CustomExceptionError.*;
 
-@MockMvcTest
+@Transactional
+@MockMvcTestSupport
 class UserControllerTest extends ContainerBaseTest {
 
     @Autowired

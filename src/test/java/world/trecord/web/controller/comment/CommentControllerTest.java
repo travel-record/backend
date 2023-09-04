@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -15,7 +16,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTest;
+import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.properties.JwtProperties;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
@@ -33,7 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.exception.CustomExceptionError.COMMENT_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 
-@MockMvcTest
+@Transactional
+@MockMvcTestSupport
 class CommentControllerTest extends ContainerBaseTest {
 
     @Autowired
@@ -92,11 +94,8 @@ class CommentControllerTest extends ContainerBaseTest {
     void createChildCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
         CommentEntity parentCommentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         String content = "content";

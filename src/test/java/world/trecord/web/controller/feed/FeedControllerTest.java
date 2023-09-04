@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -14,7 +15,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTest;
+import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.properties.JwtProperties;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
@@ -28,7 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.exception.CustomExceptionError.*;
 
-@MockMvcTest
+@Transactional
+@MockMvcTestSupport
 class FeedControllerTest extends ContainerBaseTest {
 
     @Autowired
