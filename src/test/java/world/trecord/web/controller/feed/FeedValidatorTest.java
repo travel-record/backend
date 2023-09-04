@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.validation.BindException;
-import world.trecord.web.service.feed.request.FeedCreateRequest;
-import world.trecord.web.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.feed.request.FeedCreateRequest;
+import world.trecord.service.feed.request.FeedUpdateRequest;
 
 import java.time.LocalDateTime;
 

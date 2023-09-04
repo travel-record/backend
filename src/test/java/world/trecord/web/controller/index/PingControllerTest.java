@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
+import world.trecord.infra.MockMvcTest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@MockMvcTestSupport
+@MockMvcTest
 class PingControllerTest extends ContainerBaseTest {
 
     @Autowired

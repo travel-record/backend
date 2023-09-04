@@ -16,9 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
-import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.service.users.UserContext;
-import world.trecord.web.service.users.UserService;
+import world.trecord.properties.JwtProperties;
+import world.trecord.service.users.UserContext;
+import world.trecord.service.users.UserService;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.Map;
 
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mock;
-import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @ExtendWith(MockitoExtension.class)
 class JwtTokenFilterMockTest {
@@ -66,7 +66,7 @@ class JwtTokenFilterMockTest {
         jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of(whitelistPath, List.of(HttpMethod.GET)), new ArrayList<>());
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
-        when(jwtTokenHandler.getUserId(any(), any())).thenReturn(1L);
+        when(jwtTokenHandler.getUserIdFromToken(any(), any())).thenReturn(1L);
         when(userService.getUserContextOrException(any())).thenReturn(mock(UserContext.class));
 
         //when
@@ -88,7 +88,7 @@ class JwtTokenFilterMockTest {
         ReflectionTestUtils.setField(jwtTokenFilter, "secretKey", secretKey);
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(invalidToken);
-        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, invalidToken);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verifyToken(secretKey, invalidToken);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(res.getWriter()).thenReturn(mockPrintWriter);
@@ -135,7 +135,7 @@ class JwtTokenFilterMockTest {
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(req.getServletPath()).thenReturn(requestUri);
-        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(secretKey, null);
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verifyToken(secretKey, null);
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(res.getWriter()).thenReturn(mockPrintWriter);
@@ -165,7 +165,7 @@ class JwtTokenFilterMockTest {
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(req.getServletPath()).thenReturn(tokenInUrl + "?token=" + validToken);
 
-        when(jwtTokenHandler.getUserId(any(), any())).thenReturn(1L);
+        when(jwtTokenHandler.getUserIdFromToken(any(), any())).thenReturn(1L);
         when(userService.getUserContextOrException(any())).thenReturn(mock(UserContext.class));
 
         //when
@@ -187,7 +187,7 @@ class JwtTokenFilterMockTest {
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(req.getServletPath()).thenReturn(tokenInUrl + "?token=" + invalidToken);
 
-        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verify(any(), any());
+        doThrow(new JwtException("invalid jwt exception")).when(jwtTokenHandler).verifyToken(any(), any());
 
         PrintWriter mockPrintWriter = mock(PrintWriter.class);
         when(res.getWriter()).thenReturn(mockPrintWriter);

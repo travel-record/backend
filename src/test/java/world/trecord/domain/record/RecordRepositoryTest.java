@@ -11,13 +11,13 @@ import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class RecordRepositoryTest extends ContainerBaseTest {
 
     @Autowired
@@ -37,12 +37,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
     void findRecordEntityByFeedIdTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
-        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
-        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity record1 = createRecord(feedEntity, 0);
         RecordEntity record2 = createRecord(feedEntity, 1);
         RecordEntity record3 = createRecord(feedEntity, 2);
@@ -64,12 +59,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
     void findRecordEntityByFeedIdOrderBySequenceTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
-        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
-        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity record1 = createRecord(feedEntity, 2);
         RecordEntity record2 = createRecord(feedEntity, 1);
         RecordEntity record3 = createRecord(feedEntity, 0);
@@ -87,16 +77,26 @@ class RecordRepositoryTest extends ContainerBaseTest {
     }
 
     @Test
+    @DisplayName("Select for update 쿼리가 날라가야 합니다")
+    void findByIdForUpdateTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
+
+        //when
+        RecordEntity lockedRecord = recordRepository.findByIdForUpdate(recordEntity.getId()).orElse(null);
+
+        //then
+        Assertions.assertThat(lockedRecord).isNotNull();
+    }
+
+    @Test
     @DisplayName("피드 아이디로 기록 리스트를 기록 날짜, 기록 순서가 동일하면 기록 등록 시간 오름차순으로 projection으로 조회한다")
     void findRecordEntityByFeedIdOrderByCreatedTimeTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
-        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
-        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity record1 = createRecord(feedEntity, 0);
         RecordEntity record2 = createRecord(feedEntity, 0);
         RecordEntity record3 = createRecord(feedEntity, 0);
@@ -118,12 +118,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
     void findRecordEntityWithFeedEntityTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
-        LocalDateTime feedStartAt = LocalDateTime.of(2022, 3, 1, 0, 0);
-        LocalDateTime feedEndAt = LocalDateTime.of(2022, 3, 5, 0, 0);
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
@@ -138,9 +133,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
     void findMaxSequenceByFeedAndDateTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         int sequence = 100;
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, sequence));
 
@@ -157,7 +150,6 @@ class RecordRepositoryTest extends ContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         LocalDateTime date = LocalDateTime.of(2022, 3, 3, 0, 0);
 
         //when
@@ -173,7 +165,6 @@ class RecordRepositoryTest extends ContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity record1 = createRecord(feedEntity, 0);
         RecordEntity record2 = createRecord(feedEntity, 1);
         RecordEntity record3 = createRecord(feedEntity, 2);

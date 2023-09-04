@@ -17,10 +17,10 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.web.properties.JwtProperties;
+import world.trecord.infra.MockMvcTest;
+import world.trecord.properties.JwtProperties;
+import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.web.security.JwtTokenHandler;
-import world.trecord.web.service.users.request.UserUpdateRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,9 +29,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.web.exception.CustomExceptionError.*;
+import static world.trecord.exception.CustomExceptionError.*;
 
-@MockMvcTestSupport
+@MockMvcTest
 class UserControllerTest extends ContainerBaseTest {
 
     @Autowired

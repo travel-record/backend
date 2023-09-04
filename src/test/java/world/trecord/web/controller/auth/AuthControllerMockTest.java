@@ -10,9 +10,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
-import world.trecord.web.exception.CustomException;
-import world.trecord.web.service.auth.AuthService;
-import world.trecord.web.service.auth.response.LoginResponse;
+import world.trecord.exception.CustomException;
+import world.trecord.service.auth.AuthService;
+import world.trecord.service.auth.response.LoginResponse;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerMockTest {

@@ -9,12 +9,14 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
-import world.trecord.web.exception.CustomException;
-import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordUpdateRequest;
+import world.trecord.exception.CustomException;
+import world.trecord.service.record.request.RecordCreateRequest;
+import world.trecord.service.record.request.RecordUpdateRequest;
 
-import static world.trecord.web.exception.CustomExceptionError.FEED_NOT_FOUND;
-import static world.trecord.web.exception.CustomExceptionError.RECORD_NOT_FOUND;
+import java.util.Objects;
+
+import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.RECORD_NOT_FOUND;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -29,38 +31,35 @@ public class RecordValidator {
         String recordCreateRequest = "recordCreateRequest";
         String fieldDate = "date";
 
-        if (feedEntity.getStartAt() != null && request.getDate().isBefore(feedEntity.getStartAt())) {
+        if (Objects.nonNull(feedEntity.getStartAt()) && request.getDate().isBefore(feedEntity.getStartAt())) {
             BindException bindException = new BindException(request, recordCreateRequest);
-            bindException.addError(new FieldError(recordCreateRequest, fieldDate, "Date should be after feed end time."));
+            bindException.addError(new FieldError(recordCreateRequest, fieldDate, "Date should be after feed start time."));
             throw bindException;
         }
 
-        if (feedEntity.getEndAt() != null && request.getDate().isAfter(feedEntity.getEndAt())) {
+        if (Objects.nonNull(feedEntity.getEndAt()) && request.getDate().isAfter(feedEntity.getEndAt())) {
             BindException bindException = new BindException(request, recordCreateRequest);
-            bindException.addError(new FieldError(recordCreateRequest, fieldDate, "Date should be after feed end time."));
+            bindException.addError(new FieldError(recordCreateRequest, fieldDate, "Date should be before feed end time."));
             throw bindException;
         }
     }
 
     public void verify(Long recordId, RecordUpdateRequest request) throws BindException {
-
         RecordEntity recordEntity = recordRepository.findWithFeedEntityById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
-
         FeedEntity feedEntity = recordEntity.getFeedEntity();
 
         String recordUpdateRequest = "recordUpdateRequest";
-
         String fieldDate = "date";
 
-        if (feedEntity.getStartAt() != null && request.getDate().isBefore(feedEntity.getStartAt())) {
+        if (Objects.nonNull(feedEntity.getStartAt()) && request.getDate().isBefore(feedEntity.getStartAt())) {
             BindException bindException = new BindException(request, recordUpdateRequest);
-            bindException.addError(new FieldError(recordUpdateRequest, fieldDate, "Date should be after feed end time."));
+            bindException.addError(new FieldError(recordUpdateRequest, fieldDate, "Date should be after start end time."));
             throw bindException;
         }
 
-        if (feedEntity.getEndAt() != null && request.getDate().isAfter(feedEntity.getEndAt())) {
+        if (Objects.nonNull(feedEntity.getEndAt()) && request.getDate().isAfter(feedEntity.getEndAt())) {
             BindException bindException = new BindException(request, recordUpdateRequest);
-            bindException.addError(new FieldError(recordUpdateRequest, fieldDate, "Date should be after feed end time."));
+            bindException.addError(new FieldError(recordUpdateRequest, fieldDate, "Date should be before feed end time."));
             throw bindException;
         }
     }

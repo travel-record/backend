@@ -2,18 +2,21 @@ package world.trecord.web.controller.feed;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
-import world.trecord.web.service.feed.FeedService;
-import world.trecord.web.service.feed.request.FeedCreateRequest;
-import world.trecord.web.service.feed.request.FeedUpdateRequest;
-import world.trecord.web.service.feed.response.FeedCreateResponse;
-import world.trecord.web.service.feed.response.FeedInfoResponse;
-import world.trecord.web.service.feed.response.FeedListResponse;
-import world.trecord.web.service.feed.response.FeedUpdateResponse;
-import world.trecord.web.service.users.UserContext;
+import world.trecord.service.feed.FeedService;
+import world.trecord.service.feed.request.FeedCreateRequest;
+import world.trecord.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.feed.response.FeedCreateResponse;
+import world.trecord.service.feed.response.FeedInfoResponse;
+import world.trecord.service.feed.response.FeedListResponse;
+import world.trecord.service.feed.response.FeedUpdateResponse;
+import world.trecord.service.users.UserContext;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,10 +26,9 @@ public class FeedController {
     private final FeedService feedService;
     private final FeedValidator feedValidator;
 
-    // TODO add records api
-    // TODO add pageable
     @GetMapping
-    public ApiResponse<FeedListResponse> getFeedList(@CurrentUser UserContext userContext) {
+    public ApiResponse<FeedListResponse> getFeedList(@PageableDefault(sort = "startAt", direction = Sort.Direction.DESC) Pageable pageable,
+                                                     @CurrentUser UserContext userContext) {
         return ApiResponse.ok(feedService.getFeedList(userContext.getId()));
     }
 
@@ -43,7 +45,9 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}")
-    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId, @RequestBody @Valid FeedUpdateRequest feedUpdateRequest, @CurrentUser UserContext userContext) throws BindException {
+    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId,
+                                                      @RequestBody @Valid FeedUpdateRequest feedUpdateRequest,
+                                                      @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(feedUpdateRequest);
         return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, feedUpdateRequest));
     }

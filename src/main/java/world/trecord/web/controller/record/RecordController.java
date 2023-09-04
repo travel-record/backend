@@ -2,21 +2,24 @@ package world.trecord.web.controller.record;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.security.CurrentUser;
-import world.trecord.web.service.record.RecordService;
-import world.trecord.web.service.record.request.RecordCreateRequest;
-import world.trecord.web.service.record.request.RecordSequenceSwapRequest;
-import world.trecord.web.service.record.request.RecordUpdateRequest;
-import world.trecord.web.service.record.response.RecordCommentsResponse;
-import world.trecord.web.service.record.response.RecordCreateResponse;
-import world.trecord.web.service.record.response.RecordInfoResponse;
-import world.trecord.web.service.record.response.RecordSequenceSwapResponse;
-import world.trecord.web.service.userrecordlike.UserRecordLikeService;
-import world.trecord.web.service.userrecordlike.response.UserRecordLikeResponse;
-import world.trecord.web.service.users.UserContext;
+import world.trecord.service.record.RecordService;
+import world.trecord.service.record.request.RecordCreateRequest;
+import world.trecord.service.record.request.RecordSequenceSwapRequest;
+import world.trecord.service.record.request.RecordUpdateRequest;
+import world.trecord.service.record.response.RecordCommentsResponse;
+import world.trecord.service.record.response.RecordCreateResponse;
+import world.trecord.service.record.response.RecordInfoResponse;
+import world.trecord.service.record.response.RecordSequenceSwapResponse;
+import world.trecord.service.userrecordlike.UserRecordLikeService;
+import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
+import world.trecord.service.users.UserContext;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,9 +36,10 @@ public class RecordController {
         return ApiResponse.ok(recordService.getRecord(viewerId, recordId));
     }
 
-    // TODO add pageable
     @GetMapping("/{recordId}/comments")
-    public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") Long recordId, @CurrentUser UserContext userContext) {
+    public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") Long recordId,
+                                                                 @PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
+                                                                 @CurrentUser UserContext userContext) {
         Long viewerId = (userContext != null) ? userContext.getId() : null;
         return ApiResponse.ok(recordService.getRecordComments(recordId, viewerId));
     }

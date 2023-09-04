@@ -18,9 +18,9 @@ public class JwtTokenHandler {
     private static final String USER_ID = "user_id";
     private static final String SUBJECT = "authentication";
 
-    public void verify(String secretKey, String token) {
+    public void verifyToken(String secretKey, String token) {
         try {
-            Claims claims = verifyAndGetClaims(secretKey, token);
+            Claims claims = doVerifyTokenAndGetClaims(secretKey, token);
             if (!Objects.equals(claims.getSubject(), SUBJECT)) {
                 throw new JwtException("Invalid subject in the token");
             }
@@ -40,23 +40,28 @@ public class JwtTokenHandler {
                 .setSubject(SUBJECT)
                 .setIssuedAt(issuedAt)
                 .setExpiration(new Date(issuedAt.getTime() + expiredTimeMs))
-                .signWith(getSignKey(secretKey))
+                .signWith(doGetSignKey(secretKey))
                 .compact();
     }
 
-    public Long getUserId(String secretKey, String token) {
-        return verifyAndGetClaims(secretKey, token).get(USER_ID, Long.class);
+    public Long getUserIdFromToken(String secretKey, String token) {
+        try {
+            Claims claims = doVerifyTokenAndGetClaims(secretKey, token);
+            return claims.get(USER_ID, Long.class);
+        } catch (Exception e) {
+            throw new JwtException(e.getMessage(), e);
+        }
     }
 
-    private Claims verifyAndGetClaims(String secretKey, String token) {
+    private Claims doVerifyTokenAndGetClaims(String secretKey, String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSignKey(secretKey))
+                .setSigningKey(doGetSignKey(secretKey))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    private SecretKey getSignKey(String secretKey) {
+    private SecretKey doGetSignKey(String secretKey) {
         return hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 }

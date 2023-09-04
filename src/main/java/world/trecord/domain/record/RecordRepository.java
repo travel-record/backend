@@ -1,10 +1,9 @@
 package world.trecord.domain.record;
 
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
 import java.time.LocalDateTime;
@@ -16,17 +15,24 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
     @EntityGraph(attributePaths = {"feedEntity"})
     Optional<RecordEntity> findWithFeedEntityById(Long recordId);
 
-    @Query("SELECT r.id as id, r.title as title, r.place as place, r.imageUrl as imageUrl , r.date as date " +
-            "FROM RecordEntity r " +
-            "WHERE r.feedEntity.id = :feedId " +
-            "ORDER BY r.date ASC, r.sequence ASC ,r.createdDateTime ASC")
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT re " +
+            "FROM RecordEntity re " +
+            "WHERE re.id = :recordId")
+    Optional<RecordEntity> findByIdForUpdate(@Param("recordId") Long recordId);
+
+    @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
+            "FROM RecordEntity re " +
+            "WHERE re.feedEntity.id = :feedId " +
+            "ORDER BY re.date ASC, re.sequence ASC ,re.createdDateTime ASC")
     List<RecordWithFeedProjection> findRecordsByFeedEntityId(@Param("feedId") Long feedId);
 
-    @Query("SELECT MAX(r.sequence) " +
-            "FROM RecordEntity r " +
-            "WHERE r.feedEntity.id = :feedId AND r.date = :date")
+    @Query("SELECT MAX(re.sequence) " +
+            "FROM RecordEntity re " +
+            "WHERE re.feedEntity.id = :feedId AND re.date = :date")
     Optional<Integer> findMaxSequenceByFeedEntityIdAndDate(@Param("feedId") Long feedId, @Param("date") LocalDateTime date);
 
+    @Transactional
     @Modifying
     @Query("UPDATE RecordEntity re " +
             "SET re.deletedDateTime = NOW() " +
@@ -38,4 +44,10 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "SET re.deletedDateTime = NOW() " +
             "WHERE re.id = :recordId")
     void softDeleteById(@Param("recordId") Long recordId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE RecordEntity re " +
+            "SET re.deletedDateTime = NOW()")
+    void softDeleteAll();
 }

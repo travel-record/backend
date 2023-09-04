@@ -16,8 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import world.trecord.web.properties.JwtProperties;
-import world.trecord.web.service.users.UserService;
+import world.trecord.properties.JwtProperties;
+import world.trecord.service.users.UserService;
 
 import java.time.Duration;
 import java.util.List;
@@ -61,7 +61,8 @@ public class SecurityConfig {
                 "/api/*/users/{userId}", List.of(GET),
                 "/api/*/feeds/{feedId}", List.of(GET),
                 "/api/*/records/{recordId}", List.of(GET),
-                "/api/*/records/{recordId}/comments", List.of(GET)
+                "/api/*/records/{recordId}/comments", List.of(GET),
+                "/api/*/comments/{commentId}/replies", List.of(GET)
         );
 
         List<String> tokenInParamUrls = List.of("/api/*/notifications/subscribe");

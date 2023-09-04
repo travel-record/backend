@@ -9,8 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,14 +16,16 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import world.trecord.web.controller.ApiResponse;
-import world.trecord.web.service.users.UserContext;
-import world.trecord.web.service.users.UserService;
+import world.trecord.service.users.UserContext;
+import world.trecord.service.users.UserService;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static world.trecord.web.exception.CustomExceptionError.INVALID_TOKEN;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
@@ -61,14 +61,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 return;
             }
 
-            jwtTokenHandler.verify(secretKey, token);
-
-            Long userId = jwtTokenHandler.getUserId(secretKey, token);
-
+            jwtTokenHandler.verifyToken(secretKey, token);
+            Long userId = jwtTokenHandler.getUserIdFromToken(secretKey, token);
             UserContext userContext = userService.getUserContextOrException(userId);
-
             setAuthentication(userContext);
-
             chain.doFilter(req, res);
 
         } catch (Exception e) {
@@ -79,9 +75,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private void returnInvalidTokenError(HttpServletResponse res) throws IOException {
         ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
-        res.setStatus(HttpStatus.UNAUTHORIZED.value());
-        res.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        res.setStatus(UNAUTHORIZED.value());
+        res.setCharacterEncoding(UTF_8.name());
+        res.setContentType(APPLICATION_JSON_VALUE);
         res.getWriter().write(objectMapper.writeValueAsString(body));
     }
 

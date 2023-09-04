@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 import world.trecord.web.controller.ApiResponse;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
-import world.trecord.web.service.auth.AuthService;
-import world.trecord.web.service.auth.response.LoginResponse;
-import world.trecord.web.service.auth.response.RefreshResponse;
+import world.trecord.service.auth.AuthService;
+import world.trecord.service.auth.response.LoginResponse;
+import world.trecord.service.auth.response.RefreshResponse;
 
 @RequiredArgsConstructor
 @RestController
