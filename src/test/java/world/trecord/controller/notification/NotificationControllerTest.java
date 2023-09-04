@@ -24,7 +24,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -152,12 +154,13 @@ class NotificationControllerTest extends ContainerBaseTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
     }
-    
+
     @Test
     @DisplayName("GET /api/v1/notifications - 실패 (올바르지 않은 토큰)")
     void getNotificationsWithInvalidTokenTest() throws Exception {
         //given
         long invalidToken = 0L;
+
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications")
@@ -193,7 +196,7 @@ class NotificationControllerTest extends ContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        get("/api/v1/notifications/{type}", RECORD_LIKE)
+                        get("/api/v1/notifications/type/{type}", RECORD_LIKE)
                                 .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andExpect(status().isOk())
@@ -209,7 +212,7 @@ class NotificationControllerTest extends ContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        get("/api/v1/notifications/{type}", notExistingType)
+                        get("/api/v1/notifications/type/{type}", notExistingType)
                                 .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andExpect(status().isBadRequest())
@@ -240,6 +243,22 @@ class NotificationControllerTest extends ContainerBaseTest {
                 )
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/notifications/subscribe - 실패 (accept 다름)")
+    void connectNotificationWithInvalidAcceptTypeTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/notifications/subscribe")
+                                .header(ACCEPT, APPLICATION_JSON)
+                                .queryParam("token", createToken(userEntity.getId()))
+                )
+                .andDo(print())
+                .andExpect(status().isNotAcceptable());
     }
 
     @Test

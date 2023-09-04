@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.validation.BindException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,12 +50,6 @@ public class CustomControllerAdvice {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
     }
 
-    @ExceptionHandler(HttpMessageNotWritableException.class)
-    public ResponseEntity<ApiResponse<Void>> handle(HttpMessageNotWritableException e) {
-        logException(e, "HttpMessageNotWritableException for the requested method.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
-    }
-
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handle(MethodArgumentTypeMismatchException e) {
         logException(e, "MethodArgumentTypeMismatchException while matching argument types.");
@@ -72,6 +66,12 @@ public class CustomControllerAdvice {
     public ResponseEntity<ApiResponse<Void>> handle(HttpRequestMethodNotSupportedException e) {
         logException(e, "HttpRequestMethodNotSupportedException for the requested method.");
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(ApiResponse.of(METHOD_NOT_ALLOWED.code(), METHOD_NOT_ALLOWED.message(), null));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ApiResponse<Void>> handle(HttpMediaTypeNotAcceptableException e) {
+        logException(e, "HttpMediaTypeNotAcceptableException for the requested method.");
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
     }
 
     @ExceptionHandler(JwtException.class)
