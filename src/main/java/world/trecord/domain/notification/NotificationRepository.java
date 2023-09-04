@@ -32,10 +32,4 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
             "SET deleted_date_time = NOW() " +
             "WHERE JSON_EXTRACT(args, '$.recordId') = :recordId", nativeQuery = true)
     void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE NotificationEntity ne " +
-            "SET ne.deletedDateTime = NOW()")
-    void softDeleteAll();
 }

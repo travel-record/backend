@@ -14,7 +14,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.CommitIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@CommitIntegrationTestSupport
+@IntegrationTestSupport
 public class CommentServiceAsyncTest {
 
     @Autowired

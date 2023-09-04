@@ -10,14 +10,14 @@ import org.springframework.http.HttpStatus;
 import world.trecord.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @AutoConfigureWireMock(port = 8089)
-@RollbackIntegrationTestSupport
+@IntegrationTestSupport
 class GoogleUserInfoFeignClientTest extends ContainerBaseTest {
 
     @Autowired

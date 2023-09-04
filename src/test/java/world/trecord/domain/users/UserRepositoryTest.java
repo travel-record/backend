@@ -5,12 +5,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 
 import java.util.Optional;
 
-@RollbackIntegrationTestSupport
+@Transactional
+@IntegrationTestSupport
 class UserRepositoryTest extends ContainerBaseTest {
 
     @Autowired

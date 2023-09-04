@@ -19,7 +19,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.RollbackIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
@@ -32,7 +32,8 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@RollbackIntegrationTestSupport
+@Transactional
+@IntegrationTestSupport
 class CommentServiceTest extends ContainerBaseTest {
 
     @Autowired

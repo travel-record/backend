@@ -14,7 +14,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.CommitIntegrationTestSupport;
+import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,7 +26,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @Slf4j
-@CommitIntegrationTestSupport
+@IntegrationTestSupport
 public class UserRecordLikeServiceAsyncTest {
 
     @Autowired
