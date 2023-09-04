@@ -82,7 +82,6 @@ class NotificationRepositoryTest extends ContainerBaseTest {
         NotificationEntity notificationEntity1 = createNotification(userEntity, null, COMMENT, READ);
         NotificationEntity notificationEntity2 = createNotification(userEntity, null, COMMENT, READ);
         NotificationEntity notificationEntity3 = createNotification(userEntity, null, COMMENT, READ);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
@@ -92,6 +91,19 @@ class NotificationRepositoryTest extends ContainerBaseTest {
         Assertions.assertThat(notificationList)
                 .hasSize(3)
                 .containsExactly(notificationEntity3, notificationEntity2, notificationEntity1);
+    }
+
+    @Test
+    @DisplayName("사용자 알림이 존재하지 않으면 빈 배열로 반환한다")
+    void findByUsersToEntityOrderByCreatedDateTimeDescWhenNotificationsEmtpyTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+
+        //when
+        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
+
+        //then
+        Assertions.assertThat(notificationList).isEmpty();
     }
 
     @Transactional

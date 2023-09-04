@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,6 +47,12 @@ public class CustomControllerAdvice {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handle(HttpMessageNotReadableException e) {
         logException(e, "HttpMessageNotReadableException while reading the HTTP message.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
+    }
+
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    public ResponseEntity<ApiResponse<Void>> handle(HttpMessageNotWritableException e) {
+        logException(e, "HttpMessageNotWritableException for the requested method.");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
     }
 

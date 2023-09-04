@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import world.trecord.domain.notification.NotificationType;
-import world.trecord.controller.ApiResponse;
 import world.trecord.config.security.CurrentUser;
+import world.trecord.controller.ApiResponse;
+import world.trecord.domain.notification.NotificationType;
 import world.trecord.service.notification.NotificationService;
 import world.trecord.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.service.notification.response.NotificationListResponse;
@@ -36,7 +36,7 @@ public class NotificationController {
 
     @GetMapping("/subscribe")
     public SseEmitter connectNotification(@CurrentUser UserContext userContext) {
-        return sseEmitterService.connect(userContext.getId(), new SseEmitter(Duration.ofMinutes(30).toMillis()));
+        return sseEmitterService.connect(userContext.getId(), new SseEmitter(Duration.ofHours(6).toMillis()));
     }
 
     @GetMapping

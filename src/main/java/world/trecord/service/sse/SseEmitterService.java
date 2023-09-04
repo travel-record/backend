@@ -14,7 +14,6 @@ import world.trecord.exception.CustomException;
 import world.trecord.service.notification.NotificationService;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static world.trecord.exception.CustomExceptionError.MAX_CONNECTIONS_EXCEEDED_ERROR;
@@ -35,42 +34,45 @@ public class SseEmitterService {
     @Async("sseTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void send(Long userToId, Long userFromId, NotificationType type, NotificationArgs args) {
-        if (Objects.equals(userToId, userFromId)) {
-            return;
-        }
+        // TODO
+//        if (Objects.equals(userToId, userFromId)) {
+//            return;
+//        }
 
-        log.info("Starting send method with userToId: {}, userFromId: {}, type: {}", userToId, userFromId);
+        log.info("Starting send method with userToId: [{}], userFromId: [{}]", userToId, userFromId);
 
         NotificationEntity notificationEntity = notificationService.createNotification(userToId, type, args);
-        log.info("NotificationEntity created with ID: {}", notificationEntity.getId());
+        log.info("NotificationEntity created with ID: [{}]", notificationEntity.getId());
 
         sseEmitterRepository.findByUserId(userToId).ifPresentOrElse(emitter -> {
                     try {
-                        log.info("Emitter found for userToId: {}. Sending notification...", userToId);
+                        log.info("Emitter found for userToId: [{}]. Sending notification...", userToId);
                         emitter.send(SseEmitter.event()
                                 .id(notificationEntity.getId().toString())
                                 .name(EVENT_NAME)
                                 .data(doBuildNotificationEvent(notificationEntity)));
-                        log.info("Successfully sent notification with ID: {} to emitter for userToId: {}", notificationEntity.getId(), userToId);
+                        log.info("Successfully sent notification with ID: [{}] to emitter for userToId: [{}]", notificationEntity.getId(), userToId);
 
                     } catch (IOException ex) {
-                        log.error("Error while sending notification to emitter for userToId: {}. Removing emitter.", userToId, ex);
+                        log.error("Error while sending notification to emitter for userToId: [{}]. Removing emitter.", userToId, ex);
                         releaseExternalResources(userFromId);
                         throw new CustomException(NOTIFICATION_CONNECT_ERROR);
                     }
                 },
-                () -> log.info("No emitter found for userToId: {}", userToId)
+                () -> log.info("No emitter found for userToId: [{}]", userToId)
         );
 
-        log.info("Finished send method for userToId: {} and userFromId: {}", userToId, userFromId);
+        log.info("Finished send method for userToId: [{}] and userFromId: [{}]", userToId, userFromId);
     }
 
     public SseEmitter connect(Long userId, SseEmitter emitter) {
         synchronized (this) {
             if (currentConnections.get() >= MAX_CONNECTIONS) {
+                log.warn("Max connections limit reached. Unable to connect user [{}].", userId);
                 throw new CustomException(MAX_CONNECTIONS_EXCEEDED_ERROR);
             }
             doIncrementConnection();
+            log.info("Connection incremented for user [{}]. Current connections: {}", userId, currentConnections.get());
         }
 
         try {
@@ -78,7 +80,7 @@ public class SseEmitterService {
             doSendConnectionCompletionEvent(userId, emitter);
         } catch (Exception e) {
             doDecrementConnection();
-            log.error("Error establishing SSE connection for user {}: {}", userId, e.getMessage());
+            log.error("Error establishing SSE connection for user [{}]: {}", userId, e.getMessage());
             throw new CustomException(NOTIFICATION_CONNECT_ERROR);
         }
 
@@ -87,21 +89,22 @@ public class SseEmitterService {
 
     private void establishConnection(Long userId, SseEmitter emitter) {
         sseEmitterRepository.save(userId, emitter);
+        log.info("SSE connection established and saved for user [{}].", userId);
 
         emitter.onCompletion(() -> {
-            log.info("SSE connection for user {} has been completed.", userId);
+            log.info("SSE connection for user [{}] has been completed.", userId);
             releaseExternalResources(userId);
             doDecrementConnection();
         });
 
         emitter.onTimeout(() -> {
-            log.warn("SSE connection for user {} has timed out.", userId);
+            log.warn("SSE connection for user [{}] has timed out.", userId);
             releaseExternalResources(userId);
             doDecrementConnection();
         });
 
         emitter.onError((throwable) -> {
-            log.error("Error with SSE connection for user {}: {}", userId, throwable.getMessage());
+            log.error("Error with SSE connection for user [{}]: {}", userId, throwable.getMessage());
             releaseExternalResources(userId);
             doDecrementConnection();
         });
@@ -111,6 +114,7 @@ public class SseEmitterService {
 
     private void releaseExternalResources(Long userId) {
         sseEmitterRepository.delete(userId);
+        log.info("External resources released and SSE emitter removed from the repository for user [{}].", userId);
     }
 
     private void doSendConnectionCompletionEvent(Long userId, SseEmitter emitter) throws IOException {

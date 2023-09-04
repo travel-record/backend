@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -21,11 +21,12 @@ import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.properties.JwtProperties;
 import world.trecord.service.users.request.UserUpdateRequest;
-import world.trecord.config.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -85,7 +86,7 @@ class UserControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/users")
-                                .header("Authorization", createToken(saveUser.getId()))
+                                .header(AUTHORIZATION, createToken(saveUser.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.nickname").value(nickname))
@@ -102,7 +103,7 @@ class UserControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/users")
-                                .header("Authorization", createToken(notExistingUserId))
+                                .header(AUTHORIZATION, createToken(notExistingUserId))
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
@@ -134,8 +135,8 @@ class UserControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/users")
-                                .header("Authorization", createToken(saveUser.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(saveUser.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk())
@@ -171,8 +172,8 @@ class UserControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/users")
-                                .header("Authorization", createToken(requestUserEntity.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(requestUserEntity.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isConflict())
@@ -247,7 +248,7 @@ class UserControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/comments")
-                                .header("Authorization", createToken(userEntity.getId()))
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.comments.size()").value(4))
@@ -263,7 +264,18 @@ class UserControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/comments")
-                                .header("Authorization", invalidToken)
+                                .header(AUTHORIZATION, invalidToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/comments - 실패 (토큰 없이)")
+    void getUserCommentsWithoutExistingUserIdTest() throws Exception {
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/comments")
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
@@ -274,25 +286,22 @@ class UserControllerTest extends ContainerBaseTest {
     void getUserRecordLikesTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0));
         RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0));
         RecordEntity recordEntity3 = createRecord(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 2, 0, 0));
         RecordEntity recordEntity4 = createRecord(feedEntity, "record4", "place4", LocalDateTime.of(2022, 3, 2, 0, 0));
-
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
 
         UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(userEntity, recordEntity1);
         UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(userEntity, recordEntity4);
-
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/likes")
-                                .header("Authorization", createToken(userEntity.getId()))
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.records.size()").value(2))
@@ -303,6 +312,31 @@ class UserControllerTest extends ContainerBaseTest {
                 .andExpect(jsonPath("$.data.records[0].authorNickname").value(userEntity.getNickname()));
     }
 
+    @Test
+    @DisplayName("GET /api/v1/users/likes - 실패 (올바르지 않은 토큰)")
+    void getUserCommentsWithInvalidTokenIdTest() throws Exception {
+        //given
+        String invalidToken = "-1";
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/likes")
+                                .header(AUTHORIZATION, invalidToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/users/likes - 실패 (토큰 없이)")
+    void getUserCommentsWithoutTokenIdTest() throws Exception {
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/likes")
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
 
     private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());

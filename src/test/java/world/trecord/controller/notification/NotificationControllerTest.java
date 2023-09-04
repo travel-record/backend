@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -18,12 +19,12 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.properties.JwtProperties;
-import world.trecord.config.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -33,6 +34,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
+import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Transactional
 @MockMvcTestSupport
@@ -78,7 +80,7 @@ class NotificationControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/check")
-                                .header("Authorization", createToken(userEntity.getId()))
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.hasNewNotification").value(true));
@@ -97,7 +99,7 @@ class NotificationControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/check")
-                                .header("Authorization", createToken(userEntity.getId()))
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.hasNewNotification").value(false));
@@ -112,36 +114,57 @@ class NotificationControllerTest extends ContainerBaseTest {
         UserEntity commenter1 = createUser("test1@email.com", "nickname1");
         UserEntity commenter2 = createUser("test2@email.com", "nickname2");
         UserEntity commenter3 = createUser("test3@email.com", "nickname3");
-
         userRepository.saveAll(List.of(author, commenter1, commenter2, commenter3));
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(author));
 
         RecordEntity recordEntity1 = createRecordEntity(feedEntity);
         RecordEntity recordEntity2 = createRecordEntity(feedEntity);
-
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
 
         CommentEntity commentEntity1 = createComment(commenter1, recordEntity1);
         CommentEntity commentEntity2 = createComment(commenter2, recordEntity2);
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity1, commentEntity1, UNREAD, COMMENT);
         NotificationEntity notificationEntity2 = createNotification(author, commenter2, recordEntity2, commentEntity2, UNREAD, COMMENT);
         NotificationEntity notificationEntity3 = createNotification(author, commenter3, recordEntity2, null, UNREAD, RECORD_LIKE);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //whe //then
         mockMvc.perform(
                         get("/api/v1/notifications")
-                                .header("Authorization", createToken(author.getId()))
+                                .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.notifications.size()").value(3))
                 .andExpect(jsonPath("$.data.notifications[0].content").value(notificationEntity3.getNotificationContent()))
                 .andExpect(jsonPath("$.data.notifications[0].date", matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$")));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/notifications - 실패 (토큰 없이)")
+    void getNotificationsWithoutTokenTest() throws Exception {
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/notifications")
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/notifications - 실패 (올바르지 않은 토큰)")
+    void getNotificationsWithInvalidTokenTest() throws Exception {
+        //given
+        long invalidToken = 0L;
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/notifications")
+                                .header(AUTHORIZATION, createToken(invalidToken))
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
     }
 
     @Test
@@ -152,7 +175,6 @@ class NotificationControllerTest extends ContainerBaseTest {
         UserEntity viewer1 = createUser("test1@email.com", "nickname1");
         UserEntity viewer2 = createUser("test2@email.com", "nickname2");
         UserEntity viewer3 = createUser("test3@email.com", "nickname3");
-
         userRepository.saveAll(List.of(author, viewer1, viewer2, viewer3));
 
         FeedEntity feedEntity = feedRepository.save(createFeedEntity(author));
@@ -161,20 +183,18 @@ class NotificationControllerTest extends ContainerBaseTest {
 
         CommentEntity commentEntity1 = createComment(viewer1, recordEntity);
         CommentEntity commentEntity2 = createComment(viewer2, recordEntity);
-
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
         NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
         NotificationEntity notificationEntity3 = createNotification(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
         NotificationEntity notificationEntity4 = createNotification(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/{type}", RECORD_LIKE)
-                                .header("Authorization", createToken(author.getId()))
+                                .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.notifications.size()").value(2));
@@ -185,13 +205,12 @@ class NotificationControllerTest extends ContainerBaseTest {
     void getNotificationsByNotExistingTypeTest() throws Exception {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com", "nickname"));
-
         String notExistingType = "NOT_EXISTING_TYPE";
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/notifications/{type}", notExistingType)
-                                .header("Authorization", createToken(author.getId()))
+                                .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
