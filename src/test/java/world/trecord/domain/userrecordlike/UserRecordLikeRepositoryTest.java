@@ -42,13 +42,9 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
     void existsUserRecordLikeEntityByUserEntityAndRecordEntityTestWhenUserLikeRecordExists() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
         UserRecordLikeEntity userRecordLikeEntity = createRecordLike(userEntity, recordEntity);
-
         userRecordLikeRepository.save(userRecordLikeEntity);
 
         //when
@@ -63,10 +59,8 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
     void existsUserRecordLikeEntityByUserEntityAndRecordEntityTestWhenUserLikeRecordNotExists() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         //when
         Optional<UserRecordLikeEntity> likeEntity = userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId());
@@ -80,19 +74,16 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
     void findLikedRecordsByUserEntityTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity1 = createRecord(feedEntity);
-        RecordEntity recordEntity2 = createRecord(feedEntity);
-        RecordEntity recordEntity3 = createRecord(feedEntity);
-        RecordEntity recordEntity4 = createRecord(feedEntity);
-
+        RecordEntity recordEntity1 = createRecord(feedEntity, 1);
+        RecordEntity recordEntity2 = createRecord(feedEntity, 2);
+        RecordEntity recordEntity3 = createRecord(feedEntity, 3);
+        RecordEntity recordEntity4 = createRecord(feedEntity, 4);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
 
         UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(userEntity, recordEntity1);
         UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(userEntity, recordEntity4);
-
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when
@@ -126,13 +117,9 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
     void existsByUserEntityAndRecordEntityWhenUserLikedRecordTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
         UserRecordLikeEntity userRecordLikeEntity = createRecordLike(userEntity, recordEntity);
-
         userRecordLikeRepository.save(userRecordLikeEntity);
 
         //when
@@ -147,10 +134,8 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
     void existsByUserEntityAndRecordEntityWhenUserNotLikedRecordTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         //when
         boolean result = userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId());
@@ -164,10 +149,8 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
     void existsByUserEntityAndRecordEntityWhenNullUserEntityest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         //when
         boolean result = userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(null, recordEntity.getId());
@@ -186,7 +169,7 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(other1, recordEntity);
         UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(other2, recordEntity);
@@ -208,14 +191,11 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
         UserEntity other1 = userRepository.save(createUser("test1@email.com"));
         UserEntity other2 = userRepository.save(createUser("test2@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(other1, recordEntity);
         UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(other2, recordEntity);
-
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when
@@ -233,13 +213,9 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
         UserEntity other = userRepository.save(createUser("test1@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
         UserRecordLikeEntity userRecordLikeEntity = userRecordLikeRepository.save(createRecordLike(other, recordEntity));
-
         userRecordLikeRepository.delete(userRecordLikeEntity);
 
         //when
@@ -264,7 +240,7 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
                 .build();
     }
 
-    private RecordEntity createRecord(FeedEntity feedEntity) {
+    private RecordEntity createRecord(FeedEntity feedEntity, int sequence) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
                 .title("title")
@@ -274,6 +250,7 @@ class UserRecordLikeRepositoryTest extends ContainerBaseTest {
                 .weather("weather")
                 .transportation("satisfaction")
                 .feeling("feeling")
+                .sequence(sequence)
                 .build();
     }
 

@@ -227,22 +227,16 @@ class UserControllerTest extends ContainerBaseTest {
     void getUserCommentsTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0)));
-        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0)));
+        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
+        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), 2);
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
 
-        String content1 = "content1";
-        String content2 = "content2";
-        String content3 = "content3";
-        String content4 = "content4";
-
-        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, content1);
-        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, content2);
-        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, content3);
-        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, content4);
-
+        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, "content1");
+        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, "content2");
+        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, "content3");
+        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, "content4");
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when //then
@@ -288,10 +282,10 @@ class UserControllerTest extends ContainerBaseTest {
         UserEntity userEntity = userRepository.save(createUser());
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0));
-        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0));
-        RecordEntity recordEntity3 = createRecord(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 2, 0, 0));
-        RecordEntity recordEntity4 = createRecord(feedEntity, "record4", "place4", LocalDateTime.of(2022, 3, 2, 0, 0));
+        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
+        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), 2);
+        RecordEntity recordEntity3 = createRecord(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 2, 0, 0), 3);
+        RecordEntity recordEntity4 = createRecord(feedEntity, "record4", "place4", LocalDateTime.of(2022, 3, 2, 0, 0), 4);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
 
         UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(userEntity, recordEntity1);
@@ -326,7 +320,7 @@ class UserControllerTest extends ContainerBaseTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
-    
+
     @Test
     @DisplayName("GET /api/v1/users/likes - 실패 (토큰 없이)")
     void getUserCommentsWithoutTokenIdTest() throws Exception {
@@ -357,7 +351,7 @@ class UserControllerTest extends ContainerBaseTest {
                 .build();
     }
 
-    private RecordEntity createRecord(FeedEntity feedEntity, String title, String place, LocalDateTime date) {
+    private RecordEntity createRecord(FeedEntity feedEntity, String title, String place, LocalDateTime date, int sequence) {
         return RecordEntity.builder()
                 .feedEntity(feedEntity)
                 .title(title)
@@ -367,6 +361,7 @@ class UserControllerTest extends ContainerBaseTest {
                 .weather("weather")
                 .transportation("satisfaction")
                 .feeling("feeling")
+                .sequence(sequence)
                 .build();
     }
 
