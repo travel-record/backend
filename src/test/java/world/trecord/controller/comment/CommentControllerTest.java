@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -20,7 +21,6 @@ import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.properties.JwtProperties;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
-import world.trecord.config.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -166,7 +166,7 @@ class CommentControllerTest extends ContainerBaseTest {
                 )
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -216,7 +216,7 @@ class CommentControllerTest extends ContainerBaseTest {
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -252,7 +252,7 @@ class CommentControllerTest extends ContainerBaseTest {
                                 .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test

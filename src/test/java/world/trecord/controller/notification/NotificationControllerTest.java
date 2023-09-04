@@ -152,7 +152,7 @@ class NotificationControllerTest extends ContainerBaseTest {
                         get("/api/v1/notifications")
                 )
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -167,7 +167,7 @@ class NotificationControllerTest extends ContainerBaseTest {
                                 .header(AUTHORIZATION, createToken(invalidToken))
                 )
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -216,7 +216,7 @@ class NotificationControllerTest extends ContainerBaseTest {
                                 .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -258,7 +258,8 @@ class NotificationControllerTest extends ContainerBaseTest {
                                 .queryParam("token", createToken(userEntity.getId()))
                 )
                 .andDo(print())
-                .andExpect(status().isNotAcceptable());
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test

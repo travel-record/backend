@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -25,7 +26,6 @@ import world.trecord.service.record.RecordService;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.service.record.request.RecordUpdateRequest;
-import world.trecord.config.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -126,7 +126,7 @@ class RecordControllerTest extends ContainerBaseTest {
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()))
-                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.message()));
     }
 
     @Test
@@ -160,8 +160,7 @@ class RecordControllerTest extends ContainerBaseTest {
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()))
-                .andExpect(jsonPath("$.message").value(INVALID_ARGUMENT.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test

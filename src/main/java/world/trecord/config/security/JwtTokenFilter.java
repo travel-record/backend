@@ -77,7 +77,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     private void returnInvalidTokenError(HttpServletResponse res) throws IOException {
-        ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.getErrorCode(), INVALID_TOKEN.getErrorMsg(), null);
+        ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.code(), INVALID_TOKEN.message(), null);
         res.setStatus(UNAUTHORIZED.value());
         res.setCharacterEncoding(UTF_8.name());
         res.setContentType(APPLICATION_JSON_VALUE);
