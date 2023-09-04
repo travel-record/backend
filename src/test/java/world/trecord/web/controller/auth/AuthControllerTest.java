@@ -9,10 +9,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
+import world.trecord.infra.MockMvcTest;
+import world.trecord.properties.JwtProperties;
 import world.trecord.web.controller.auth.request.GoogleLoginRequest;
 import world.trecord.web.controller.auth.request.RefreshTokenRequest;
-import world.trecord.properties.JwtProperties;
 import world.trecord.web.security.JwtTokenHandler;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
-@MockMvcTestSupport
+@MockMvcTest
 public class AuthControllerTest extends ContainerBaseTest {
 
     @Autowired

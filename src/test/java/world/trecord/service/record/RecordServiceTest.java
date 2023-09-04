@@ -14,9 +14,9 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.exception.CustomException;
+import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.service.record.request.RecordUpdateRequest;
@@ -30,7 +30,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.exception.CustomExceptionError.*;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class RecordServiceTest extends ContainerBaseTest {
 
     @Autowired

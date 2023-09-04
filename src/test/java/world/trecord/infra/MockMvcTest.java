@@ -20,5 +20,5 @@ import java.lang.annotation.Target;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public @interface MockMvcTestSupport {
+public @interface MockMvcTest {
 }

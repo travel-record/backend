@@ -43,7 +43,7 @@ public class CommentEntity extends BaseEntity {
     @JoinColumn(name = "id_parent", foreignKey = @ForeignKey(name = "fk_comment_comment"))
     private CommentEntity parentCommentEntity;
 
-    @OneToMany(mappedBy = "parentCommentEntity")
+    @OneToMany(mappedBy = "parentCommentEntity", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<CommentEntity> childCommentEntities = new ArrayList<>();
 
     @Builder
@@ -62,6 +62,11 @@ public class CommentEntity extends BaseEntity {
 
     public void addChildCommentEntity(CommentEntity childCommentEntity) {
         this.childCommentEntities.add(childCommentEntity);
+    }
+
+    public void clear() {
+        this.parentCommentEntity = null;
+        this.childCommentEntities.clear();
     }
 
     public void update(CommentEntity updateEntity) {

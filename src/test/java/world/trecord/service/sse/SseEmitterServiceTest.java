@@ -6,13 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.sse.SseEmitterRepository;
-import world.trecord.service.sse.SseEmitterService;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 
 import java.time.Duration;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class SseEmitterServiceTest extends ContainerBaseTest {
 
     @Autowired

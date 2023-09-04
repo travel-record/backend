@@ -3,6 +3,7 @@ package world.trecord.domain.record;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "WHERE re.feedEntity.id = :feedId AND re.date = :date")
     Optional<Integer> findMaxSequenceByFeedEntityIdAndDate(@Param("feedId") Long feedId, @Param("date") LocalDateTime date);
 
+    @Transactional
     @Modifying
     @Query("UPDATE RecordEntity re " +
             "SET re.deletedDateTime = NOW() " +
@@ -42,4 +44,10 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "SET re.deletedDateTime = NOW() " +
             "WHERE re.id = :recordId")
     void softDeleteById(@Param("recordId") Long recordId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE RecordEntity re " +
+            "SET re.deletedDateTime = NOW()")
+    void softDeleteAll();
 }

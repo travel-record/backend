@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 
 import java.util.List;
@@ -25,15 +26,23 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
 
     boolean existsByUserEntityIdAndRecordEntityId(Long userId, Long recordId);
 
+    @Transactional
     @Modifying
     @Query("UPDATE UserRecordLikeEntity le " +
             "SET le.deletedDateTime = NOW() " +
             "where le.recordEntity.id = :recordId")
     void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
 
+    @Transactional
     @Modifying
     @Query("UPDATE UserRecordLikeEntity urle " +
             "SET urle.deletedDateTime = NOW() " +
             "where urle.id = :userRecordLikeId")
     void softDeleteById(@Param("userRecordLikeId") Long userRecordLikeId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE UserRecordLikeEntity urle " +
+            "SET urle.deletedDateTime = NOW()")
+    void softDeleteAll();
 }

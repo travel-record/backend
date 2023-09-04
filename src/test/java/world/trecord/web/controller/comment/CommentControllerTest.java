@@ -15,11 +15,11 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
+import world.trecord.infra.MockMvcTest;
 import world.trecord.properties.JwtProperties;
-import world.trecord.web.security.JwtTokenHandler;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
+import world.trecord.web.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.exception.CustomExceptionError.COMMENT_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 
-@MockMvcTestSupport
+@MockMvcTest
 class CommentControllerTest extends ContainerBaseTest {
 
     @Autowired

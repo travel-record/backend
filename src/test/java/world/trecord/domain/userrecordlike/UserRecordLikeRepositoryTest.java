@@ -12,7 +12,7 @@ import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class UserRecordLikeRepositoryTest extends ContainerBaseTest {
 
     @Autowired

@@ -14,8 +14,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.userrecordlike.UserRecordLikeService;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -23,10 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static world.trecord.domain.notification.NotificationStatus.UNREAD;
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class UserRecordLikeServiceTest extends ContainerBaseTest {
 
     @Autowired
@@ -46,7 +43,6 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
 
     @Autowired
     NotificationRepository notificationRepository;
-
 
     @Test
     @DisplayName("사용자가 좋아요한 기록에 좋아요를 하면 liked=false 응답을 한다")
@@ -84,27 +80,6 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
                 .extracting("userEntity", "recordEntity")
                 .containsExactly(
                         tuple(userEntity, recordEntity)
-                );
-    }
-
-    @Test
-    @DisplayName("기록 작성자가 아닌 사용자가 기록에 좋아요를 하면 기록 작성자를 향한 좋아요 알림을 생성한다")
-    void createNotificationTestWhenViewerLikeOnRecordTest() throws Exception {
-        //given
-        UserEntity writer = userRepository.save(createUser("test1@email.com"));
-        UserEntity viewer = userRepository.save(createUser("test2@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        //when
-        userRecordLikeService.toggleLike(viewer.getId(), recordEntity.getId());
-
-        //then
-        Assertions.assertThat(notificationRepository.findAll())
-                .hasSize(1)
-                .extracting("type", "status")
-                .containsExactly(
-                        tuple(RECORD_LIKE, UNREAD)
                 );
     }
 

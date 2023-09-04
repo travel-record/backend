@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 
 import java.util.List;
@@ -34,21 +35,30 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     Page<CommentEntity> findByParentCommentEntityId(Long parentCommentEntityId, Pageable pageable);
 
+    @Transactional
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
             "where ce.recordEntity.id = :recordId")
     void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
 
+    @Transactional
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
             "where ce.parentCommentEntity.id = :commentId")
     void deleteAllByCommentEntityId(@Param("commentId") Long commentId);
 
+    @Transactional
     @Modifying
     @Query("UPDATE CommentEntity ce " +
             "SET ce.deletedDateTime = NOW() " +
             "where ce.id = :commentId")
     void softDeleteById(@Param("commentId") Long commentId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE CommentEntity ce " +
+            "SET ce.deletedDateTime = NOW()")
+    void softDeleteAll();
 }

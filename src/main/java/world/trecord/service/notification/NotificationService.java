@@ -10,9 +10,9 @@ import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.NotificationType;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.exception.CustomException;
 import world.trecord.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.service.notification.response.NotificationListResponse;
-import world.trecord.exception.CustomException;
 
 import java.util.List;
 
@@ -31,17 +31,13 @@ public class NotificationService {
 
     public CheckNewNotificationResponse checkUnreadNotifications(Long userId) {
         boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userId, UNREAD);
-
-        return CheckNewNotificationResponse.builder()
-                .hasNewNotification(hasNewNotification)
-                .build();
+        return doBuildNewNotificationResponse(hasNewNotification);
     }
 
     @Transactional
     public NotificationEntity createNotification(Long userToId, NotificationType type, NotificationArgs args) {
         UserEntity userToEntity = userRepository.findById(userToId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-        NotificationEntity notificationEntity = doBuildNotification(type, args, userToEntity);
-        return notificationRepository.save(notificationEntity);
+        return notificationRepository.save(doBuildNotification(type, args, userToEntity));
     }
 
     @Transactional
@@ -68,6 +64,12 @@ public class NotificationService {
         markNotificationsAsRead(userId);
 
         return response;
+    }
+
+    private CheckNewNotificationResponse doBuildNewNotificationResponse(boolean hasNewNotification) {
+        return CheckNewNotificationResponse.builder()
+                .hasNewNotification(hasNewNotification)
+                .build();
     }
 
     private void markNotificationsAsRead(Long userId) {

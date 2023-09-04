@@ -40,7 +40,7 @@ public class NotificationEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users_to", foreignKey = @ForeignKey(name = "fk_notification_users_to"))
     private UserEntity usersToEntity;
-    
+
     @Builder
     private NotificationEntity(NotificationType type, NotificationStatus status, UserEntity usersToEntity, NotificationArgs args) {
         this.type = type;

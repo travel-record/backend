@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -13,10 +14,10 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
+import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentUpdateResponse;
@@ -27,7 +28,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class CommentServiceTest extends ContainerBaseTest {
 
     @Autowired
@@ -73,27 +74,6 @@ class CommentServiceTest extends ContainerBaseTest {
     }
 
     @Test
-    @DisplayName("다른 사람의 기록에 댓글을 작성하면 알림이 생성된다")
-    void createCommentNotificationWhenCommentOnOtherRecordTest() throws Exception {
-        //given
-        UserEntity author = userRepository.save(createUser("test@email.com"));
-        UserEntity commenter = userRepository.save(createUser("test1@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(author));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-
-        CommentCreateRequest request = CommentCreateRequest.builder()
-                .recordId(recordEntity.getId())
-                .content("content")
-                .build();
-
-        //when
-        commentService.createComment(commenter.getId(), request);
-
-        //then
-        Assertions.assertThat(notificationRepository.findAll()).hasSize(1);
-    }
-
-    @Test
     @DisplayName("자신의 기록에 댓글을 작성하면 알림이 생성되지 않는다")
     void createCommentNotificationWhenCommentOnSelfTest() throws Exception {
         //given
@@ -132,8 +112,7 @@ class CommentServiceTest extends ContainerBaseTest {
         commentService.createComment(userEntity.getId(), request);
 
         //then
-        Assertions.assertThat(commentRepository.findAll())
-                .hasSize(2);
+        Assertions.assertThat(commentRepository.findAll()).hasSize(2);
     }
 
     @Test
@@ -275,6 +254,7 @@ class CommentServiceTest extends ContainerBaseTest {
 
     @Test
     @DisplayName("원댓글 작성자가 원댓글을 삭제하면 하위 댓글들도 함께 삭제된다")
+    @Transactional
     void deleteParentCommentTest() throws Exception {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com"));

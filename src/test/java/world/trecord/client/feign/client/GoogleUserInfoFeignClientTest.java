@@ -7,18 +7,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
-import world.trecord.client.feign.client.GoogleUserInfoFeignClient;
-import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.exception.CustomException;
+import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @AutoConfigureWireMock(port = 8089)
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class GoogleUserInfoFeignClientTest extends ContainerBaseTest {
 
     @Autowired

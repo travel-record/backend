@@ -15,9 +15,8 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 import world.trecord.service.comment.CommentService;
-import world.trecord.service.notification.NotificationService;
 import world.trecord.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.service.notification.response.NotificationListResponse;
 import world.trecord.service.record.RecordService;
@@ -33,7 +32,7 @@ import static world.trecord.domain.notification.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.NotificationType.COMMENT;
 import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class NotificationServiceTest extends ContainerBaseTest {
 
     @Autowired

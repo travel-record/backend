@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
+import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.service.users.response.UserInfoResponse;
 
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 
 @Slf4j
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class UserServiceTest extends ContainerBaseTest {
 
     @Autowired

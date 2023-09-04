@@ -10,11 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@ContextConfiguration(initializers = ContainerBaseTest.class)
 @Transactional
 @ActiveProfiles("test")
 @SpringBootTest
+@ContextConfiguration(initializers = ContainerBaseTest.class)
 @Target(value = ElementType.TYPE)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface IntegrationTestSupport {
+public @interface RollbackIntegrationTestSupport {
 }

@@ -67,7 +67,6 @@ public class FeedService {
         doCheckPermissionOverFeed(feedEntity, userId);
 
         feedEntity.update(request.toUpdateEntity());
-
         feedRepository.saveAndFlush(feedEntity);
 
         return FeedUpdateResponse.builder()

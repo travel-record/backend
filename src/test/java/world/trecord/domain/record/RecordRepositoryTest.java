@@ -11,13 +11,13 @@ import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.RollbackIntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@IntegrationTestSupport
+@RollbackIntegrationTestSupport
 class RecordRepositoryTest extends ContainerBaseTest {
 
     @Autowired
