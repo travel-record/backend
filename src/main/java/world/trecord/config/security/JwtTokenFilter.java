@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import world.trecord.controller.ApiResponse;
@@ -34,7 +35,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
     private final ObjectMapper objectMapper;
-    private final Map<RequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
+    private final Map<RegexRequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
     private final Set<RequestMatcher> tokenInParamSet = new HashSet<>();
 
     public JwtTokenFilter(String secretKey, JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap, List<String> tokenInParamUrls) {
@@ -42,7 +43,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
         this.objectMapper = objectMapper;
-        whitelistMap.forEach((url, methods) -> this.whitelistMap.put(new AntPathRequestMatcher(url), methods));
+        whitelistMap.forEach((url, methods) -> this.whitelistMap.put(new RegexRequestMatcher(url, null), methods));
         tokenInParamUrls.forEach(url -> this.tokenInParamSet.add(new AntPathRequestMatcher(url)));
     }
 

@@ -52,17 +52,16 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
     public JwtTokenFilter jwtAuthFilter() {
         Map<String, List<HttpMethod>> whitelistMap = Map.of(
                 "/", List.of(GET),
-                "/api/*/auth/google-login", List.of(POST),
-                "/api/*/auth/token", List.of(POST),
-                "/api/*/users/{userId}", List.of(GET),
-                "/api/*/feeds/{feedId}", List.of(GET),
-                "/api/*/records/{recordId}", List.of(GET),
-                "/api/*/records/{recordId}/comments", List.of(GET),
-                "/api/*/comments/{commentId}/replies", List.of(GET)
+                "/api/.+/auth/google-login", List.of(POST),
+                "/api/.+/auth/token", List.of(POST),
+                "/api/.+/users/\\d+", List.of(GET),
+                "/api/.+/feeds/\\d+", List.of(GET),
+                "/api/.+/records/\\d+", List.of(GET),
+                "/api/.+/records/\\d+/comments", List.of(GET),
+                "/api/.+/comments/\\d+/replies", List.of(GET)
         );
 
         List<String> tokenInParamUrls = List.of("/api/*/notifications/subscribe");
