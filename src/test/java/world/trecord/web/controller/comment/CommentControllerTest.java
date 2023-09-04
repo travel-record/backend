@@ -270,11 +270,11 @@ class CommentControllerTest extends ContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(author));
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
         CommentEntity parentComment = commentRepository.save(createComment(commenter1, recordEntity, null));
+
         CommentEntity comment1 = createComment(commenter2, recordEntity, parentComment);
         CommentEntity comment2 = createComment(commenter3, recordEntity, parentComment);
         CommentEntity comment3 = createComment(commenter2, recordEntity, parentComment);
         CommentEntity comment4 = createComment(commenter3, recordEntity, parentComment);
-
         commentRepository.saveAll(List.of(comment1, comment2, comment3, comment4));
 
         //when //then
@@ -282,6 +282,7 @@ class CommentControllerTest extends ContainerBaseTest {
                         get("/api/v1/comments/{commentId}/replies", parentComment.getId())
                                 .header(AUTHORIZATION, createToken(author.getId()))
                 )
+                .andDo(print())
                 .andExpect(status().isOk());
     }
 

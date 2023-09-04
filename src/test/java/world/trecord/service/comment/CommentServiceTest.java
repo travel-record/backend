@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
@@ -20,10 +22,12 @@ import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.RollbackIntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
+import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -91,6 +95,51 @@ class CommentServiceTest extends ContainerBaseTest {
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("대댓글을 page로 조회한다")
+    void getRepliesTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        UserEntity commenter = userRepository.save(createUser("test1@email.com"));
+        UserEntity replier = userRepository.save(createUser("test2@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        CommentEntity originalComment = commentRepository.save(createComment(commenter, recordEntity, null));
+
+        List<CommentEntity> replyComments = new ArrayList<>();
+        int commentCnt = 100;
+        for (int commentNumber = 0; commentNumber < commentCnt; commentNumber++) {
+            replyComments.add(createComment(replier, recordEntity, originalComment));
+        }
+
+        commentRepository.saveAll(replyComments);
+
+        int pageNumber = 0;
+        int pageSize = 20;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
+        //when
+        Page<CommentResponse> response = commentService.getReplies(originalComment.getId(), author.getId(), pageRequest);
+
+        //then
+        Assertions.assertThat(response.getSize()).isEqualTo(pageSize);
+        Assertions.assertThat(response.getNumber()).isEqualTo(pageNumber);
+        Assertions.assertThat(response.getTotalPages()).isEqualTo(commentCnt / pageSize);
+        Assertions.assertThat(response.getTotalElements()).isEqualTo(commentCnt);
+    }
+
+    @Test
+    @DisplayName("원댓글이 존재하지 않으면 예외가 발생한다")
+    void getRepliesWhenCommentsNotExistingTest() throws Exception {
+        //given
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        long notExistingCommentId = -1L;
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> commentService.getReplies(notExistingCommentId, null, pageRequest))
+                .isInstanceOf(CustomException.class);
     }
 
     @Test
