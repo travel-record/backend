@@ -57,7 +57,7 @@ public class CommentService {
     public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
         CommentEntity commentEntity = findCommentOrException(commentId);
 
-        doCheckPermissionOverComment(commentEntity, userId);
+        ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
         commentRepository.saveAndFlush(commentEntity);
@@ -71,7 +71,7 @@ public class CommentService {
     public void deleteComment(Long userId, Long commentId) {
         CommentEntity commentEntity = findCommentOrException(commentId);
 
-        doCheckPermissionOverComment(commentEntity, userId);
+        ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntityId(commentId);
         commentRepository.softDeleteById(commentId);
@@ -117,7 +117,7 @@ public class CommentService {
                 .orElse(null);
     }
 
-    private void doCheckPermissionOverComment(CommentEntity commentEntity, Long userId) {
+    private void ensureUserHasPermissionOverComment(CommentEntity commentEntity, Long userId) {
         if (!commentEntity.isCommenter(userId)) {
             throw new CustomException(FORBIDDEN);
         }

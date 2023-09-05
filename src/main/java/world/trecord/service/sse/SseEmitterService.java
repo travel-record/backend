@@ -77,7 +77,7 @@ public class SseEmitterService {
 
         try {
             establishConnection(userId, emitter);
-            doSendConnectionCompletionEvent(userId, emitter);
+            sendConnectionCompletionEvent(userId, emitter);
         } catch (Exception e) {
             doDecrementConnection();
             log.error("Error establishing SSE connection for user [{}]: {}", userId, e.getMessage());
@@ -117,7 +117,7 @@ public class SseEmitterService {
         log.info("External resources released and SSE emitter removed from the repository for user [{}].", userId);
     }
 
-    private void doSendConnectionCompletionEvent(Long userId, SseEmitter emitter) throws IOException {
+    private void sendConnectionCompletionEvent(Long userId, SseEmitter emitter) throws IOException {
         log.info("Attempting to send connection completion event for user {}.", userId);
         String eventID = String.valueOf(System.currentTimeMillis());
         emitter.send(SseEmitter.event()

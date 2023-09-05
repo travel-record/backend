@@ -67,7 +67,7 @@ public class FeedService {
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
-        doCheckPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverFeed(feedEntity, userId);
 
         feedEntity.update(request.toUpdateEntity());
         feedRepository.saveAndFlush(feedEntity);
@@ -81,14 +81,14 @@ public class FeedService {
     public void deleteFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
-        doCheckPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverFeed(feedEntity, userId);
 
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.softDeleteById(feedId);
     }
 
-    private void doCheckPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isManagedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
