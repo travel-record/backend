@@ -88,7 +88,7 @@ public class RecordService {
         RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
         RecordEntity targetRecord = findRecordForUpdateOrException(request.getTargetRecordId());
 
-        doCheckHasSameFeed(originalRecord, targetRecord);
+        ensureRecordsHasSameFeed(originalRecord, targetRecord);
 
         FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
 
@@ -138,7 +138,7 @@ public class RecordService {
         return recordSequenceEntity.getSequence();
     }
 
-    private void doCheckHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
+    private void ensureRecordsHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
         if (!originalRecord.hasSameFeed(targetRecord)) {
             throw new CustomException(INVALID_ARGUMENT);
         }

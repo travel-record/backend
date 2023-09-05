@@ -50,7 +50,7 @@ public class SseEmitterService {
                         emitter.send(SseEmitter.event()
                                 .id(notificationEntity.getId().toString())
                                 .name(EVENT_NAME)
-                                .data(doBuildNotificationEvent(notificationEntity)));
+                                .data(buildNotificationEvent(notificationEntity)));
                         log.info("Successfully sent notification with ID: [{}] to emitter for userToId: [{}]", notificationEntity.getId(), userToId);
 
                     } catch (IOException ex) {
@@ -71,7 +71,7 @@ public class SseEmitterService {
                 log.warn("Max connections limit reached. Unable to connect user [{}].", userId);
                 throw new CustomException(MAX_CONNECTIONS_EXCEEDED_ERROR);
             }
-            doIncrementConnection();
+            incrementConnection();
             log.info("Connection incremented for user [{}]. Current connections: {}", userId, currentConnections.get());
         }
 
@@ -79,7 +79,7 @@ public class SseEmitterService {
             establishConnection(userId, emitter);
             sendConnectionCompletionEvent(userId, emitter);
         } catch (Exception e) {
-            doDecrementConnection();
+            decrementConnection();
             log.error("Error establishing SSE connection for user [{}]: {}", userId, e.getMessage());
             throw new CustomException(NOTIFICATION_CONNECT_ERROR);
         }
@@ -94,19 +94,19 @@ public class SseEmitterService {
         emitter.onCompletion(() -> {
             log.info("SSE connection for user [{}] has been completed.", userId);
             releaseExternalResources(userId);
-            doDecrementConnection();
+            decrementConnection();
         });
 
         emitter.onTimeout(() -> {
             log.warn("SSE connection for user [{}] has timed out.", userId);
             releaseExternalResources(userId);
-            doDecrementConnection();
+            decrementConnection();
         });
 
         emitter.onError((throwable) -> {
             log.error("Error with SSE connection for user [{}]: {}", userId, throwable.getMessage());
             releaseExternalResources(userId);
-            doDecrementConnection();
+            decrementConnection();
         });
 
         // 연결이 끊어진 경우도 처리해줘야함
@@ -127,15 +127,15 @@ public class SseEmitterService {
         log.info("Connection completion event for user {} has been sent successfully.", userId);
     }
 
-    private void doIncrementConnection() {
+    private void incrementConnection() {
         currentConnections.incrementAndGet();
     }
 
-    private void doDecrementConnection() {
+    private void decrementConnection() {
         currentConnections.decrementAndGet();
     }
 
-    private SseNotificationEvent doBuildNotificationEvent(NotificationEntity notificationEntity) {
+    private SseNotificationEvent buildNotificationEvent(NotificationEntity notificationEntity) {
         return SseNotificationEvent.builder()
                 .notificationEntity(notificationEntity)
                 .build();

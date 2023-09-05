@@ -41,16 +41,18 @@ public class CommentService {
     public void createComment(Long userFromId, CommentCreateRequest request) {
         UserEntity userEntity = findUserOrException(userFromId);
         RecordEntity recordEntity = findRecordOrException(request.getRecordId());
-        CommentEntity parentCommentEntity = findCommentOrNull(request.getParentId());
+        Optional<CommentEntity> parentOptional = findCommentOrOptional(request.getParentId());
 
-        if (request.getParentId() != null && parentCommentEntity == null) {
+        if (request.getParentId() != null && parentOptional.isEmpty()) {
             throw new CustomException(COMMENT_NOT_FOUND);
         }
+
+        CommentEntity parentCommentEntity = parentOptional.orElse(null);
 
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
-        sseEmitterService.send(userToId, userFromId, COMMENT, doBuildNotificationArgs(commentEntity, userEntity));
+        sseEmitterService.send(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity));
     }
 
     @Transactional
@@ -111,10 +113,11 @@ public class CommentService {
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
-    private CommentEntity findCommentOrNull(Long parentId) {
-        return Optional.ofNullable(parentId)
-                .map(this::findCommentOrException)
-                .orElse(null);
+    private Optional<CommentEntity> findCommentOrOptional(Long parentId) {
+        if (parentId == null) {
+            return Optional.empty();
+        }
+        return commentRepository.findById(parentId);
     }
 
     private void ensureUserHasPermissionOverComment(CommentEntity commentEntity, Long userId) {
@@ -123,7 +126,7 @@ public class CommentService {
         }
     }
 
-    private NotificationArgs doBuildNotificationArgs(CommentEntity commentEntity, UserEntity userEntity) {
+    private NotificationArgs buildNotificationArgs(CommentEntity commentEntity, UserEntity userEntity) {
         return NotificationArgs.builder()
                 .commentEntity(commentEntity)
                 .recordEntity(commentEntity.getRecordEntity())
