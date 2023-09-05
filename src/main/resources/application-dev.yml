@@ -1,3 +1,8 @@
+spring.jpa:
+  hibernate:
+    ddl-auto: none # Do not change
+  open-in-view: false
+
 spring.datasource:
   url: ${aws.rds.hostname}
   driver-class-name: org.mariadb.jdbc.Driver
