@@ -11,7 +11,7 @@ services:
 
   redis:
     image: redis
-    command: redis-server --requirepass test
+    command: redis-server --requirepass 1234
     hostname: test
     ports:
       - "6379:6379"

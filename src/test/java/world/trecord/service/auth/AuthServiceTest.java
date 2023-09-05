@@ -19,6 +19,7 @@ import world.trecord.exception.CustomExceptionError;
 import world.trecord.service.auth.google.GoogleAuthService;
 import world.trecord.service.auth.response.LoginResponse;
 import world.trecord.service.auth.response.RefreshResponse;
+import world.trecord.service.users.UserCacheRepository;
 import world.trecord.service.users.UserService;
 
 import java.util.Optional;
@@ -44,6 +45,9 @@ class AuthServiceTest {
 
     @Spy
     JwtProperties jwtProperties;
+
+    @Mock
+    UserCacheRepository userCacheRepository;
 
     @InjectMocks
     AuthService authService;
@@ -76,7 +80,7 @@ class AuthServiceTest {
 
         given(jwtTokenHandler.generateToken(null, secretKey, expiredTimeMs * 14))
                 .willReturn(token);
-
+        
         //when
         LoginResponse loginResponse = authService.googleLogin(accessToken, redirectionUri);
 

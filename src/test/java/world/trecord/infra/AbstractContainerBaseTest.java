@@ -30,22 +30,22 @@ public abstract class AbstractContainerBaseTest {
         String jdbcUrl = String.format("jdbc:mariadb://%s:%s/test",
                 DOCKER_COMPOSE_CONTAINER.getServiceHost(MARIADB_SERVICE_NAME, MARIADB_SERVICE_PORT),
                 DOCKER_COMPOSE_CONTAINER.getServicePort(MARIADB_SERVICE_NAME, MARIADB_SERVICE_PORT));
-        String username = "root";
-        String password = "1234";
-        
+        String jdbcUsername = "root";
+        String jdbcPassword = "1234";
+
         // Redis
-        String redisHost = DOCKER_COMPOSE_CONTAINER.getServiceHost(REDIS_SERVICE_NAME, REDIS_SERVICE_PORT);
         Integer redisPort = DOCKER_COMPOSE_CONTAINER.getServicePort(REDIS_SERVICE_NAME, REDIS_SERVICE_PORT);
-        String redisUrl = String.format("redis://:%s@%s:%d", "1234", redisHost, redisPort);
+        String redisPassword = "1234";
+        String redisUrl = String.format("redis://:%s@%s:%d", redisPassword, redisPassword, redisPort);
 
         log.info("MARIA_DB_CONTAINER url ==> {}", jdbcUrl);
-        log.info("MARIA_DB_CONTAINER username ==> {}", username);
-        log.info("MARIA_DB_CONTAINER password ==> {}", password);
+        log.info("MARIA_DB_CONTAINER jdbcUsername ==> {}", jdbcUsername);
+        log.info("MARIA_DB_CONTAINER jdbcPassword ==> {}", jdbcPassword);
         log.info("REDIS_CONTAINER url ==> {}", redisUrl);
 
-        registry.add("spring.datasource.url=", () -> jdbcUrl);
-        registry.add("spring.datasource.username=", () -> username);
-        registry.add("spring.datasource.password=", () -> password);
-        registry.add("spring.redis.url=", () -> redisUrl);
+        registry.add("spring.datasource.url", () -> jdbcUrl);
+        registry.add("spring.datasource.username", () -> jdbcUsername);
+        registry.add("spring.datasource.password", () -> jdbcPassword);
+        registry.add("spring.redis.url", () -> redisUrl);
     }
 }

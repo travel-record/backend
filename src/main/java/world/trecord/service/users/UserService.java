@@ -3,7 +3,6 @@ package world.trecord.service.users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
@@ -13,6 +12,7 @@ import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.service.users.response.UserInfoResponse;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
@@ -24,6 +24,7 @@ import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserCacheRepository userCacheRepository;
 
     @Transactional
     public UserEntity createNewUser(String email) {
@@ -63,13 +64,16 @@ public class UserService {
                 .build();
     }
 
-    public UserContext getUserContextOrException(Long userId) throws UsernameNotFoundException {
-        return userRepository.findById(userId)
-                .map(UserContext::fromEntity)
-                .orElseThrow(() -> {
-                    log.warn("Error in method [getUserContextOrException] - User not found with ID: {}", userId);
-                    return new UsernameNotFoundException(USER_NOT_FOUND.name());
-                });
+    public UserContext getUserContextOrException(Long userId) {
+        Optional<UserContext> userContextOptional = userCacheRepository.getUserContext(userId);
+
+        return userContextOptional
+                .orElseGet(() -> userRepository.findById(userId)
+                        .map(userEntity -> userCacheRepository.setUserContext(UserContext.fromEntity(userEntity)))
+                        .orElseThrow(() -> {
+                            log.warn("Error in method [getUserContextOrException] - User not found with ID: {}", userId);
+                            return new CustomException(USER_NOT_FOUND);
+                        }));
     }
 
     private UserEntity findUserOrException(Long userId) {

@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -172,14 +171,14 @@ class UserServiceTestAbstract extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("사용자가 존재하지 않으면 UsernameNotFoundException 예외가 발생한다")
+    @DisplayName("사용자가 존재하지 않으면 CustomException 예외가 발생한다")
     void loadUserContextByUserIdWhenUserNotFoundTest() throws Exception {
         //given
         long notExistingUserId = -1L;
 
         //when //then
         Assertions.assertThatThrownBy(() -> userService.getUserContextOrException(notExistingUserId))
-                .isInstanceOf(UsernameNotFoundException.class);
+                .isInstanceOf(CustomException.class);
     }
 
     private UserEntity createUser(String email, String nickname) {
