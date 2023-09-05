@@ -106,6 +106,7 @@ public class RecordService {
     public void deleteRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
+
         ensureUserHasPermissionOverFeed(feedEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
