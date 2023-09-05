@@ -8,6 +8,8 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.service.auth.google.GoogleAuthService;
 import world.trecord.service.auth.response.LoginResponse;
 import world.trecord.service.auth.response.RefreshResponse;
+import world.trecord.service.users.UserCacheRepository;
+import world.trecord.service.users.UserContext;
 import world.trecord.service.users.UserService;
 
 @Service
@@ -18,13 +20,20 @@ public class AuthService {
     private final UserService userService;
     private final JwtTokenHandler jwtTokenHandler;
     private final GoogleAuthService googleAuthService;
+    private final UserCacheRepository userCacheRepository;
     private final String secretKey;
     private final Long tokenExpiredTimeMs;
 
-    public AuthService(UserRepository userRepository, UserService userService, JwtTokenHandler jwtTokenHandler, GoogleAuthService googleAuthService, JwtProperties jwtProperties) {
+    public AuthService(UserRepository userRepository,
+                       UserService userService,
+                       JwtTokenHandler jwtTokenHandler,
+                       UserCacheRepository userCacheRepository,
+                       GoogleAuthService googleAuthService,
+                       JwtProperties jwtProperties) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.jwtTokenHandler = jwtTokenHandler;
+        this.userCacheRepository = userCacheRepository;
         this.googleAuthService = googleAuthService;
         this.secretKey = jwtProperties.getSecretKey();
         this.tokenExpiredTimeMs = jwtProperties.getTokenExpiredTimeMs();
@@ -35,6 +44,8 @@ public class AuthService {
         UserEntity userEntity = findOrCreateUser(email);
         String issuedToken = createToken(userEntity.getId());
         String issuedRefreshToken = createRefreshToken(userEntity.getId());
+
+        userCacheRepository.setUserContext(UserContext.fromEntity(userEntity));
 
         return LoginResponse.builder()
                 .userId(userEntity.getId())

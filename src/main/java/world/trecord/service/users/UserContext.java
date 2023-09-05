@@ -26,8 +26,11 @@ public class UserContext implements UserDetails {
     private String introduction;
     private String imageUrl;
     private String role;
+    @JsonIgnore
     private LocalDateTime createdDateTime;
+    @JsonIgnore
     private LocalDateTime modifiedDateTime;
+    @JsonIgnore
     private LocalDateTime deletedDateTime;
 
     public static UserContext fromEntity(UserEntity userEntity) {

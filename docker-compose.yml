@@ -12,3 +12,10 @@ services:
       JWT_SECRET_KEY: $JWT_SECRET_KEY
       GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
       GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
+      SPRING_REDIS_URL: redis://:1234@redis:6379
+
+  redis:
+    image: redis:latest
+    command: [ "redis-server", "--requirepass", "1234" ]
+    ports:
+      - "6379:6379"

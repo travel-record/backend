@@ -17,7 +17,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.notification.NotificationEventListener;
 import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
@@ -31,7 +31,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @Transactional
 @IntegrationTestSupport
-class UserRecordLikeServiceTest extends ContainerBaseTest {
+class UserRecordLikeServiceTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     UserRecordLikeService userRecordLikeService;
@@ -106,7 +106,8 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
         userRecordLikeService.toggleLike(viewer.getId(), recordEntity.getId());
 
         //then
-        Awaitility.await().atMost(1, TimeUnit.SECONDS)
+        Awaitility.await()
+                .atMost(1, TimeUnit.SECONDS)
                 .untilAsserted(() -> Mockito.verify(mockEventListener, Mockito.times(1)).handleNotificationEventListener(Mockito.any()));
     }
 

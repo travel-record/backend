@@ -8,9 +8,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @IntegrationTestSupport
-@ActiveProfiles("test")
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface MockMvcTestSupport {

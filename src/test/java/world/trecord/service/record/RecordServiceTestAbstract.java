@@ -17,7 +17,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordSequenceSwapRequest;
@@ -35,7 +35,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @IntegrationTestSupport
-class RecordServiceTest extends ContainerBaseTest {
+class RecordServiceTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     RecordService recordService;

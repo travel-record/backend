@@ -5,11 +5,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 @IntegrationTestSupport
-class SseEmitterRepositoryTest extends ContainerBaseTest {
+class SseEmitterRepositoryTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     SseEmitterRepository sseEmitterRepository;

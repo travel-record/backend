@@ -11,7 +11,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.response.RecordCreateResponse;
@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 
 @IntegrationTestSupport
-class RecordServiceConcurrencyTest extends ContainerBaseTest {
+class RecordServiceConcurrencyTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     RecordService recordService;
@@ -51,7 +51,7 @@ class RecordServiceConcurrencyTest extends ContainerBaseTest {
     }
 
     @Test
-    @DisplayName("같은 피드에 같은 날짜에 여러 요청을 동시에 수행해도 같은 번호를 가지지 않는다")
+    @DisplayName("같은 피드에 같은 날짜에 여러 기록을 동시에 저장해도 같은 번호를 가지지 않는다")
     void createRecordWithSequenceConcurrencyTest() throws InterruptedException {
         //given
         int numberOfCores = Runtime.getRuntime().availableProcessors();

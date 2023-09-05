@@ -1,8 +1,17 @@
+spring.jpa:
+  hibernate:
+    ddl-auto: none # Do not change
+  open-in-view: false
+
 spring.datasource:
   url: ${aws.rds.hostname}
   driver-class-name: org.mariadb.jdbc.Driver
   username: ${aws.rds.username}
   password: ${aws.rds.password}
+
+spring.data:
+  redis:
+    url: ${SPRING_REDIS_URL}
 
 jwt:
   secret-key: ${jwt.secret.key}

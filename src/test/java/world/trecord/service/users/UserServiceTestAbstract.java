@@ -5,13 +5,12 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.service.users.response.UserInfoResponse;
@@ -22,7 +21,7 @@ import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 @Slf4j
 @Transactional
 @IntegrationTestSupport
-class UserServiceTest extends ContainerBaseTest {
+class UserServiceTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     UserService userService;
@@ -172,14 +171,14 @@ class UserServiceTest extends ContainerBaseTest {
     }
 
     @Test
-    @DisplayName("사용자가 존재하지 않으면 UsernameNotFoundException 예외가 발생한다")
+    @DisplayName("사용자가 존재하지 않으면 CustomException 예외가 발생한다")
     void loadUserContextByUserIdWhenUserNotFoundTest() throws Exception {
         //given
         long notExistingUserId = -1L;
 
         //when //then
         Assertions.assertThatThrownBy(() -> userService.getUserContextOrException(notExistingUserId))
-                .isInstanceOf(UsernameNotFoundException.class);
+                .isInstanceOf(CustomException.class);
     }
 
     private UserEntity createUser(String email, String nickname) {
