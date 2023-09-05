@@ -4,6 +4,10 @@ spring.datasource:
   username: ${aws.rds.username}
   password: ${aws.rds.password}
 
+spring.data:
+  redis:
+    url: ${SPRING_REDIS_URL}
+
 jwt:
   secret-key: ${jwt.secret.key}
 
