@@ -39,7 +39,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @MockMvcTestSupport
-class RecordControllerTestAbstract extends AbstractContainerBaseTest {
+class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

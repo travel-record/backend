@@ -35,7 +35,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @IntegrationTestSupport
-class RecordServiceTestAbstract extends AbstractContainerBaseTest {
+class RecordServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     RecordService recordService;

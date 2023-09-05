@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Transactional
 @IntegrationTestSupport
-class UserRepositoryTestAbstract extends AbstractContainerBaseTest {
+class UserRepositoryTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

@@ -11,7 +11,7 @@ import world.trecord.infra.IntegrationTestSupport;
 import java.time.Duration;
 
 @IntegrationTestSupport
-class SseEmitterServiceTestAbstract extends AbstractContainerBaseTest {
+class SseEmitterServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     SseEmitterRepository sseEmitterRepository;
@@ -24,7 +24,7 @@ class SseEmitterServiceTestAbstract extends AbstractContainerBaseTest {
     void connectNotificationTest() throws Exception {
         //given
         Long userId = 1L;
-        SseEmitter sseEmitter = new SseEmitter(Duration.ofDays(1).toMillis());
+        SseEmitter sseEmitter = new SseEmitter(Duration.ofHours(3).toMillis());
 
         //when
         SseEmitter emitter = sseEmitterService.connect(userId, sseEmitter);

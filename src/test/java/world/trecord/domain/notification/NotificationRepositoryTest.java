@@ -25,7 +25,7 @@ import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @Transactional
 @IntegrationTestSupport
-class NotificationRepositoryTestAbstract extends AbstractContainerBaseTest {
+class NotificationRepositoryTest extends AbstractContainerBaseTest {
 
     @Autowired
     NotificationRepository notificationRepository;

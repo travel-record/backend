@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 
 @Transactional
 @IntegrationTestSupport
-class RecordValidatorTestAbstract extends AbstractContainerBaseTest {
+class RecordValidatorTest extends AbstractContainerBaseTest {
 
     @Autowired
     RecordValidator recordValidator;

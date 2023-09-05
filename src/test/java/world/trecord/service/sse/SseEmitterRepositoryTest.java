@@ -9,7 +9,7 @@ import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 @IntegrationTestSupport
-class SseEmitterRepositoryTestAbstract extends AbstractContainerBaseTest {
+class SseEmitterRepositoryTest extends AbstractContainerBaseTest {
 
     @Autowired
     SseEmitterRepository sseEmitterRepository;

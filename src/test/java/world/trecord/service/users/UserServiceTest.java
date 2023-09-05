@@ -21,7 +21,7 @@ import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 @Slf4j
 @Transactional
 @IntegrationTestSupport
-class UserServiceTestAbstract extends AbstractContainerBaseTest {
+class UserServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserService userService;

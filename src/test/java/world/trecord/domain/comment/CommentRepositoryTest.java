@@ -22,7 +22,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @Transactional
 @IntegrationTestSupport
-class CommentRepositoryTestAbstract extends AbstractContainerBaseTest {
+class CommentRepositoryTest extends AbstractContainerBaseTest {
 
     @Autowired
     CommentRepository commentRepository;
