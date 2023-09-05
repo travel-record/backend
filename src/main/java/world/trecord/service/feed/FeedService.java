@@ -19,6 +19,7 @@ import world.trecord.service.feed.response.FeedListResponse;
 import world.trecord.service.feed.response.FeedUpdateResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 import static world.trecord.exception.CustomExceptionError.*;
 
@@ -41,7 +42,7 @@ public class FeedService {
                 .build();
     }
 
-    public FeedInfoResponse getFeed(Long viewerId, Long feedId) {
+    public FeedInfoResponse getFeed(Optional<Long> viewerId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedId);
 

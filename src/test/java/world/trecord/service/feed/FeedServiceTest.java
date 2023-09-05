@@ -25,6 +25,7 @@ import world.trecord.service.feed.response.FeedUpdateResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
@@ -87,24 +88,22 @@ class FeedServiceTest extends ContainerBaseTest {
     @DisplayName("사용자가 등록한 특정 피드를 기록과 함께 반환한다")
     void getFeedByFeedIdTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        FeedEntity savedFeedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
-        RecordEntity recordEntity1 = createRecord(savedFeedEntity);
-        RecordEntity recordEntity2 = createRecord(savedFeedEntity);
-        RecordEntity recordEntity3 = createRecord(savedFeedEntity);
-
+        RecordEntity recordEntity1 = createRecord(feedEntity);
+        RecordEntity recordEntity2 = createRecord(feedEntity);
+        RecordEntity recordEntity3 = createRecord(feedEntity);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedInfoResponse response = feedService.getFeed(savedUserEntity.getId(), savedFeedEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(Optional.of(userEntity.getId()), feedEntity.getId());
 
         //then
         Assertions.assertThat(response)
                 .extracting("writerId", "feedId", "startAt", "endAt")
-                .containsExactly(savedUserEntity.getId(), savedFeedEntity.getId(),
-                        savedFeedEntity.convertStartAtToLocalDate(), savedFeedEntity.convertEndAtToLocalDate());
+                .containsExactly(userEntity.getId(), feedEntity.getId(),
+                        feedEntity.convertStartAtToLocalDate(), feedEntity.convertEndAtToLocalDate());
         Assertions.assertThat(response.getRecords().stream().map(FeedInfoResponse.Record::getTitle)).containsExactly("title", "title", "title");
     }
 
@@ -149,7 +148,7 @@ class FeedServiceTest extends ContainerBaseTest {
         recordRepository.softDeleteById(recordEntity2.getId());
 
         //when
-        FeedInfoResponse response = feedService.getFeed(userEntity.getId(), feedEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(Optional.of(userEntity.getId()), feedEntity.getId());
 
         //then
         Assertions.assertThat(response.getRecords())
@@ -166,7 +165,7 @@ class FeedServiceTest extends ContainerBaseTest {
         Long notExistingUserId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.getFeed(notExistingUserId, notExistingFeedId))
+        Assertions.assertThatThrownBy(() -> feedService.getFeed(Optional.of(notExistingUserId), notExistingFeedId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
