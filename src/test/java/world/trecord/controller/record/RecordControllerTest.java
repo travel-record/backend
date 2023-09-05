@@ -331,7 +331,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/records/swap - 성공")
+    @DisplayName("POST /api/v1/records/sequence/swap - 성공")
     void swapRecordSequenceTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
@@ -351,7 +351,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/swap")
+                        post("/api/v1/records/sequence/swap")
                                 .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -372,7 +372,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/records/swap - 실패 (같은 피드 아이디가 아닌 경우)")
+    @DisplayName("POST /api/v1/records/sequence/swap - 실패 (같은 피드 아이디가 아닌 경우)")
     void swapRecordSequenceWhenRecordNotSameFeedTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
@@ -390,7 +390,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/swap")
+                        post("/api/v1/records/sequence/swap")
                                 .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -400,7 +400,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/records/swap - 실패 (피드 관리자가 아닌 경우)")
+    @DisplayName("POST /api/v1/records/sequence/swap - 실패 (피드 관리자가 아닌 경우)")
     void swapRecordSequenceByNotFeedManagerTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
@@ -418,7 +418,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/swap")
+                        post("/api/v1/records/sequence/swap")
                                 .header(AUTHORIZATION, createToken(other.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -428,7 +428,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/records/swap - 실패 (존재하지 않는 기록 아이디로 요청)")
+    @DisplayName("POST /api/v1/records/sequence/swap - 실패 (존재하지 않는 기록 아이디로 요청)")
     void swapRecordSequenceWhenRecordNotExistingTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(createUser("test@email.com"));
@@ -444,7 +444,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/records/swap")
+                        post("/api/v1/records/sequence/swap")
                                 .header(AUTHORIZATION, token)
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))

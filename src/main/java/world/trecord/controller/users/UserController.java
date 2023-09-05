@@ -32,12 +32,12 @@ public class UserController {
     }
 
     @PostMapping
-    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest updateRequest, @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(userService.updateUser(userContext.getId(), updateRequest));
+    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest request, @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(userService.updateUser(userContext.getId(), request));
     }
 
     @GetMapping("/{userId}")
-    public ApiResponse<UserInfoResponse> getUserByUserId(@PathVariable("userId") Long userId) {
+    public ApiResponse<UserInfoResponse> getUserByUserId(@PathVariable Long userId) {
         return ApiResponse.ok(userService.getUser(userId));
     }
 

@@ -25,7 +25,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/{commentId}/replies")
-    public ApiResponse<Page<CommentResponse>> getReplies(@PathVariable("commentId") Long commentId,
+    public ApiResponse<Page<CommentResponse>> getReplies(@PathVariable Long commentId,
                                                          @PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                          @CurrentUser UserContext userContext) {
         Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
@@ -39,14 +39,14 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    public ApiResponse<CommentUpdateResponse> updateComment(@PathVariable("commentId") Long commentId,
+    public ApiResponse<CommentUpdateResponse> updateComment(@PathVariable Long commentId,
                                                             @RequestBody @Valid CommentUpdateRequest request,
                                                             @CurrentUser UserContext userContext) {
         return ApiResponse.ok(commentService.updateComment(userContext.getId(), commentId, request));
     }
 
     @DeleteMapping("/{commentId}")
-    public ApiResponse<Void> deleteComment(@PathVariable("commentId") Long commentId, @CurrentUser UserContext userContext) {
+    public ApiResponse<Void> deleteComment(@PathVariable Long commentId, @CurrentUser UserContext userContext) {
         commentService.deleteComment(userContext.getId(), commentId);
         return ApiResponse.ok();
     }

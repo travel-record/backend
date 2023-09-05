@@ -58,7 +58,6 @@ public class AuthService {
     public RefreshResponse reissueToken(String refreshToken) {
         jwtTokenHandler.verifyToken(secretKey, refreshToken);
         Long userId = jwtTokenHandler.getUserIdFromToken(secretKey, refreshToken);
-        // TODO userId 없으면 exception
         String reissuedToken = createToken(userId);
         String reissuedRefreshToken = createRefreshToken(userId);
 

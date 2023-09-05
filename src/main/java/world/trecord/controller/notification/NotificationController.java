@@ -49,7 +49,7 @@ public class NotificationController {
 
     @GetMapping("/type/{type}")
     public ApiResponse<NotificationListResponse> getNotificationsByType(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                                        @PathVariable("type") NotificationType type,
+                                                                        @PathVariable NotificationType type,
                                                                         @CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.getNotificationsByType(userContext.getId(), type));
     }
