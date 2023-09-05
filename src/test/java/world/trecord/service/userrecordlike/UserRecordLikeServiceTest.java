@@ -106,7 +106,8 @@ class UserRecordLikeServiceTest extends ContainerBaseTest {
         userRecordLikeService.toggleLike(viewer.getId(), recordEntity.getId());
 
         //then
-        Awaitility.await().atMost(1, TimeUnit.SECONDS)
+        Awaitility.await()
+                .atMost(1, TimeUnit.SECONDS)
                 .untilAsserted(() -> Mockito.verify(mockEventListener, Mockito.times(1)).handleNotificationEventListener(Mockito.any()));
     }
 

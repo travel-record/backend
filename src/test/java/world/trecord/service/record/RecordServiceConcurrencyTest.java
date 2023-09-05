@@ -51,7 +51,7 @@ class RecordServiceConcurrencyTest extends ContainerBaseTest {
     }
 
     @Test
-    @DisplayName("같은 피드에 같은 날짜에 여러 요청을 동시에 수행해도 같은 번호를 가지지 않는다")
+    @DisplayName("같은 피드에 같은 날짜에 여러 기록을 동시에 저장해도 같은 번호를 가지지 않는다")
     void createRecordWithSequenceConcurrencyTest() throws InterruptedException {
         //given
         int numberOfCores = Runtime.getRuntime().availableProcessors();

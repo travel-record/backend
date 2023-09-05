@@ -125,7 +125,8 @@ class CommentServiceTest extends ContainerBaseTest {
         commentService.createComment(commenter.getId(), request);
 
         //then
-        Awaitility.await().atMost(1, TimeUnit.SECONDS)
+        Awaitility.await()
+                .atMost(1, TimeUnit.SECONDS)
                 .untilAsserted(() -> Mockito.verify(mockEventListener, Mockito.times(1)).handleNotificationEventListener(Mockito.any()));
     }
 

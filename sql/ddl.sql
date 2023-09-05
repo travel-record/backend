@@ -6,8 +6,8 @@ create table users
     image_url          text         null comment '프로필 이미지 URL',
     introduction       varchar(255) null comment '한 줄 소개글',
     email              varchar(255) not null comment '이메일',
-    created_date_time  datetime     null comment '사용자 생성 시간',
-    modified_date_time datetime     null comment '사용자 수정 시간',
+    created_date_time  datetime     null comment '기록 생성 시간',
+    modified_date_time datetime     null comment '기록 수정 시간',
     deleted_date_time  datetime     null comment '사용자 삭제 시간',
     constraint uk_users_email
         unique (email),
@@ -20,18 +20,18 @@ create table feed
 (
     id_feed            int auto_increment comment '피드 PK'
         primary key,
-    id_users           int                                   not null comment '사용자 FK',
-    image_url          text                                  null comment '썸네일 이미지 URL',
-    description        varchar(255)                          null comment '설명',
-    name               varchar(255)                          not null comment '피드 이름',
-    start_at           timestamp default current_timestamp() not null on update current_timestamp() comment '시작 시간',
-    end_at             timestamp                             null comment '종료 시간',
-    companion          varchar(255)                          null comment '동행자',
-    satisfaction       varchar(255)                          null comment '만족도',
-    place              varchar(255)                          null comment '장소',
-    created_date_time  datetime                              null comment '피드 생성 시간',
-    modified_date_time datetime                              null comment '피드 수정 시간',
-    deleted_date_time  datetime                              null comment '피드 삭제 시간',
+    id_users           int                                  not null comment '사용자 FK',
+    image_url          text                                 null comment '썸네일 이미지 URL',
+    description        varchar(255)                         null comment '설명',
+    name               varchar(255)                         not null comment '피드 이름',
+    start_at           datetime default current_timestamp() not null on update current_timestamp() comment '시작 시간',
+    end_at             datetime                             null comment '종료 시간',
+    companion          varchar(255)                         null comment '동행자',
+    satisfaction       varchar(255)                         null comment '만족도',
+    place              varchar(255)                         null comment '장소',
+    created_date_time  datetime                             null comment '기록 생성 시간',
+    modified_date_time datetime                             null comment '기록 수정 시간',
+    deleted_date_time  datetime                             null comment '피드 삭제 시간',
     constraint fk_feed_users
         foreign key (id_users) references users (id_users)
             on update cascade on delete cascade
@@ -47,7 +47,7 @@ create table notification
     status             varchar(20) default 'UNREAD'            not null comment '알림 상태(읽음/읽지 않음)',
     args               longtext collate utf8mb4_bin            null comment '인수'
         check (json_valid(`args`)),
-    created_dated_time datetime    default current_timestamp() not null comment '알림 생성 시간',
+    created_date_time  datetime    default current_timestamp() not null comment '알림 생성 시간',
     modified_date_time datetime    default current_timestamp() not null comment '알림 수정 시간',
     deleted_date_time  datetime                                null comment '알림 삭제 시간',
     constraint fk_notification_users_to
@@ -69,10 +69,10 @@ create table record
     weather            varchar(255)  not null comment '날씨',
     id_feed            int           not null comment '피드 FK',
     companion          varchar(255)  null comment '동행자',
-    created_date_time  datetime      null comment '기록 생성 시간',
-    modified_date_time datetime      null comment '기록 수정 시간',
     image_url          text          null comment '썸네일 이미지 URL',
     sequence           int default 0 not null comment '순서',
+    created_date_time  datetime      null comment '기록 생성 시간',
+    modified_date_time datetime      null comment '기록 수정 시간',
     deleted_date_time  datetime      null comment '기록 삭제 시간',
     constraint fk_record_feed
         foreign key (id_feed) references feed (id_feed)
@@ -84,12 +84,12 @@ create table comment
 (
     id_comment         int auto_increment comment '댓글 PK'
         primary key,
-    content            varchar(255) not null comment '댓글',
+    id_parent          int          null comment '원 댓글 PK',
     id_record          int          not null comment '기록 FK',
     id_users           int          not null comment '사용자 FK',
+    content            varchar(255) not null comment '댓글',
     created_date_time  datetime     null comment '댓글 생성 시간',
     modified_date_time datetime     null comment '댓글 수정 시간',
-    id_parent          int          null comment '원 댓글 PK',
     deleted_date_time  datetime     null comment '댓글 삭제 시간',
     constraint fk_comment_comment
         foreign key (id_parent) references comment (id_comment)
@@ -102,6 +102,24 @@ create table comment
             on delete cascade
 )
     comment '댓글';
+
+create table record_sequence
+(
+    id_sequence        int auto_increment comment '기록 순서 PK'
+        primary key,
+    id_feed            int                                  not null comment '피드 FK',
+    date               datetime                             not null comment '시간',
+    sequence           int                                  not null comment '순서',
+    created_date_time  datetime default current_timestamp() null comment '순서 생성 시간',
+    modified_date_time datetime default current_timestamp() null comment '순서 수정 시간',
+    deleted_date_time  datetime                             null comment '순서 삭제 시간',
+    constraint idx_feed_date
+        unique (id_feed, date),
+    constraint fk_sequence_feed
+        foreign key (id_feed) references feed (id_feed)
+            on delete cascade
+)
+    comment '기록 순서 테이블';
 
 create table user_record_like
 (
