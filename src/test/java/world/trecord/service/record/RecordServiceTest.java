@@ -425,7 +425,7 @@ class RecordServiceTest extends ContainerBaseTest {
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1));
 
         //when
-        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), viewer.getId());
+        RecordCommentsResponse response = recordService.getRecordComments(Optional.of(viewer.getId()), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getComments())
@@ -454,7 +454,7 @@ class RecordServiceTest extends ContainerBaseTest {
         commentRepository.softDeleteById(commentEntity2.getId());
 
         //when
-        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), commenter.getId());
+        RecordCommentsResponse response = recordService.getRecordComments(Optional.of(commenter.getId()), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getComments())
@@ -472,7 +472,7 @@ class RecordServiceTest extends ContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
-        RecordCommentsResponse response = recordService.getRecordComments(recordEntity.getId(), writer.getId());
+        RecordCommentsResponse response = recordService.getRecordComments(Optional.of(writer.getId()), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getComments()).isEmpty();

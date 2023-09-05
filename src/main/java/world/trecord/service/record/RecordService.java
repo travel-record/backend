@@ -115,7 +115,7 @@ public class RecordService {
         recordRepository.softDeleteById(recordId);
     }
 
-    public RecordCommentsResponse getRecordComments(Long recordId, Long viewerId) {
+    public RecordCommentsResponse getRecordComments(Optional<Long> viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
         List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
 

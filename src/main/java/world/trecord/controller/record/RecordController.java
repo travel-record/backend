@@ -42,8 +42,8 @@ public class RecordController {
     public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") Long recordId,
                                                                  @PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                                  @CurrentUser UserContext userContext) {
-        Long viewerId = (userContext != null) ? userContext.getId() : null;
-        return ApiResponse.ok(recordService.getRecordComments(recordId, viewerId));
+        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
+        return ApiResponse.ok(recordService.getRecordComments(viewerId, recordId));
     }
 
     @PostMapping
