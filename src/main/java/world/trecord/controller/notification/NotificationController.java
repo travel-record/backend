@@ -38,7 +38,7 @@ public class NotificationController {
 
     @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
     public SseEmitter connectNotification(@CurrentUser UserContext userContext) {
-        return sseEmitterService.connect(userContext.getId(), new SseEmitter(Duration.ofHours(6).toMillis()));
+        return sseEmitterService.connect(userContext.getId(), new SseEmitter(Duration.ofHours(3).toMillis()));
     }
 
     @GetMapping

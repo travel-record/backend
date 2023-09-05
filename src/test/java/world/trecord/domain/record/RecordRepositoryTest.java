@@ -79,7 +79,7 @@ class RecordRepositoryTest extends ContainerBaseTest {
     }
 
     @Test
-    @DisplayName("Select for update 쿼리가 날라가야 합니다")
+    @DisplayName("Select for update 쿼리가 날라가야한다")
     void findByIdForUpdateTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
@@ -99,10 +99,9 @@ class RecordRepositoryTest extends ContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity record1 = createRecord(feedEntity, 0);
-        RecordEntity record2 = createRecord(feedEntity, 0);
-        RecordEntity record3 = createRecord(feedEntity, 0);
-
+        RecordEntity record1 = createRecord(feedEntity, 1);
+        RecordEntity record2 = createRecord(feedEntity, 2);
+        RecordEntity record3 = createRecord(feedEntity, 3);
         recordRepository.saveAll(List.of(record1, record2, record3));
 
         //when

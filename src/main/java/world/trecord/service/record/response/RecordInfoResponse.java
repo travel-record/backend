@@ -7,6 +7,7 @@ import lombok.Setter;
 import world.trecord.domain.record.RecordEntity;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @NoArgsConstructor
 @Getter
@@ -29,11 +30,11 @@ public class RecordInfoResponse {
     private String imageUrl;
 
     @Builder
-    private RecordInfoResponse(RecordEntity recordEntity, Long viewerId, Boolean liked) {
+    private RecordInfoResponse(RecordEntity recordEntity, Optional<Long> viewerId, Boolean liked) {
         this.writerId = recordEntity.getFeedEntity().getUserEntity().getId();
         this.feedId = recordEntity.getFeedEntity().getId();
         this.recordId = recordEntity.getId();
-        this.isUpdatable = recordEntity.getFeedEntity().isManagedBy(viewerId);
+        this.isUpdatable = recordEntity.getFeedEntity().isManagedBy(viewerId.orElse(null));
         this.liked = liked;
         this.title = recordEntity.getTitle();
         this.date = recordEntity.convertDateToLocalDate();

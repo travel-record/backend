@@ -7,8 +7,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
-import world.trecord.controller.ApiResponse;
 import world.trecord.config.security.CurrentUser;
+import world.trecord.controller.ApiResponse;
 import world.trecord.service.record.RecordService;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordSequenceSwapRequest;
@@ -21,6 +21,8 @@ import world.trecord.service.userrecordlike.UserRecordLikeService;
 import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.service.users.UserContext;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/api/v1/records")
@@ -32,7 +34,7 @@ public class RecordController {
 
     @GetMapping("/{recordId}")
     public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable("recordId") Long recordId, @CurrentUser UserContext userContext) {
-        Long viewerId = (userContext != null) ? userContext.getId() : null;
+        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
         return ApiResponse.ok(recordService.getRecord(viewerId, recordId));
     }
 

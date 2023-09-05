@@ -10,8 +10,10 @@ import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.record.RecordSequenceEntity;
+import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
-import world.trecord.domain.users.UserRepository;
+import world.trecord.exception.CustomException;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.service.record.request.RecordUpdateRequest;
@@ -19,9 +21,10 @@ import world.trecord.service.record.response.RecordCommentsResponse;
 import world.trecord.service.record.response.RecordCreateResponse;
 import world.trecord.service.record.response.RecordInfoResponse;
 import world.trecord.service.record.response.RecordSequenceSwapResponse;
-import world.trecord.exception.CustomException;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static world.trecord.exception.CustomExceptionError.*;
 
@@ -31,13 +34,13 @@ import static world.trecord.exception.CustomExceptionError.*;
 public class RecordService {
 
     private final RecordRepository recordRepository;
-    private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final NotificationRepository notificationRepository;
     private final CommentRepository commentRepository;
+    private final RecordSequenceRepository recordSequenceRepository;
 
-    public RecordInfoResponse getRecord(Long viewerId, Long recordId) {
+    public RecordInfoResponse getRecord(Optional<Long> viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
         boolean liked = userLiked(recordEntity, viewerId);
 
@@ -49,13 +52,13 @@ public class RecordService {
     }
 
     @Transactional
-    public RecordCreateResponse createRecord(Long userId, RecordCreateRequest recordCreateRequest) {
-        FeedEntity feedEntity = findFeedOrException(recordCreateRequest.getFeedId());
+    public RecordCreateResponse createRecord(Long userId, RecordCreateRequest request) {
+        FeedEntity feedEntity = findFeedOrException(request.getFeedId());
 
-        doCheckPermissionOverFeed(feedEntity, userId);
+        doEnsureUserHasPermissionOverFeed(feedEntity, userId);
 
-        int nextSequence = getNextSequence(recordCreateRequest, feedEntity);
-        RecordEntity savedRecordEntity = recordRepository.save(recordCreateRequest.toEntity(feedEntity, nextSequence));
+        int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
+        RecordEntity savedRecordEntity = recordRepository.save(request.toEntity(feedEntity, nextSequence));
 
         return RecordCreateResponse.builder()
                 .writerEntity(feedEntity.getUserEntity())
@@ -65,33 +68,33 @@ public class RecordService {
 
     @Transactional
     public RecordInfoResponse updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
-        RecordEntity recordEntity = findRecordOrException(recordId);
+        RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
-        doCheckPermissionOverFeed(feedEntity, userId);
+        doEnsureUserHasPermissionOverFeed(feedEntity, userId);
 
         recordEntity.update(request.toUpdateEntity());
         recordRepository.saveAndFlush(recordEntity);
 
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
-                .viewerId(userId)
+                .viewerId(Optional.of(userId))
                 .build();
     }
 
-    // TODO 로직 변경
     @Transactional
     public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
+        // TODO
         RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
         RecordEntity targetRecord = findRecordForUpdateOrException(request.getTargetRecordId());
 
         doCheckHasSameFeed(originalRecord, targetRecord);
 
         FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
-        doCheckPermissionOverFeed(feedEntity, userId);
+
+        doEnsureUserHasPermissionOverFeed(feedEntity, userId);
 
         originalRecord.swapSequenceWith(targetRecord);
-
         recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
 
         return RecordSequenceSwapResponse.builder()
@@ -102,14 +105,13 @@ public class RecordService {
 
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
-        RecordEntity recordEntity = findRecordOrException(recordId);
+        RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
-        doCheckPermissionOverFeed(feedEntity, userId);
+        doEnsureUserHasPermissionOverFeed(feedEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
         userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
         notificationRepository.deleteAllByRecordEntityId(recordId);
-
         recordRepository.softDeleteById(recordId);
     }
 
@@ -127,9 +129,13 @@ public class RecordService {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
-    private int getNextSequence(RecordCreateRequest recordCreateRequest, FeedEntity feedEntity) {
-        // TODO 동시성 처리
-        return recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), recordCreateRequest.getDate()).orElse(0) + 1;
+    private int findNextSequence(Long feedId, LocalDateTime date) {
+        recordSequenceRepository.insertOrIncrement(feedId, date);
+
+        RecordSequenceEntity recordSequenceEntity = recordSequenceRepository.findByFeedEntityIdAndDate(feedId, date)
+                .orElseThrow(() -> new IllegalStateException("RecordSequence should exist after increment or insert"));
+
+        return recordSequenceEntity.getSequence();
     }
 
     private void doCheckHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
@@ -146,19 +152,15 @@ public class RecordService {
         return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
-    private void doCheckPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+    private void doEnsureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isManagedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }
 
-    private boolean userLiked(RecordEntity recordEntity, Long viewerId) {
-        if (viewerId == null) {
-            return false;
-        }
-
-        return userRepository.findById(viewerId)
-                .map(userEntity -> userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId()))
-                .orElseGet(() -> false);
+    private boolean userLiked(RecordEntity recordEntity, Optional<Long> viewerId) {
+        return viewerId
+                .filter(userId -> userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userId, recordEntity.getId()))
+                .isPresent();
     }
 }

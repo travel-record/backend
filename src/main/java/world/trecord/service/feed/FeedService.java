@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -29,6 +30,7 @@ public class FeedService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
+    private final RecordSequenceRepository recordSequenceRepository;
 
     // TODO pageable
     public FeedListResponse getFeedList(Long userId) {
@@ -81,6 +83,7 @@ public class FeedService {
         doCheckPermissionOverFeed(feedEntity, userId);
 
         recordRepository.deleteAllByFeedEntityId(feedId);
+        recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.softDeleteById(feedId);
     }
 

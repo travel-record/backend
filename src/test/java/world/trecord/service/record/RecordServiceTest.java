@@ -11,6 +11,7 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
@@ -27,6 +28,7 @@ import world.trecord.service.record.response.RecordInfoResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.exception.CustomExceptionError.*;
@@ -51,6 +53,9 @@ class RecordServiceTest extends ContainerBaseTest {
     CommentRepository commentRepository;
 
     @Autowired
+    RecordSequenceRepository recordSequenceRepository;
+
+    @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
 
     @Test
@@ -62,7 +67,7 @@ class RecordServiceTest extends ContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecord(writer.getId(), recordEntity.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecord(Optional.of(writer.getId()), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -87,7 +92,7 @@ class RecordServiceTest extends ContainerBaseTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecord(commenter1.getId(), recordEntity.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecord(Optional.of(commenter1.getId()), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -112,7 +117,7 @@ class RecordServiceTest extends ContainerBaseTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse response = recordService.getRecord(null, recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(Optional.empty(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response)
@@ -128,7 +133,7 @@ class RecordServiceTest extends ContainerBaseTest {
         long notExistingRecordId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.getRecord(viewerId, notExistingRecordId))
+        Assertions.assertThatThrownBy(() -> recordService.getRecord(Optional.of(viewerId), notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(RECORD_NOT_FOUND);
@@ -176,32 +181,26 @@ class RecordServiceTest extends ContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
         int sequence = 1;
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, sequence));
-
-        String title = "title";
-        String place = "jeju";
-        String feeling = "feeling";
-        String weather = "weather";
-        String satisfaction = "best";
-        String content = "content";
-        String companion = "companion";
+        recordSequenceRepository.insertOrIncrement(feedEntity.getId(), recordEntity.getDate());
 
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .feedId(feedEntity.getId())
-                .title(title)
+                .title("title")
                 .date(recordEntity.getDate())
-                .place(place)
-                .feeling(feeling)
-                .weather(weather)
-                .transportation(satisfaction)
-                .content(content)
-                .companion(companion)
+                .place("jeju")
+                .feeling("feeling")
+                .weather("weather")
+                .transportation("best")
+                .content("content")
+                .companion("companion")
                 .build();
 
         //when
         recordService.createRecord(writer.getId(), request);
 
         //then
-        Assertions.assertThat(recordRepository.findAll())
+        List<RecordEntity> all = recordRepository.findAll();
+        Assertions.assertThat(all)
                 .hasSize(2)
                 .extracting("sequence")
                 .containsExactly(sequence, sequence + 1);
@@ -373,7 +372,7 @@ class RecordServiceTest extends ContainerBaseTest {
         userRecordLikeRepository.save(createRecordLike(viewer, recordEntity));
 
         //when
-        RecordInfoResponse response = recordService.getRecord(viewer.getId(), recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(Optional.of(viewer.getId()), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isTrue();
@@ -389,7 +388,7 @@ class RecordServiceTest extends ContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
-        RecordInfoResponse response = recordService.getRecord(viewer.getId(), recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(Optional.of(viewer.getId()), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();
@@ -404,7 +403,7 @@ class RecordServiceTest extends ContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
-        RecordInfoResponse response = recordService.getRecord(null, recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(Optional.empty(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();
