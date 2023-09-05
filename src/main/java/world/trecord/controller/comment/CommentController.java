@@ -7,14 +7,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-import world.trecord.controller.ApiResponse;
 import world.trecord.config.security.CurrentUser;
+import world.trecord.controller.ApiResponse;
 import world.trecord.service.comment.CommentService;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.users.UserContext;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,8 +28,8 @@ public class CommentController {
     public ApiResponse<Page<CommentResponse>> getReplies(@PathVariable("commentId") Long commentId,
                                                          @PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                          @CurrentUser UserContext userContext) {
-        Long viewerId = (userContext != null) ? userContext.getId() : null;
-        return ApiResponse.ok(commentService.getReplies(commentId, viewerId, pageable));
+        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
+        return ApiResponse.ok(commentService.getReplies(viewerId, commentId, pageable));
     }
 
     @PostMapping

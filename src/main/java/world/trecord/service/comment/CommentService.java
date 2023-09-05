@@ -1,6 +1,7 @@
 package world.trecord.service.comment;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
-import world.trecord.service.sse.SseEmitterService;
+import world.trecord.service.notification.NotificationEvent;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,29 +36,30 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final RecordRepository recordRepository;
-    private final SseEmitterService sseEmitterService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createComment(Long userFromId, CommentCreateRequest request) {
         UserEntity userEntity = findUserOrException(userFromId);
         RecordEntity recordEntity = findRecordOrException(request.getRecordId());
-        CommentEntity parentCommentEntity = findCommentOrNull(request.getParentId());
+        Optional<CommentEntity> parentOptional = findCommentOrOptional(request.getParentId());
 
-        if (request.getParentId() != null && parentCommentEntity == null) {
+        if (request.getParentId() != null && parentOptional.isEmpty()) {
             throw new CustomException(COMMENT_NOT_FOUND);
         }
 
+        CommentEntity parentCommentEntity = parentOptional.orElse(null);
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
-        sseEmitterService.send(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity));
+        eventPublisher.publishEvent(new NotificationEvent(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity)));
     }
 
     @Transactional
     public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
-        CommentEntity commentEntity = findCommentWithUserOrException(commentId);
+        CommentEntity commentEntity = findCommentOrException(commentId);
 
-        doCheckPermissionOverComment(commentEntity, userId);
+        ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
         commentRepository.saveAndFlush(commentEntity);
@@ -69,22 +71,21 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
-        CommentEntity commentEntity = findCommentWithChildCommentsOrException(commentId);
+        CommentEntity commentEntity = findCommentOrException(commentId);
 
-        doCheckPermissionOverComment(commentEntity, userId);
+        ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntityId(commentId);
-
         commentRepository.softDeleteById(commentId);
     }
 
-    public Page<CommentResponse> getReplies(Long commentId, Long viewerId, Pageable pageable) {
+    public Page<CommentResponse> getReplies(Optional<Long> viewerId, Long commentId, Pageable pageable) {
         CommentEntity parentComment = findCommentOrException(commentId);
 
         return commentRepository.findByParentCommentEntityId(parentComment.getId(), pageable)
                 .map(it -> CommentResponse.builder()
                         .commentEntity(it)
-                        .viewerId(viewerId)
+                        .viewerId(viewerId.orElse(null))
                         .build());
     }
 
@@ -112,23 +113,14 @@ public class CommentService {
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 
-    private CommentEntity findCommentOrNull(Long parentId) {
-        return Optional.ofNullable(parentId)
-                .map(this::findCommentWithUserOrException)
-                .orElse(null);
+    private Optional<CommentEntity> findCommentOrOptional(Long parentId) {
+        if (parentId == null) {
+            return Optional.empty();
+        }
+        return commentRepository.findById(parentId);
     }
 
-    private CommentEntity findCommentWithChildCommentsOrException(Long commentId) {
-        return commentRepository.findWithChildCommentEntitiesById(commentId)
-                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
-    }
-
-    private CommentEntity findCommentWithUserOrException(Long commentId) {
-        return commentRepository.findWithUserEntityById(commentId)
-                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
-    }
-
-    private void doCheckPermissionOverComment(CommentEntity commentEntity, Long userId) {
+    private void ensureUserHasPermissionOverComment(CommentEntity commentEntity, Long userId) {
         if (!commentEntity.isCommenter(userId)) {
             throw new CustomException(FORBIDDEN);
         }

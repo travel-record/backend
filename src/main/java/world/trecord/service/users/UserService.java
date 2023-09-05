@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.exception.CustomException;
 import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.service.users.response.UserInfoResponse;
-import world.trecord.exception.CustomException;
 
 import java.util.Objects;
 
@@ -85,6 +85,6 @@ public class UserService {
     }
 
     private boolean isNicknameConstraintViolation(DataIntegrityViolationException ex) {
-        return ex.getMessage().contains("uk_users_nickname");
+        return ex.getCause() != null && ex.getCause().getMessage().contains("Duplicate entry");
     }
 }

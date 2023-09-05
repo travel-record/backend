@@ -1,10 +1,8 @@
 package world.trecord.exception;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-@Getter
 @RequiredArgsConstructor
 public enum CustomExceptionError {
 
@@ -28,14 +26,14 @@ public enum CustomExceptionError {
     private final String errorMsg;
 
     public int code() {
-        return errorCode;
+        return this.errorCode;
     }
 
     public String message() {
-        return errorMsg;
+        return this.errorMsg;
     }
 
     public HttpStatus status() {
-        return httpStatus;
+        return this.httpStatus;
     }
 }

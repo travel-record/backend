@@ -13,6 +13,7 @@ import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Transactional
 @IntegrationTestSupport
@@ -32,11 +33,9 @@ class FeedRepositoryTest extends ContainerBaseTest {
     void findByUserEntityOrderByStartAtDescTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
         FeedEntity feedEntity1 = createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity feedEntity2 = createFeed(userEntity, LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
         FeedEntity feedEntity3 = createFeed(userEntity, LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
-
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
 
         //when
@@ -64,11 +63,24 @@ class FeedRepositoryTest extends ContainerBaseTest {
     }
 
     @Test
+    @DisplayName("Select for update 쿼리를 날린다")
+    void findByIdForUpdateTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
+        //when
+        Optional<FeedEntity> byIdForUpdate = feedRepository.findByIdForUpdate(feedEntity.getId());
+
+        //then
+        Assertions.assertThat(byIdForUpdate).isNotEmpty();
+    }
+
+    @Test
     @DisplayName("피드를 soft delete 한다")
     void deleteFeedTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when

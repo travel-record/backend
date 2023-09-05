@@ -1,29 +1,30 @@
 package world.trecord.exception;
 
-import lombok.Getter;
-
-@Getter
 public class CustomException extends RuntimeException {
 
-    private CustomExceptionError error;
-    private String message;
-
-    public CustomException(CustomExceptionError error) {
-        this.error = error;
-    }
+    private final CustomExceptionError error;
+    private final String message;
 
     public CustomException(CustomExceptionError error, String message) {
         this.error = error;
         this.message = message;
     }
 
+    public CustomException(CustomExceptionError error) {
+        this(error, null);
+    }
+
     @Override
     public String getMessage() {
-        String errorMsg = error.getErrorMsg();
-        return message == null ? errorMsg : String.format("%s. %s", errorMsg, message);
+        String errorMsg = this.error.message();
+        return this.message == null ? errorMsg : String.format("%s. %s", errorMsg, message);
     }
 
     public String message() {
         return getMessage();
+    }
+
+    public CustomExceptionError error() {
+        return this.error;
     }
 }

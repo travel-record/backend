@@ -12,16 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
-
-    @EntityGraph(attributePaths = "userEntity")
-    Optional<CommentEntity> findWithUserEntityById(Long commentId);
-
-    @EntityGraph(attributePaths = "childCommentEntities")
-    Optional<CommentEntity> findWithChildCommentEntitiesById(Long commentId);
 
     @Query("SELECT re.id as recordId, re.title as recordTitle, ce.id as commentId, ce.content as content, ce.createdDateTime as createdDateTime " +
             "FROM CommentEntity ce " +

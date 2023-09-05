@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
@@ -18,7 +19,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.properties.JwtProperties;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -152,7 +152,7 @@ class NotificationControllerTest extends ContainerBaseTest {
                         get("/api/v1/notifications")
                 )
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -167,7 +167,7 @@ class NotificationControllerTest extends ContainerBaseTest {
                                 .header(AUTHORIZATION, createToken(invalidToken))
                 )
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -216,7 +216,7 @@ class NotificationControllerTest extends ContainerBaseTest {
                                 .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.getErrorCode()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -258,7 +258,8 @@ class NotificationControllerTest extends ContainerBaseTest {
                                 .queryParam("token", createToken(userEntity.getId()))
                 )
                 .andDo(print())
-                .andExpect(status().isNotAcceptable());
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test

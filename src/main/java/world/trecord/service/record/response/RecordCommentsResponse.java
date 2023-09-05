@@ -45,7 +45,7 @@ public class RecordCommentsResponse {
         private Comment(CommentEntity commentEntity, Long viewerId) {
             this.commentId = commentEntity.getId();
             this.content = commentEntity.getContent();
-            this.isUpdatable = commentEntity.getUserEntity().getId().equals(viewerId);
+            this.isUpdatable = commentEntity.isCommenter(viewerId);
             this.commentCreatedDate = commentEntity.getCreatedDateTime();
             this.commenterId = commentEntity.getUserEntity().getId();
             this.commenterImageUrl = commentEntity.getUserEntity().getImageUrl();

@@ -16,9 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
-import world.trecord.config.security.JwtTokenFilter;
-import world.trecord.config.security.JwtTokenHandler;
-import world.trecord.properties.JwtProperties;
+import world.trecord.config.properties.JwtProperties;
 import world.trecord.service.users.UserContext;
 import world.trecord.service.users.UserService;
 
@@ -105,7 +103,7 @@ class JwtTokenFilterMockTest {
         verify(mockPrintWriter).write(responseContentCaptor.capture());
 
         String responseBody = responseContentCaptor.getValue();
-        Assertions.assertThat(responseBody).contains(String.valueOf(INVALID_TOKEN.getErrorCode()));
+        Assertions.assertThat(responseBody).contains(String.valueOf(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -152,7 +150,7 @@ class JwtTokenFilterMockTest {
         verify(mockPrintWriter).write(responseContentCaptor.capture());
 
         String responseBody = responseContentCaptor.getValue();
-        Assertions.assertThat(responseBody).contains(String.valueOf(INVALID_TOKEN.getErrorCode()));
+        Assertions.assertThat(responseBody).contains(String.valueOf(INVALID_TOKEN.code()));
     }
 
     @Test
@@ -204,6 +202,6 @@ class JwtTokenFilterMockTest {
         verify(mockPrintWriter).write(responseContentCaptor.capture());
 
         String responseBody = responseContentCaptor.getValue();
-        Assertions.assertThat(responseBody).contains(String.valueOf(INVALID_TOKEN.getErrorCode()));
+        Assertions.assertThat(responseBody).contains(String.valueOf(INVALID_TOKEN.code()));
     }
 }

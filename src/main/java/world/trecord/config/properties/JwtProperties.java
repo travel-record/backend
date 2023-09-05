@@ -1,4 +1,4 @@
-package world.trecord.properties;
+package world.trecord.config.properties;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

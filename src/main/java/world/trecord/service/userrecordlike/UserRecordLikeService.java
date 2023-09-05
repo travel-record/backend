@@ -1,6 +1,7 @@
 package world.trecord.service.userrecordlike;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.NotificationArgs;
@@ -11,10 +12,10 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.exception.CustomException;
+import world.trecord.service.notification.NotificationEvent;
 import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
-import world.trecord.exception.CustomException;
-import world.trecord.service.sse.SseEmitterService;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class UserRecordLikeService {
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final RecordRepository recordRepository;
     private final UserRepository userRepository;
-    private final SseEmitterService sseEmitterService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UserRecordLikeResponse toggleLike(Long userId, Long recordId) {
@@ -54,14 +55,14 @@ public class UserRecordLikeService {
 
     private UserRecordLikeResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
         userRecordLikeRepository.softDeleteById(userRecordLikeEntity.getId());
-        return doBuildLikeResponse(false);
+        return buildLikeResponse(false);
     }
 
     private UserRecordLikeResponse like(UserEntity userEntity, RecordEntity recordEntity) {
         saveRecordLike(userEntity, recordEntity);
         Long userToId = recordEntity.getFeedEntity().getUserEntity().getId();
-        sseEmitterService.send(userToId, userEntity.getId(), RECORD_LIKE, doBuildNotificationArgs(userEntity, recordEntity));
-        return doBuildLikeResponse(true);
+        eventPublisher.publishEvent(new NotificationEvent(userToId, userEntity.getId(), RECORD_LIKE, buildNotificationArgs(userEntity, recordEntity)));
+        return buildLikeResponse(true);
     }
 
     private void saveRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
@@ -73,7 +74,7 @@ public class UserRecordLikeService {
         userRecordLikeRepository.save(userRecordLikeEntity);
     }
 
-    private UserRecordLikeResponse doBuildLikeResponse(boolean liked) {
+    private UserRecordLikeResponse buildLikeResponse(boolean liked) {
         return UserRecordLikeResponse.builder()
                 .liked(liked)
                 .build();
@@ -87,7 +88,7 @@ public class UserRecordLikeService {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
-    private NotificationArgs doBuildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {
+    private NotificationArgs buildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {
         return NotificationArgs.builder()
                 .recordEntity(recordEntity)
                 .userFromEntity(userEntity)

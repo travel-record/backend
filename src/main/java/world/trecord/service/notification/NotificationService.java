@@ -31,13 +31,13 @@ public class NotificationService {
 
     public CheckNewNotificationResponse checkUnreadNotifications(Long userId) {
         boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userId, UNREAD);
-        return doBuildNewNotificationResponse(hasNewNotification);
+        return buildNewNotificationResponse(hasNewNotification);
     }
 
     @Transactional
     public NotificationEntity createNotification(Long userToId, NotificationType type, NotificationArgs args) {
         UserEntity userToEntity = userRepository.findById(userToId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-        return notificationRepository.save(doBuildNotification(type, args, userToEntity));
+        return notificationRepository.save(buildNotificationEntity(type, args, userToEntity));
     }
 
     @Transactional
@@ -66,17 +66,17 @@ public class NotificationService {
         return response;
     }
 
-    private CheckNewNotificationResponse doBuildNewNotificationResponse(boolean hasNewNotification) {
+    private void markNotificationsAsRead(Long userId) {
+        notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
+    }
+
+    private CheckNewNotificationResponse buildNewNotificationResponse(boolean hasNewNotification) {
         return CheckNewNotificationResponse.builder()
                 .hasNewNotification(hasNewNotification)
                 .build();
     }
 
-    private void markNotificationsAsRead(Long userId) {
-        notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
-    }
-
-    private NotificationEntity doBuildNotification(NotificationType type, NotificationArgs args, UserEntity userToEntity) {
+    private NotificationEntity buildNotificationEntity(NotificationType type, NotificationArgs args, UserEntity userToEntity) {
         return NotificationEntity.builder()
                 .usersToEntity(userToEntity)
                 .args(args)

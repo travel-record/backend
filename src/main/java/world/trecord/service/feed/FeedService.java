@@ -6,18 +6,20 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.service.feed.response.FeedCreateResponse;
-import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedUpdateResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
+import world.trecord.service.feed.response.FeedListResponse;
+import world.trecord.service.feed.response.FeedUpdateResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 import static world.trecord.exception.CustomExceptionError.*;
 
@@ -29,6 +31,7 @@ public class FeedService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
+    private final RecordSequenceRepository recordSequenceRepository;
 
     // TODO pageable
     public FeedListResponse getFeedList(Long userId) {
@@ -39,13 +42,13 @@ public class FeedService {
                 .build();
     }
 
-    public FeedInfoResponse getFeed(Long viewerId, Long feedId) {
+    public FeedInfoResponse getFeed(Optional<Long> viewerId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedId);
 
         return FeedInfoResponse.builder()
                 .feedEntity(feedEntity)
-                .viewerId(viewerId)
+                .viewerId(viewerId.orElse(null))
                 .projectionList(projectionList)
                 .build();
     }
@@ -62,9 +65,9 @@ public class FeedService {
 
     @Transactional
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
-        FeedEntity feedEntity = findFeedOrException(feedId);
+        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
-        doCheckPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverFeed(feedEntity, userId);
 
         feedEntity.update(request.toUpdateEntity());
         feedRepository.saveAndFlush(feedEntity);
@@ -76,16 +79,16 @@ public class FeedService {
 
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = findFeedOrException(feedId);
+        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
-        doCheckPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverFeed(feedEntity, userId);
 
         recordRepository.deleteAllByFeedEntityId(feedId);
-
+        recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.softDeleteById(feedId);
     }
 
-    private void doCheckPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isManagedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
@@ -93,5 +96,9 @@ public class FeedService {
 
     private FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    }
+
+    private FeedEntity findFeedForUpdateOrException(Long feedId) {
+        return feedRepository.findByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 }

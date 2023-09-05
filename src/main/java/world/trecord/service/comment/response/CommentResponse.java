@@ -8,7 +8,6 @@ import lombok.Setter;
 import world.trecord.domain.comment.CommentEntity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @NoArgsConstructor
 @Getter
@@ -30,7 +29,7 @@ public class CommentResponse {
         this.parentId = commentEntity.getParentCommentEntity() != null ? commentEntity.getParentCommentEntity().getId() : null;
         this.commentId = commentEntity.getId();
         this.content = commentEntity.getContent();
-        this.isEditable = Objects.equals(viewerId, commentEntity.getUserEntity().getId());
+        this.isEditable = commentEntity.isCommenter(viewerId);
         this.createdDateTime = commentEntity.getCreatedDateTime();
     }
 }

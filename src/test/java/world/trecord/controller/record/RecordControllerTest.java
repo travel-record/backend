@@ -5,9 +5,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.properties.JwtProperties;
+import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -20,16 +21,16 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.properties.JwtProperties;
 import world.trecord.service.record.RecordService;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.service.record.request.RecordUpdateRequest;
-import world.trecord.config.security.JwtTokenHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -83,7 +84,7 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", createToken(writer.getId()))
+                                .header(AUTHORIZATION, createToken(writer.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
@@ -122,11 +123,11 @@ class RecordControllerTest extends ContainerBaseTest {
         //when // then
         mockMvc.perform(
                         get("/api/v1/records/{recordId}", 0L)
-                                .header("Authorization", invalidToken)
+                                .header(AUTHORIZATION, invalidToken)
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()))
-                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.getErrorMsg()));
+                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.message()));
     }
 
     @Test
@@ -155,13 +156,12 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header("Authorization", createToken(writer.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(writer.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()))
-                .andExpect(jsonPath("$.message").value(INVALID_ARGUMENT.getErrorMsg()));
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
     }
 
     @Test
@@ -198,8 +198,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header("Authorization", createToken(writer.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(writer.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
@@ -242,8 +242,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header("Authorization", createToken(viewer.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(viewer.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isForbidden())
@@ -285,8 +285,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", createToken(writer.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(writer.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk())
@@ -322,8 +322,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", createToken(other.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(other.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isForbidden())
@@ -352,8 +352,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
-                                .header("Authorization", createToken(writer.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(writer.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
@@ -391,8 +391,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
-                                .header("Authorization", createToken(writer.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(writer.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
@@ -419,8 +419,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
-                                .header("Authorization", createToken(other.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(other.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isForbidden())
@@ -445,8 +445,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/swap")
-                                .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, token)
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isNotFound())
@@ -466,8 +466,8 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", 0L)
-                                .header("Authorization", token)
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, token)
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
@@ -510,7 +510,7 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         delete("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header("Authorization", token)
+                                .header(AUTHORIZATION, token)
                 )
                 .andExpect(status().isOk());
 
@@ -534,7 +534,7 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/{recordId}/like", recordEntity.getId())
-                                .header("Authorization", token)
+                                .header(AUTHORIZATION, token)
                 )
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -557,7 +557,7 @@ class RecordControllerTest extends ContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/{recordId}/like", recordEntity.getId())
-                                .header("Authorization", token)
+                                .header(AUTHORIZATION, token)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.liked").value(true));

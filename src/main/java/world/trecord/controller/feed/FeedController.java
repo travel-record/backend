@@ -7,8 +7,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
-import world.trecord.controller.ApiResponse;
 import world.trecord.config.security.CurrentUser;
+import world.trecord.controller.ApiResponse;
 import world.trecord.service.feed.FeedService;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
@@ -17,6 +17,8 @@ import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
 import world.trecord.service.feed.response.FeedUpdateResponse;
 import world.trecord.service.users.UserContext;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -34,22 +36,22 @@ public class FeedController {
 
     @GetMapping("/{feedId}")
     public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserContext userContext) {
-        Long viewerId = (userContext != null) ? userContext.getId() : null;
+        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
 
     @PostMapping
-    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest feedCreateRequest, @CurrentUser UserContext userContext) throws BindException {
-        feedValidator.verify(feedCreateRequest);
-        return ApiResponse.ok(feedService.createFeed(userContext.getId(), feedCreateRequest));
+    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request, @CurrentUser UserContext userContext) throws BindException {
+        feedValidator.verify(request);
+        return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
     }
 
     @PutMapping("/{feedId}")
     public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId,
-                                                      @RequestBody @Valid FeedUpdateRequest feedUpdateRequest,
+                                                      @RequestBody @Valid FeedUpdateRequest request,
                                                       @CurrentUser UserContext userContext) throws BindException {
-        feedValidator.verify(feedUpdateRequest);
-        return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, feedUpdateRequest));
+        feedValidator.verify(request);
+        return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, request));
     }
 
     @DeleteMapping("/{feedId}")
