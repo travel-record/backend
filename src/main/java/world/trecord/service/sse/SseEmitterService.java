@@ -2,16 +2,9 @@ package world.trecord.service.sse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import world.trecord.domain.notification.NotificationArgs;
-import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.NotificationType;
 import world.trecord.exception.CustomException;
-import world.trecord.service.notification.NotificationService;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,29 +22,22 @@ public class SseEmitterService {
     private AtomicInteger currentConnections = new AtomicInteger(0);
 
     private final SseEmitterRepository sseEmitterRepository;
-    private final NotificationService notificationService;
 
-    @Async("sseTaskExecutor")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void send(Long userToId, Long userFromId, NotificationType type, NotificationArgs args) {
-        // TODO
-//        if (Objects.equals(userToId, userFromId)) {
-//            return;
-//        }
+    public void send(SseEmitterEvent sseEmitterEvent, Long eventId) {
 
-        log.info("Starting send method with userToId: [{}], userFromId: [{}]", userToId, userFromId);
+        Long userToId = sseEmitterEvent.getRecipientId();
+        Long userFromId = sseEmitterEvent.getSenderId();
 
-        NotificationEntity notificationEntity = notificationService.createNotification(userToId, type, args);
-        log.info("NotificationEntity created with ID: [{}]", notificationEntity.getId());
+        log.info("Starting send sse with userToId: [{}] and userFromId: [{}]", userToId, userFromId);
 
         sseEmitterRepository.findByUserId(userToId).ifPresentOrElse(emitter -> {
                     try {
                         log.info("Emitter found for userToId: [{}]. Sending notification...", userToId);
                         emitter.send(SseEmitter.event()
-                                .id(notificationEntity.getId().toString())
+                                .id(eventId.toString())
                                 .name(EVENT_NAME)
-                                .data(buildNotificationEvent(notificationEntity)));
-                        log.info("Successfully sent notification with ID: [{}] to emitter for userToId: [{}]", notificationEntity.getId(), userToId);
+                                .data(sseEmitterEvent));
+                        log.info("Successfully sent notification with ID: [{}] to emitter for userToId: [{}]", eventId, userToId);
 
                     } catch (IOException ex) {
                         log.error("Error while sending notification to emitter for userToId: [{}]. Removing emitter.", userToId, ex);
@@ -62,7 +48,7 @@ public class SseEmitterService {
                 () -> log.info("No emitter found for userToId: [{}]", userToId)
         );
 
-        log.info("Finished send method for userToId: [{}] and userFromId: [{}]", userToId, userFromId);
+        log.info("Finished send sse for userToId: [{}] and userFromId: [{}]", userToId, userFromId);
     }
 
     public SseEmitter connect(Long userId, SseEmitter emitter) {
@@ -133,11 +119,5 @@ public class SseEmitterService {
 
     private void decrementConnection() {
         currentConnections.decrementAndGet();
-    }
-
-    private SseNotificationEvent buildNotificationEvent(NotificationEntity notificationEntity) {
-        return SseNotificationEvent.builder()
-                .notificationEntity(notificationEntity)
-                .build();
     }
 }

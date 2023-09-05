@@ -84,7 +84,6 @@ public class RecordService {
 
     @Transactional
     public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
-        // TODO
         RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
         RecordEntity targetRecord = findRecordForUpdateOrException(request.getTargetRecordId());
 

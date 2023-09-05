@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
-import world.trecord.properties.JwtProperties;
+import world.trecord.config.properties.JwtProperties;
 import world.trecord.service.users.UserContext;
 import world.trecord.service.users.UserService;
 

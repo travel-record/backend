@@ -1,6 +1,7 @@
 package world.trecord.service.comment;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
-import world.trecord.service.sse.SseEmitterService;
+import world.trecord.service.notification.NotificationEvent;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final RecordRepository recordRepository;
-    private final SseEmitterService sseEmitterService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createComment(Long userFromId, CommentCreateRequest request) {
@@ -48,11 +49,10 @@ public class CommentService {
         }
 
         CommentEntity parentCommentEntity = parentOptional.orElse(null);
-
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
-        sseEmitterService.send(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity));
+        eventPublisher.publishEvent(new NotificationEvent(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity)));
     }
 
     @Transactional

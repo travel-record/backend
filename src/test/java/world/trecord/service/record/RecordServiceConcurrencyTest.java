@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.users.UserEntity;
@@ -110,20 +109,6 @@ class RecordServiceConcurrencyTest extends ContainerBaseTest {
                 .name("name")
                 .startAt(LocalDateTime.of(2022, 9, 30, 0, 0))
                 .endAt(LocalDateTime.of(2022, 10, 2, 0, 0))
-                .build();
-    }
-
-    private RecordEntity createRecord(FeedEntity feedEntity, int sequence) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .title("record")
-                .place("place")
-                .date(LocalDateTime.of(2022, 10, 1, 0, 0))
-                .content("content")
-                .weather("weather")
-                .transportation("satisfaction")
-                .feeling("feeling")
-                .sequence(sequence)
                 .build();
     }
 

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.controller.auth.request.GoogleLoginRequest;
 import world.trecord.controller.auth.request.RefreshTokenRequest;
@@ -14,7 +15,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.properties.JwtProperties;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

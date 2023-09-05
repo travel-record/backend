@@ -12,8 +12,8 @@ import world.trecord.client.feign.client.GoogleUserInfoFeignClient;
 import world.trecord.client.feign.client.request.GoogleTokenRequest;
 import world.trecord.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.client.feign.client.response.GoogleUserInfoResponse;
+import world.trecord.config.properties.GoogleProperties;
 import world.trecord.exception.CustomException;
-import world.trecord.properties.GoogleProperties;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

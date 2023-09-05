@@ -1,6 +1,7 @@
 package world.trecord.service.sse;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,12 +17,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SseNotificationEvent {
+public class SseEmitterEvent {
 
     private NotificationType type;
     private NotificationStatus status;
     private Long recordId;
     private Long commentId;
+    @JsonIgnore
+    private Long recipientId;
     private Long parentCommentId;
     private Long senderId;
     private String senderNickname;
@@ -31,11 +34,12 @@ public class SseNotificationEvent {
     private LocalDateTime date;
 
     @Builder
-    private SseNotificationEvent(NotificationEntity notificationEntity) {
+    private SseEmitterEvent(NotificationEntity notificationEntity) {
         this.type = notificationEntity.getType();
         this.status = notificationEntity.getStatus();
         this.recordId = notificationEntity.getArgs().getRecordId();
         this.commentId = notificationEntity.getArgs().getCommentId();
+        this.recipientId = notificationEntity.getUsersToEntity().getId();
         this.parentCommentId = notificationEntity.getArgs().getParentCommentId();
         this.senderId = notificationEntity.getArgs().getUserFromId();
         this.senderNickname = notificationEntity.getArgs().getUserFromNickname();

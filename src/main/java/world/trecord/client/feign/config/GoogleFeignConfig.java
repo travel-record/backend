@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import world.trecord.client.feign.decoder.GoogleFeignErrorDecoder;
-import world.trecord.properties.GoogleProperties;
+import world.trecord.config.properties.GoogleProperties;
 
 @RequiredArgsConstructor
 @Configuration

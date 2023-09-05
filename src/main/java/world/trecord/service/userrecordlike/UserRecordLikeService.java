@@ -1,6 +1,7 @@
 package world.trecord.service.userrecordlike;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.NotificationArgs;
@@ -12,7 +13,7 @@ import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
-import world.trecord.service.sse.SseEmitterService;
+import world.trecord.service.notification.NotificationEvent;
 import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -30,7 +31,7 @@ public class UserRecordLikeService {
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final RecordRepository recordRepository;
     private final UserRepository userRepository;
-    private final SseEmitterService sseEmitterService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UserRecordLikeResponse toggleLike(Long userId, Long recordId) {
@@ -60,7 +61,7 @@ public class UserRecordLikeService {
     private UserRecordLikeResponse like(UserEntity userEntity, RecordEntity recordEntity) {
         saveRecordLike(userEntity, recordEntity);
         Long userToId = recordEntity.getFeedEntity().getUserEntity().getId();
-        sseEmitterService.send(userToId, userEntity.getId(), RECORD_LIKE, buildNotificationArgs(userEntity, recordEntity));
+        eventPublisher.publishEvent(new NotificationEvent(userToId, userEntity.getId(), RECORD_LIKE, buildNotificationArgs(userEntity, recordEntity)));
         return buildLikeResponse(true);
     }
 

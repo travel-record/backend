@@ -3,10 +3,13 @@ package world.trecord.service.comment;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -24,11 +27,13 @@ import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
+import world.trecord.service.notification.NotificationEventListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.exception.CustomExceptionError.*;
@@ -54,6 +59,9 @@ class CommentServiceTest extends ContainerBaseTest {
 
     @Autowired
     NotificationRepository notificationRepository;
+
+    @MockBean
+    NotificationEventListener mockEventListener;
 
     @Test
     @DisplayName("사용자가 기록에 댓글을 작성하면 댓글 상세 정보를 반환한다")
@@ -97,6 +105,40 @@ class CommentServiceTest extends ContainerBaseTest {
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("다른 사람의 기록에 댓글을 작성하면 비동기로 알림이 생성된다")
+    void createCommentNotificationWhenCommentOnOtherRecordTest() throws Exception {
+        //given
+        UserEntity author = userRepository.save(createUser("test@email.com"));
+        UserEntity commenter = userRepository.save(createUser("test1@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .content("content")
+                .build();
+
+        //when
+        commentService.createComment(commenter.getId(), request);
+
+        //then
+        Awaitility.await().atMost(1, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(mockEventListener, Mockito.times(1)).handleNotificationEventListener(Mockito.any()));
+    }
+
+
+    @Test
+    @DisplayName("자신의 기록에 댓글을 남기면 알림이 전송되지 않는다")
+    void test() throws Exception {
+        // TODO
+        //given
+
+        //when
+
+        //then
     }
 
     @Test

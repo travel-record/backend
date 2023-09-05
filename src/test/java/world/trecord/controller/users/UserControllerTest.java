@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
@@ -19,7 +20,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.ContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.properties.JwtProperties;
 import world.trecord.service.users.request.UserUpdateRequest;
 
 import java.time.LocalDateTime;

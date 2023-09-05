@@ -1,11 +1,13 @@
 package world.trecord.service.comment;
 
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
@@ -16,10 +18,10 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
+import world.trecord.service.notification.NotificationEventListener;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -43,6 +45,9 @@ class CommentServiceAsyncTest {
 
     @Autowired
     NotificationRepository notificationRepository;
+
+    @MockBean
+    private NotificationEventListener mockEventListener;
 
     @AfterEach
     void tearDown() {
@@ -68,15 +73,11 @@ class CommentServiceAsyncTest {
                 .build();
 
         //when
-        log.info("createComment started in thread: {}", Thread.currentThread().getName());
-        final CountDownLatch latch = new CountDownLatch(1);
-
         commentService.createComment(commenter.getId(), request);
-        latch.await(1, TimeUnit.SECONDS);
-        log.info("createComment ended in thread: {}", Thread.currentThread().getName());
 
         //then
-        Assertions.assertThat(notificationRepository.findAll()).hasSize(1);
+        Awaitility.await().atMost(1, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(mockEventListener, Mockito.times(1)).handleNotificationEventListener(Mockito.any()));
     }
 
     private UserEntity createUser() {
