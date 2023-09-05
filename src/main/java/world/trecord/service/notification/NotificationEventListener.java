@@ -37,7 +37,7 @@ public class NotificationEventListener {
 
         NotificationEntity notificationEntity = notificationService.createNotification(userToId, type, args);
         log.info("NotificationEntity created with ID: [{}]", notificationEntity.getId());
-        sseEmitterService.send(buildSseEmitterEvent(notificationEntity), notificationEntity.getId());
+        sseEmitterService.send(notificationEntity.getId(), buildSseEmitterEvent(notificationEntity));
     }
 
     private SseEmitterEvent buildSseEmitterEvent(NotificationEntity notificationEntity) {

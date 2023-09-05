@@ -17,14 +17,12 @@ import static world.trecord.exception.CustomExceptionError.NOTIFICATION_CONNECT_
 @Component
 public class SseEmitterService {
 
-    public final static String EVENT_NAME = "notification";
+    public static final String EVENT_NAME = "notification";
     private static final int MAX_CONNECTIONS = 1000;
-    private AtomicInteger currentConnections = new AtomicInteger(0);
-
+    private final AtomicInteger currentConnections = new AtomicInteger(0);
     private final SseEmitterRepository sseEmitterRepository;
 
-    public void send(SseEmitterEvent sseEmitterEvent, Long eventId) {
-
+    public void send(Long eventId, SseEmitterEvent sseEmitterEvent) {
         Long userToId = sseEmitterEvent.getRecipientId();
         Long userFromId = sseEmitterEvent.getSenderId();
 
@@ -38,7 +36,6 @@ public class SseEmitterService {
                                 .name(EVENT_NAME)
                                 .data(sseEmitterEvent));
                         log.info("Successfully sent notification with ID: [{}] to emitter for userToId: [{}]", eventId, userToId);
-
                     } catch (IOException ex) {
                         log.error("Error while sending notification to emitter for userToId: [{}]. Removing emitter.", userToId, ex);
                         releaseExternalResources(userFromId);
