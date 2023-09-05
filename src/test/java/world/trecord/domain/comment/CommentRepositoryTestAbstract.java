@@ -12,7 +12,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @Transactional
 @IntegrationTestSupport
-class CommentRepositoryTest extends ContainerBaseTest {
+class CommentRepositoryTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     CommentRepository commentRepository;

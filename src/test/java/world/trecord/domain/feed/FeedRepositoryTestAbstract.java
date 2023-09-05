@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Transactional
 @IntegrationTestSupport
-class FeedRepositoryTest extends ContainerBaseTest {
+class FeedRepositoryTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

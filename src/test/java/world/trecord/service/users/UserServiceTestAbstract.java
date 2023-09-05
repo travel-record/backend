@@ -11,7 +11,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.service.users.response.UserInfoResponse;
@@ -22,7 +22,7 @@ import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 @Slf4j
 @Transactional
 @IntegrationTestSupport
-class UserServiceTest extends ContainerBaseTest {
+class UserServiceTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     UserService userService;

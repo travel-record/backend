@@ -19,7 +19,7 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.service.record.RecordService;
 import world.trecord.service.record.request.RecordCreateRequest;
@@ -39,7 +39,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @MockMvcTestSupport
-class RecordControllerTest extends ContainerBaseTest {
+class RecordControllerTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

@@ -15,7 +15,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.CommentService;
 import world.trecord.service.notification.response.CheckNewNotificationResponse;
@@ -35,7 +35,7 @@ import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
 
 @Transactional
 @IntegrationTestSupport
-class NotificationServiceTest extends ContainerBaseTest {
+class NotificationServiceTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

@@ -20,7 +20,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
@@ -40,7 +40,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @IntegrationTestSupport
-class CommentServiceTest extends ContainerBaseTest {
+class CommentServiceTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

@@ -16,7 +16,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
@@ -31,7 +31,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @MockMvcTestSupport
-class FeedControllerTest extends ContainerBaseTest {
+class FeedControllerTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

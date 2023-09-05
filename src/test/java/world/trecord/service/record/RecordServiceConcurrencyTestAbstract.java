@@ -11,7 +11,7 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.response.RecordCreateResponse;
@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 
 @IntegrationTestSupport
-class RecordServiceConcurrencyTest extends ContainerBaseTest {
+class RecordServiceConcurrencyTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     RecordService recordService;

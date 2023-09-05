@@ -17,7 +17,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 
 import java.time.LocalDateTime;
@@ -40,7 +40,7 @@ import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Transactional
 @MockMvcTestSupport
-class NotificationControllerTest extends ContainerBaseTest {
+class NotificationControllerTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

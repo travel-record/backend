@@ -11,7 +11,7 @@ import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @Transactional
 @IntegrationTestSupport
-class RecordRepositoryTest extends ContainerBaseTest {
+class RecordRepositoryTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
-import world.trecord.infra.ContainerBaseTest;
+import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @MockMvcTestSupport
-class PingControllerTest extends ContainerBaseTest {
+class PingControllerTestAbstract extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;
