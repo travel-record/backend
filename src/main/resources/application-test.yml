@@ -1,0 +1,11 @@
+spring.jpa:
+  hibernate:
+    ddl-auto: create
+  show-sql: true
+  properties:
+    hibernate:
+      format_sql: true
+
+google:
+  oauth2.endpoint: "http://localhost:8089"
+  api.baseUrl: "http://localhost:8089"

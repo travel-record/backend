@@ -11,6 +11,10 @@ spring.jpa:
     ddl-auto: none # Do not change
   open-in-view: false
 
+spring.data:
+  redis:
+    url: redis://:1234@localhost:6379
+
 feign:
   client.config.default:
     connectTimeout: 1000
@@ -38,18 +42,3 @@ spring.jpa:
   properties:
     hibernate:
       format_sql: true
-
----
-spring.config.activate.on-profile: test
-
-spring.jpa:
-  hibernate:
-    ddl-auto: create
-  show-sql: true
-  properties:
-    hibernate:
-      format_sql: true
-
-google:
-  oauth2.endpoint: "http://localhost:8089"
-  api.baseUrl: "http://localhost:8089"
