@@ -85,7 +85,7 @@ public class CommentService {
         return commentRepository.findByParentCommentEntityId(parentComment.getId(), pageable)
                 .map(it -> CommentResponse.builder()
                         .commentEntity(it)
-                        .viewerId(viewerId)
+                        .viewerId(viewerId.orElse(null))
                         .build());
     }
 

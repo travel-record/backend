@@ -48,7 +48,7 @@ public class FeedService {
 
         return FeedInfoResponse.builder()
                 .feedEntity(feedEntity)
-                .viewerId(viewerId)
+                .viewerId(viewerId.orElse(null))
                 .projectionList(projectionList)
                 .build();
     }

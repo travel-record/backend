@@ -11,7 +11,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @NoArgsConstructor
 @Setter
@@ -31,10 +30,10 @@ public class FeedInfoResponse {
     private List<Record> records;
 
     @Builder
-    private FeedInfoResponse(FeedEntity feedEntity, Optional<Long> viewerId, List<RecordWithFeedProjection> projectionList) {
+    private FeedInfoResponse(FeedEntity feedEntity, Long viewerId, List<RecordWithFeedProjection> projectionList) {
         this.writerId = feedEntity.getUserEntity().getId();
         this.feedId = feedEntity.getId();
-        this.isUpdatable = feedEntity.isManagedBy(viewerId.orElse(null));
+        this.isUpdatable = feedEntity.isManagedBy(viewerId);
         this.name = feedEntity.getName();
         this.imageUrl = feedEntity.getImageUrl();
         this.description = feedEntity.getDescription();

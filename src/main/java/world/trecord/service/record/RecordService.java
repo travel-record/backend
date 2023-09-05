@@ -46,7 +46,7 @@ public class RecordService {
 
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
-                .viewerId(viewerId)
+                .viewerId(viewerId.orElse(null))
                 .liked(liked)
                 .build();
     }
@@ -78,7 +78,7 @@ public class RecordService {
 
         return RecordInfoResponse.builder()
                 .recordEntity(recordEntity)
-                .viewerId(Optional.of(userId))
+                .viewerId(userId)
                 .build();
     }
 
@@ -121,7 +121,7 @@ public class RecordService {
 
         return RecordCommentsResponse.builder()
                 .commentEntities(commentEntities)
-                .viewerId(viewerId)
+                .viewerId(viewerId.orElse(null))
                 .build();
     }
 

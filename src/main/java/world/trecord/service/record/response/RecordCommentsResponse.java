@@ -9,7 +9,6 @@ import world.trecord.domain.comment.CommentEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @NoArgsConstructor
 @Setter
@@ -19,7 +18,7 @@ public class RecordCommentsResponse {
     private List<Comment> comments;
 
     @Builder
-    private RecordCommentsResponse(List<CommentEntity> commentEntities, Optional<Long> viewerId) {
+    private RecordCommentsResponse(List<CommentEntity> commentEntities, Long viewerId) {
         this.comments = commentEntities.stream().map(commentEntity ->
                         Comment.builder()
                                 .commentEntity(commentEntity)
@@ -43,10 +42,10 @@ public class RecordCommentsResponse {
         private LocalDateTime commentCreatedDate;
 
         @Builder
-        private Comment(CommentEntity commentEntity, Optional<Long> viewerId) {
+        private Comment(CommentEntity commentEntity, Long viewerId) {
             this.commentId = commentEntity.getId();
             this.content = commentEntity.getContent();
-            this.isUpdatable = commentEntity.isCommenter(viewerId.orElse(null));
+            this.isUpdatable = commentEntity.isCommenter(viewerId);
             this.commentCreatedDate = commentEntity.getCreatedDateTime();
             this.commenterId = commentEntity.getUserEntity().getId();
             this.commenterImageUrl = commentEntity.getUserEntity().getImageUrl();
