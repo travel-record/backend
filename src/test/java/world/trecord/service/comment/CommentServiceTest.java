@@ -28,6 +28,7 @@ import world.trecord.service.comment.response.UserCommentsResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.exception.CustomExceptionError.*;
@@ -122,7 +123,7 @@ class CommentServiceTest extends ContainerBaseTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<CommentResponse> response = commentService.getReplies(originalComment.getId(), author.getId(), pageRequest);
+        Page<CommentResponse> response = commentService.getReplies(Optional.of(author.getId()), originalComment.getId(), pageRequest);
 
         //then
         Assertions.assertThat(response.getSize()).isEqualTo(pageSize);
@@ -139,7 +140,7 @@ class CommentServiceTest extends ContainerBaseTest {
         long notExistingCommentId = -1L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> commentService.getReplies(notExistingCommentId, null, pageRequest))
+        Assertions.assertThatThrownBy(() -> commentService.getReplies(null, notExistingCommentId, pageRequest))
                 .isInstanceOf(CustomException.class);
     }
 

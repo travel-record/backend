@@ -8,7 +8,7 @@ import lombok.Setter;
 import world.trecord.domain.comment.CommentEntity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.Optional;
 
 @NoArgsConstructor
 @Getter
@@ -25,12 +25,12 @@ public class CommentResponse {
     private LocalDateTime createdDateTime;
 
     @Builder
-    private CommentResponse(CommentEntity commentEntity, Long viewerId) {
+    private CommentResponse(CommentEntity commentEntity, Optional<Long> viewerId) {
         this.recordId = commentEntity.getRecordEntity().getId();
         this.parentId = commentEntity.getParentCommentEntity() != null ? commentEntity.getParentCommentEntity().getId() : null;
         this.commentId = commentEntity.getId();
         this.content = commentEntity.getContent();
-        this.isEditable = Objects.equals(viewerId, commentEntity.getUserEntity().getId());
+        this.isEditable = commentEntity.isCommenter(viewerId.orElse(null));
         this.createdDateTime = commentEntity.getCreatedDateTime();
     }
 }

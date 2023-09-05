@@ -29,5 +29,4 @@ public class AuthController {
     public ApiResponse<RefreshResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
         return ApiResponse.ok(authService.reissueToken(request.getRefreshToken()));
     }
-
 }

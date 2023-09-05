@@ -41,17 +41,17 @@ public class FeedController {
     }
 
     @PostMapping
-    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest feedCreateRequest, @CurrentUser UserContext userContext) throws BindException {
-        feedValidator.verify(feedCreateRequest);
-        return ApiResponse.ok(feedService.createFeed(userContext.getId(), feedCreateRequest));
+    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request, @CurrentUser UserContext userContext) throws BindException {
+        feedValidator.verify(request);
+        return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
     }
 
     @PutMapping("/{feedId}")
     public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId,
-                                                      @RequestBody @Valid FeedUpdateRequest feedUpdateRequest,
+                                                      @RequestBody @Valid FeedUpdateRequest request,
                                                       @CurrentUser UserContext userContext) throws BindException {
-        feedValidator.verify(feedUpdateRequest);
-        return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, feedUpdateRequest));
+        feedValidator.verify(request);
+        return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, request));
     }
 
     @DeleteMapping("/{feedId}")

@@ -77,7 +77,7 @@ public class CommentService {
         commentRepository.softDeleteById(commentId);
     }
 
-    public Page<CommentResponse> getReplies(Long commentId, Long viewerId, Pageable pageable) {
+    public Page<CommentResponse> getReplies(Optional<Long> viewerId, Long commentId, Pageable pageable) {
         CommentEntity parentComment = findCommentOrException(commentId);
 
         return commentRepository.findByParentCommentEntityId(parentComment.getId(), pageable)
