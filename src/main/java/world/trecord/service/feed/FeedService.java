@@ -63,6 +63,7 @@ public class FeedService {
                 .build();
     }
 
+    // TODO 응답 메시지 경량화
     @Transactional
     public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
@@ -79,7 +80,7 @@ public class FeedService {
 
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
+        FeedEntity feedEntity = findFeedOrException(feedId);
 
         ensureUserHasPermissionOverFeed(feedEntity, userId);
 

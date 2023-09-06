@@ -60,6 +60,7 @@ public class FeedEntity extends BaseEntity {
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
     private UserEntity userEntity;
 
+    // TODO 제거
     @OneToMany(mappedBy = "feedEntity")
     private List<RecordEntity> recordEntities = new ArrayList<>();
 

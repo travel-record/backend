@@ -53,7 +53,7 @@ public class UserService {
             userEntity.update(updateRequest.toUpdateEntity());
             userRepository.saveAndFlush(userEntity);
         } catch (DataIntegrityViolationException ex) {
-            if (isNicknameConstraintViolation(ex)) {
+            if (isNicknameAlreadyInUse(updateRequest.getNickname())) {
                 throw new CustomException(NICKNAME_DUPLICATED);
             }
             throw ex;
@@ -86,9 +86,5 @@ public class UserService {
 
     private boolean isNicknameAlreadyInUse(String nickname) {
         return userRepository.existsByNickname(nickname);
-    }
-
-    private boolean isNicknameConstraintViolation(DataIntegrityViolationException ex) {
-        return ex.getCause() != null && ex.getCause().getMessage().contains("Duplicate entry");
     }
 }
