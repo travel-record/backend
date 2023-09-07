@@ -40,7 +40,7 @@ import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Transactional
 @MockMvcTestSupport
-class NotificationControllerTestAbstract extends AbstractContainerBaseTest {
+class NotificationControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

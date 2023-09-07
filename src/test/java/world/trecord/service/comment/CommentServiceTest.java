@@ -40,7 +40,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @IntegrationTestSupport
-class CommentServiceTestAbstract extends AbstractContainerBaseTest {
+class CommentServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

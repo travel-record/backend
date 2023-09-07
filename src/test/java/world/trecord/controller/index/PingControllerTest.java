@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @MockMvcTestSupport
-class PingControllerTestAbstract extends AbstractContainerBaseTest {
+class PingControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

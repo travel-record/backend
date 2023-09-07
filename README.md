@@ -8,7 +8,7 @@
 
 ### Tech
 
-- Backend: Java 17, SpringBoot 3, JPA, JUnit5, Mockito, MariaDB
+- Backend: Java 17, SpringBoot 3, JPA with QueryDSL, JUnit5, Mockito, MariaDB
 - Infra: Github actions, AWS EC2 with DB
     - Use EC2 with EB instead of ECS for cost and management issues
 
@@ -33,6 +33,7 @@
 ### External APIs in use
 
 The following APIs are being invoked for Google Oauth2 authentication
+
 - https://oauth2.googleapis.com/token
 - https://www.googleapis.com/oauth2/v3/userinfo
 

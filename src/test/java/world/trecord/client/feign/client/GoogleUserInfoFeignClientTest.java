@@ -18,7 +18,7 @@ import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHOR
 
 @AutoConfigureWireMock(port = 8089)
 @IntegrationTestSupport
-class GoogleUserInfoFeignClientTestAbstract extends AbstractContainerBaseTest {
+class GoogleUserInfoFeignClientTest extends AbstractContainerBaseTest {
 
     @Autowired
     private GoogleUserInfoFeignClient client;

@@ -10,7 +10,7 @@ services:
       - MYSQL_ROOT_PASSWORD=1234
 
   redis:
-    image: redis
+    image: redis:latest
     command: [ "redis-server", "--requirepass", "1234" ]
     hostname: test
     ports:

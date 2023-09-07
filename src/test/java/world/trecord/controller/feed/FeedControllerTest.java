@@ -31,7 +31,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @MockMvcTestSupport
-class FeedControllerTestAbstract extends AbstractContainerBaseTest {
+class FeedControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

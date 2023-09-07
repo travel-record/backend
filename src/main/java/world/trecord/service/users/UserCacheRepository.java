@@ -24,7 +24,8 @@ public class UserCacheRepository {
     }
 
     public Optional<UserContext> getUserContext(Long userId) {
-        UserContext userContext = userContextRedisTemplate.opsForValue().get(getKey(userId));
+        String key = getKey(userId);
+        UserContext userContext = userContextRedisTemplate.opsForValue().get(key);
         log.info("Get UserContext from Redis {}", userContext);
         return Optional.ofNullable(userContext);
     }

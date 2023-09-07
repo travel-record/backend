@@ -35,7 +35,7 @@ public class FeedController {
     }
 
     @GetMapping("/{feedId}")
-    public ApiResponse<FeedInfoResponse> getFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserContext userContext) {
+    public ApiResponse<FeedInfoResponse> getFeed(@PathVariable Long feedId, @CurrentUser UserContext userContext) {
         Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
@@ -47,7 +47,7 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}")
-    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable("feedId") Long feedId,
+    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable Long feedId,
                                                       @RequestBody @Valid FeedUpdateRequest request,
                                                       @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(request);
@@ -55,7 +55,7 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}")
-    public ApiResponse<Void> deleteFeed(@PathVariable("feedId") Long feedId, @CurrentUser UserContext userContext) {
+    public ApiResponse<Void> deleteFeed(@PathVariable Long feedId, @CurrentUser UserContext userContext) {
         feedService.deleteFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
     }

@@ -31,7 +31,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @Transactional
 @IntegrationTestSupport
-class FeedServiceTestAbstract extends AbstractContainerBaseTest {
+class FeedServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     FeedRepository feedRepository;

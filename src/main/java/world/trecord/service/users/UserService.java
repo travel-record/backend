@@ -3,6 +3,8 @@ package world.trecord.service.users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
@@ -53,7 +55,7 @@ public class UserService {
             userEntity.update(updateRequest.toUpdateEntity());
             userRepository.saveAndFlush(userEntity);
         } catch (DataIntegrityViolationException ex) {
-            if (isNicknameConstraintViolation(ex)) {
+            if (isNicknameAlreadyInUse(updateRequest.getNickname())) {
                 throw new CustomException(NICKNAME_DUPLICATED);
             }
             throw ex;
@@ -76,6 +78,13 @@ public class UserService {
                         }));
     }
 
+    public Page<UserInfoResponse> searchUser(String keyword, Pageable pageable) {
+        return userRepository.findByKeyword(keyword, pageable)
+                .map(userEntity -> UserInfoResponse.builder()
+                        .userEntity(userEntity)
+                        .build());
+    }
+
     private UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
@@ -86,9 +95,5 @@ public class UserService {
 
     private boolean isNicknameAlreadyInUse(String nickname) {
         return userRepository.existsByNickname(nickname);
-    }
-
-    private boolean isNicknameConstraintViolation(DataIntegrityViolationException ex) {
-        return ex.getCause() != null && ex.getCause().getMessage().contains("Duplicate entry");
     }
 }

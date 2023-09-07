@@ -36,7 +36,7 @@ import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 
 @Transactional
 @MockMvcTestSupport
-class CommentControllerTestAbstract extends AbstractContainerBaseTest {
+class CommentControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

@@ -33,13 +33,13 @@ public class RecordController {
     private final UserRecordLikeService userRecordLikeService;
 
     @GetMapping("/{recordId}")
-    public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable("recordId") Long recordId, @CurrentUser UserContext userContext) {
+    public ApiResponse<RecordInfoResponse> getRecordInfo(@PathVariable Long recordId, @CurrentUser UserContext userContext) {
         Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
         return ApiResponse.ok(recordService.getRecord(viewerId, recordId));
     }
 
     @GetMapping("/{recordId}/comments")
-    public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable("recordId") Long recordId,
+    public ApiResponse<RecordCommentsResponse> getRecordComments(@PathVariable Long recordId,
                                                                  @PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                                  @CurrentUser UserContext userContext) {
         Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
@@ -47,30 +47,32 @@ public class RecordController {
     }
 
     @PostMapping
-    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Valid RecordCreateRequest recordCreateRequest, @CurrentUser UserContext userContext) throws BindException {
-        recordValidator.verify(recordCreateRequest);
-        return ApiResponse.ok(recordService.createRecord(userContext.getId(), recordCreateRequest));
+    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Valid RecordCreateRequest request, @CurrentUser UserContext userContext) throws BindException {
+        recordValidator.verify(request);
+        return ApiResponse.ok(recordService.createRecord(userContext.getId(), request));
     }
 
-    @PostMapping("/swap")
-    public ApiResponse<RecordSequenceSwapResponse> swapRecordSequence(@RequestBody @Valid RecordSequenceSwapRequest recordSequenceSwapRequest, @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(recordService.swapRecordSequence(userContext.getId(), recordSequenceSwapRequest));
+    @PostMapping("/sequence/swap")
+    public ApiResponse<RecordSequenceSwapResponse> swapRecordSequence(@RequestBody @Valid RecordSequenceSwapRequest request, @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(recordService.swapRecordSequence(userContext.getId(), request));
     }
 
     @PutMapping("/{recordId}")
-    public ApiResponse<RecordInfoResponse> updateRecord(@PathVariable("recordId") Long recordId, @RequestBody @Valid RecordUpdateRequest recordUpdateRequest, @CurrentUser UserContext userContext) throws BindException {
-        recordValidator.verify(recordId, recordUpdateRequest);
-        return ApiResponse.ok(recordService.updateRecord(userContext.getId(), recordId, recordUpdateRequest));
+    public ApiResponse<RecordInfoResponse> updateRecord(@PathVariable Long recordId,
+                                                        @RequestBody @Valid RecordUpdateRequest request,
+                                                        @CurrentUser UserContext userContext) throws BindException {
+        recordValidator.verify(recordId, request);
+        return ApiResponse.ok(recordService.updateRecord(userContext.getId(), recordId, request));
     }
 
     @DeleteMapping("/{recordId}")
-    public ApiResponse<Void> deleteRecord(@PathVariable("recordId") Long recordId, @CurrentUser UserContext userContext) {
+    public ApiResponse<Void> deleteRecord(@PathVariable Long recordId, @CurrentUser UserContext userContext) {
         recordService.deleteRecord(userContext.getId(), recordId);
         return ApiResponse.ok();
     }
 
     @PostMapping("/{recordId}/like")
-    public ApiResponse<UserRecordLikeResponse> toggleLike(@PathVariable("recordId") Long recordId, @CurrentUser UserContext userContext) {
+    public ApiResponse<UserRecordLikeResponse> toggleLike(@PathVariable Long recordId, @CurrentUser UserContext userContext) {
         return ApiResponse.ok(userRecordLikeService.toggleLike(userContext.getId(), recordId));
     }
 }

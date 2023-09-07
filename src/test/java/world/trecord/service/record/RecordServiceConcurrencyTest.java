@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 
 @IntegrationTestSupport
-class RecordServiceConcurrencyTestAbstract extends AbstractContainerBaseTest {
+class RecordServiceConcurrencyTest extends AbstractContainerBaseTest {
 
     @Autowired
     RecordService recordService;

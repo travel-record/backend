@@ -31,7 +31,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @Transactional
 @IntegrationTestSupport
-class UserRecordLikeServiceTestAbstract extends AbstractContainerBaseTest {
+class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRecordLikeService userRecordLikeService;

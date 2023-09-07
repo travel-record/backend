@@ -9,13 +9,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-// TODO redis 사용
 @Slf4j
 @RequiredArgsConstructor
 @Repository
 public class SseEmitterRepository {
 
-    private Map<String, SseEmitter> emitterMap = new ConcurrentHashMap<>();
+    private static final Map<String, SseEmitter> emitterMap = new ConcurrentHashMap<>();
 
     public SseEmitter save(Long userId, SseEmitter emitter) {
         final String key = getKey(userId);

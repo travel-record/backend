@@ -24,7 +24,7 @@ import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Transactional
 @MockMvcTestSupport
-class AuthControllerTestAbstract extends AbstractContainerBaseTest {
+class AuthControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     MockMvc mockMvc;

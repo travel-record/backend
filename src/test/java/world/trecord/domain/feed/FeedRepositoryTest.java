@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Transactional
 @IntegrationTestSupport
-class FeedRepositoryTestAbstract extends AbstractContainerBaseTest {
+class FeedRepositoryTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;

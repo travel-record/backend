@@ -69,7 +69,17 @@ public class RecordEntity extends BaseEntity {
     private List<CommentEntity> commentEntities = new ArrayList<>();
 
     @Builder
-    private RecordEntity(FeedEntity feedEntity, String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl, int sequence) {
+    private RecordEntity(FeedEntity feedEntity,
+                         String title,
+                         LocalDateTime date,
+                         String place,
+                         String feeling,
+                         String weather,
+                         String transportation,
+                         String content,
+                         String companion,
+                         String imageUrl,
+                         int sequence) {
         this.sequence = sequence;
         if (feedEntity != null) {
             this.feedEntity = feedEntity;
