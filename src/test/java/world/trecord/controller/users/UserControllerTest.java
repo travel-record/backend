@@ -29,6 +29,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.exception.CustomExceptionError.*;
@@ -151,17 +152,11 @@ class UserControllerTest extends AbstractContainerBaseTest {
         //given
         String duplicatedNickname = "duplicate nickname";
 
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .nickname(duplicatedNickname)
-                .build();
+        UserEntity userEntity = createUser("test@email.com", duplicatedNickname);
 
         userRepository.save(userEntity);
 
-        UserEntity requestUserEntity = UserEntity.builder()
-                .email("test1@email.com")
-                .nickname("nickname")
-                .build();
+        UserEntity requestUserEntity = createUser("test1@email.com", "nickname");
 
         userRepository.save(requestUserEntity);
 
@@ -226,7 +221,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
     @DisplayName("GET /api/v1/users/comments - 성공")
     void getUserCommentsTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
@@ -279,7 +274,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
     @DisplayName("GET /api/v1/users/likes - 성공")
     void getUserRecordLikesTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser());
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
@@ -332,13 +327,67 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
+    @Test
+    @DisplayName("GET /api/v1/users/search?q= - 성공")
+    void searchUserTest() throws Exception {
+        //given
+        UserEntity userEntity1 = createUser("test1@email.com", "김박김");
+        UserEntity userEntity2 = createUser("test2@email.com", "이이이");
+        UserEntity userEntity3 = createUser("test3@email.com", "김박박");
+        UserEntity userEntity4 = createUser("test4@email.com", "김이박");
+        UserEntity userEntity5 = createUser("test5@email.com", "박이김");
+
+        userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
+
+        String keyword = "김박";
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/search")
+                                .param("q", keyword)
+                                .header(AUTHORIZATION, createToken(userEntity1.getId()))
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content.size()").value(2));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/search?q= - 실패(쿼리 파라미터 없을때)")
+    void searchUserWithEmptyQueryTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/search")
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/search?q= - 실패(유효하지 않은 토큰으로 요청한 경우)")
+    void searchUserWhenAuthFailedTest() throws Exception {
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/search")
+                )
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
     private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
 
-    private UserEntity createUser() {
+    private UserEntity createUser(String email, String nickname) {
         return UserEntity.builder()
-                .email("test@email.com")
+                .email(email)
+                .nickname(nickname)
                 .build();
     }
 

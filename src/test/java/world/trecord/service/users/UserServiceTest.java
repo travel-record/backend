@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -14,6 +16,8 @@ import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.users.request.UserUpdateRequest;
 import world.trecord.service.users.response.UserInfoResponse;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
@@ -179,6 +183,44 @@ class UserServiceTest extends AbstractContainerBaseTest {
         //when //then
         Assertions.assertThatThrownBy(() -> userService.getUserContextOrException(notExistingUserId))
                 .isInstanceOf(CustomException.class);
+    }
+
+    @Test
+    @DisplayName("닉네임으로 사용자를 조회하여 반환한다")
+    void searchUserTest() throws Exception {
+        //given
+        UserEntity userEntity1 = createUser("test1@email.com", "김김김");
+        UserEntity userEntity2 = createUser("test2@email.com", "이이이");
+        UserEntity userEntity3 = createUser("test3@email.com", "김박박");
+        UserEntity userEntity4 = createUser("test4@email.com", "김이박");
+        UserEntity userEntity5 = createUser("test5@email.com", "박이김");
+
+        userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        String keyword = "김";
+
+        //when
+        Page<UserInfoResponse> response = userService.searchUser(keyword, pageRequest);
+
+        //then
+        Assertions.assertThat(response.getContent())
+                .extracting("nickname")
+                .containsExactly(userEntity1.getNickname(), userEntity3.getNickname(), userEntity4.getNickname());
+    }
+
+    @Test
+    @DisplayName("닉네임에 포함되는 사용자가 존재하지 않으면 빈 배열을 반환한다")
+    void searchUserWhenUserEmptyTest() throws Exception {
+        //given
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        String keyword = "김";
+
+        //when
+        Page<UserInfoResponse> response = userService.searchUser(keyword, pageRequest);
+
+        //then
+        Assertions.assertThat(response.getContent()).isEmpty();
     }
 
     private UserEntity createUser(String email, String nickname) {

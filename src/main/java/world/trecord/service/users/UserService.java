@@ -3,6 +3,8 @@ package world.trecord.service.users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
@@ -74,6 +76,13 @@ public class UserService {
                             log.warn("Error in method [getUserContextOrException] - User not found with ID: {}", userId);
                             return new CustomException(USER_NOT_FOUND);
                         }));
+    }
+
+    public Page<UserInfoResponse> searchUser(String keyword, Pageable pageable) {
+        return userRepository.findByKeyword(keyword, pageable)
+                .map(userEntity -> UserInfoResponse.builder()
+                        .userEntity(userEntity)
+                        .build());
     }
 
     private UserEntity findUserOrException(Long userId) {

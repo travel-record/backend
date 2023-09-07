@@ -18,7 +18,7 @@ public class UserRepositoryExtensionImpl extends QuerydslRepositorySupport imple
         QUserEntity userEntity = QUserEntity.userEntity;
 
         JPQLQuery<UserEntity> query = from(userEntity)
-                .where(userEntity.nickname.containsIgnoreCase(keyword))
+                .where(userEntity.nickname.startsWithIgnoreCase(keyword))
                 .distinct();
 
         JPQLQuery<UserEntity> pageableQuery = getQuerydsl().applyPagination(pageable, query);

@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -31,7 +32,7 @@ public class CustomControllerAdvice {
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ApiResponse<ValidationErrorDTO>> handle(BindException ex) {
         doLog(ex, "BindException while binding request parameters.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), doBuildFieldErrors(ex)));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), buildFieldErrors(ex)));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -82,11 +83,17 @@ public class CustomControllerAdvice {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.of(INTERNAL_SERVER_ERROR.code(), INTERNAL_SERVER_ERROR.message(), null));
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<Void>> handle(MissingServletRequestParameterException ex) {
+        doLog(ex, "MissingServletRequestParameterException while processing request parameters.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.of(INVALID_ARGUMENT.code(), INVALID_ARGUMENT.message(), null));
+    }
+
     private void doLog(Exception e, String description) {
         log.error("Error in [{}]: [{}] Cause: [{}]", e.getStackTrace()[0], description, e.getMessage());
     }
 
-    private ValidationErrorDTO doBuildFieldErrors(BindException ex) {
+    private ValidationErrorDTO buildFieldErrors(BindException ex) {
         List<ValidationErrorDTO.FieldError> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> ValidationErrorDTO.FieldError.builder()
                         .field(fieldError.getField())
