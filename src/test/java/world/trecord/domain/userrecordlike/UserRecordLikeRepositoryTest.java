@@ -199,7 +199,7 @@ class UserRecordLikeRepositoryTest extends AbstractContainerBaseTest {
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when
-        userRecordLikeRepository.softDeleteById(userRecordLikeEntity1.getId());
+        userRecordLikeRepository.delete(userRecordLikeEntity1);
 
         //then
         Assertions.assertThat(userRecordLikeRepository.findAll())

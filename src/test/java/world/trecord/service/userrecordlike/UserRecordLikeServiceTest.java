@@ -188,7 +188,7 @@ class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
 
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
-        userRecordLikeRepository.softDeleteById(userRecordLikeEntity2.getId());
+        userRecordLikeRepository.delete(userRecordLikeEntity2);
 
         //when
         UserRecordLikeListResponse response = userRecordLikeService.getUserRecordLikeList(other.getId());

@@ -54,7 +54,7 @@ public class UserRecordLikeService {
     }
 
     private UserRecordLikeResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
-        userRecordLikeRepository.softDeleteById(userRecordLikeEntity.getId());
+        userRecordLikeRepository.delete(userRecordLikeEntity);
         return buildLikeResponse(false);
     }
 

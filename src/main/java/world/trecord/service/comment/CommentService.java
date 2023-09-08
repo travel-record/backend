@@ -71,7 +71,7 @@ public class CommentService {
         ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntityId(commentId);
-        commentRepository.softDeleteById(commentId);
+        commentRepository.delete(commentEntity);
     }
 
     public Page<CommentResponse> getReplies(Optional<Long> viewerId, Long commentId, Pageable pageable) {

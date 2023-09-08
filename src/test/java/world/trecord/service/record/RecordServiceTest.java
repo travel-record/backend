@@ -451,7 +451,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
 
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1, commentEntity3));
 
-        commentRepository.softDeleteById(commentEntity2.getId());
+        commentRepository.delete(commentEntity2);
 
         //when
         RecordCommentsResponse response = recordService.getRecordComments(Optional.of(commenter.getId()), recordEntity.getId());

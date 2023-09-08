@@ -190,7 +190,7 @@ class CommentRepositoryTest extends AbstractContainerBaseTest {
         commentRepository.save(commentEntity);
 
         //when
-        commentRepository.softDeleteById(commentEntity.getId());
+        commentRepository.delete(commentEntity);
 
         //then
         Assertions.assertThat(commentRepository.findAll()).isEmpty();

@@ -101,7 +101,7 @@ public class RecordService {
         commentRepository.deleteAllByRecordEntityId(recordId);
         userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
         notificationRepository.deleteAllByRecordEntityId(recordId);
-        recordRepository.softDeleteById(recordId);
+        recordRepository.delete(recordEntity);
     }
 
     public RecordCommentsResponse getRecordComments(Optional<Long> viewerId, Long recordId) {

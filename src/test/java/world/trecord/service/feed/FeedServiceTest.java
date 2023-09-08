@@ -118,7 +118,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
 
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
 
-        feedRepository.softDeleteById(feedEntity3.getId());
+        feedRepository.delete(feedEntity3);
 
         //when
         FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
@@ -144,7 +144,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
 
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
-        recordRepository.softDeleteById(recordEntity2.getId());
+        recordRepository.delete(recordEntity2);
 
         //when
         FeedInfoResponse response = feedService.getFeed(Optional.of(userEntity.getId()), feedEntity.getId());

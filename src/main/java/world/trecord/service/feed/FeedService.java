@@ -80,7 +80,7 @@ public class FeedService {
 
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
-        feedRepository.softDeleteById(feedId);
+        feedRepository.delete(feedEntity);
     }
 
     private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
