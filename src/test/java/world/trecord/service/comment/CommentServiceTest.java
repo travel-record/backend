@@ -25,7 +25,6 @@ import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
-import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
 import world.trecord.service.notification.NotificationEventListener;
 
@@ -315,7 +314,7 @@ class CommentServiceTest extends AbstractContainerBaseTest {
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
+        CommentEntity savedComment = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         String changedContent = "changed content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -323,12 +322,16 @@ class CommentServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        CommentUpdateResponse response = commentService.updateComment(userEntity.getId(), commentEntity.getId(), request);
+        commentService.updateComment(userEntity.getId(), savedComment.getId(), request);
 
         //then
-        Assertions.assertThat(response)
-                .extracting("recordId", "commentId", "content")
-                .containsExactly(recordEntity.getId(), commentEntity.getId(), changedContent);
+        Assertions.assertThat(commentRepository.findById(savedComment.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        commentEntity -> {
+                            Assertions.assertThat(commentEntity.getContent()).isEqualTo(changedContent);
+                        }
+                );
     }
 
     @Test

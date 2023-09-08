@@ -190,8 +190,7 @@ class CommentControllerTest extends AbstractContainerBaseTest {
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content").value(changeContent));
+                .andExpect(status().isOk());
     }
 
     @Test

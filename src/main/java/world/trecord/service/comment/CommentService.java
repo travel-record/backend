@@ -18,7 +18,6 @@ import world.trecord.exception.CustomException;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
-import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
 import world.trecord.service.notification.NotificationEvent;
 
@@ -56,17 +55,13 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
+    public void updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
         CommentEntity commentEntity = findCommentOrException(commentId);
 
         ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
         commentRepository.saveAndFlush(commentEntity);
-
-        return CommentUpdateResponse.builder()
-                .commentEntity(commentEntity)
-                .build();
     }
 
     @Transactional
