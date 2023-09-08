@@ -52,7 +52,7 @@ public class FeedEntity extends BaseEntity {
     private String satisfaction;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
+    @JoinColumn(name = "id_owner", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
     private UserEntity userEntity;
 
     @Builder
