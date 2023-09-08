@@ -20,7 +20,6 @@ import world.trecord.service.record.request.RecordUpdateRequest;
 import world.trecord.service.record.response.RecordCommentsResponse;
 import world.trecord.service.record.response.RecordCreateResponse;
 import world.trecord.service.record.response.RecordInfoResponse;
-import world.trecord.service.record.response.RecordSequenceSwapResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,7 +66,7 @@ public class RecordService {
     }
 
     @Transactional
-    public RecordInfoResponse updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
+    public void updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
@@ -75,15 +74,10 @@ public class RecordService {
 
         recordEntity.update(request.toUpdateEntity());
         recordRepository.saveAndFlush(recordEntity);
-
-        return RecordInfoResponse.builder()
-                .recordEntity(recordEntity)
-                .viewerId(userId)
-                .build();
     }
 
     @Transactional
-    public RecordSequenceSwapResponse swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
+    public void swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
         RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
         RecordEntity targetRecord = findRecordForUpdateOrException(request.getTargetRecordId());
 
@@ -95,11 +89,6 @@ public class RecordService {
 
         originalRecord.swapSequenceWith(targetRecord);
         recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
-
-        return RecordSequenceSwapResponse.builder()
-                .originalRecordId(targetRecord.getId())
-                .targetRecordId(originalRecord.getId())
-                .build();
     }
 
     @Transactional

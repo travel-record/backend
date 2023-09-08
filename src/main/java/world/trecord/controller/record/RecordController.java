@@ -16,7 +16,6 @@ import world.trecord.service.record.request.RecordUpdateRequest;
 import world.trecord.service.record.response.RecordCommentsResponse;
 import world.trecord.service.record.response.RecordCreateResponse;
 import world.trecord.service.record.response.RecordInfoResponse;
-import world.trecord.service.record.response.RecordSequenceSwapResponse;
 import world.trecord.service.userrecordlike.UserRecordLikeService;
 import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.service.users.UserContext;
@@ -53,16 +52,18 @@ public class RecordController {
     }
 
     @PostMapping("/sequence/swap")
-    public ApiResponse<RecordSequenceSwapResponse> swapRecordSequence(@RequestBody @Valid RecordSequenceSwapRequest request, @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(recordService.swapRecordSequence(userContext.getId(), request));
+    public ApiResponse<Void> swapRecordSequence(@RequestBody @Valid RecordSequenceSwapRequest request, @CurrentUser UserContext userContext) {
+        recordService.swapRecordSequence(userContext.getId(), request);
+        return ApiResponse.ok();
     }
 
     @PutMapping("/{recordId}")
-    public ApiResponse<RecordInfoResponse> updateRecord(@PathVariable Long recordId,
-                                                        @RequestBody @Valid RecordUpdateRequest request,
-                                                        @CurrentUser UserContext userContext) throws BindException {
+    public ApiResponse<Void> updateRecord(@PathVariable Long recordId,
+                                          @RequestBody @Valid RecordUpdateRequest request,
+                                          @CurrentUser UserContext userContext) throws BindException {
         recordValidator.verify(recordId, request);
-        return ApiResponse.ok(recordService.updateRecord(userContext.getId(), recordId, request));
+        recordService.updateRecord(userContext.getId(), recordId, request);
+        return ApiResponse.ok();
     }
 
     @DeleteMapping("/{recordId}")
