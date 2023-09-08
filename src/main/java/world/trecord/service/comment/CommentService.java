@@ -14,12 +14,12 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
-import world.trecord.service.notification.NotificationEvent;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package world.trecord.service.sse;
+package world.trecord.event.sse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

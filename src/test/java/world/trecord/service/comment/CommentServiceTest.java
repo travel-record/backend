@@ -19,6 +19,7 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.event.notification.NotificationEventListener;
 import world.trecord.exception.CustomException;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
@@ -26,7 +27,6 @@ import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
-import world.trecord.service.notification.NotificationEventListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

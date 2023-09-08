@@ -1,4 +1,4 @@
-package world.trecord.service.notification;
+package world.trecord.event.notification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,8 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.notification.enumeration.NotificationType;
-import world.trecord.service.sse.SseEmitterEvent;
-import world.trecord.service.sse.SseEmitterService;
+import world.trecord.event.sse.SseEmitterEvent;
+import world.trecord.event.sse.SseEmitterService;
+import world.trecord.service.notification.NotificationService;
 
 import java.util.Objects;
 
