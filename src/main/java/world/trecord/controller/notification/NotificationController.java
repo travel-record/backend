@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.service.notification.NotificationService;
 import world.trecord.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.service.notification.response.NotificationListResponse;

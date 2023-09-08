@@ -19,7 +19,7 @@ import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.util.List;
 
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
 import static world.trecord.exception.CustomExceptionError.RECORD_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
 

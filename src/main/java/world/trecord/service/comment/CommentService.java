@@ -24,7 +24,7 @@ import world.trecord.service.notification.NotificationEvent;
 import java.util.List;
 import java.util.Optional;
 
-import static world.trecord.domain.notification.NotificationType.COMMENT;
+import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
 import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional(readOnly = true)

@@ -10,6 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RecordArgs {
-    private Long recordId;
-    private String recordTitle;
+    private Long id;
+    private String title;
 }

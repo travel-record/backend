@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CommentArgs {
-    private Long commentId;
-    private Long parentCommentId;
-    private String commentContent;
+    private Long id;
+    private Long parentId;
+    private String content;
 }

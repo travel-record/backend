@@ -13,12 +13,12 @@ import java.util.List;
 @Setter
 public class NotificationListResponse {
 
-    public List<Notification> notifications;
+    public List<NotificationResponse> notifications;
 
     @Builder
     private NotificationListResponse(List<NotificationEntity> notificationEntities) {
         this.notifications = notificationEntities.stream()
-                .map(notificationEntity -> Notification.builder()
+                .map(notificationEntity -> NotificationResponse.builder()
                         .notificationEntity(notificationEntity)
                         .build())
                 .toList();

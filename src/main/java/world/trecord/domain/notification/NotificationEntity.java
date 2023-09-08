@@ -11,6 +11,8 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.notification.enumeration.NotificationStatus;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.users.UserEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

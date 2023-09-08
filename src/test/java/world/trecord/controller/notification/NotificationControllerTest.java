@@ -14,8 +14,8 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
-import world.trecord.domain.notification.NotificationStatus;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.enumeration.NotificationStatus;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
@@ -35,10 +35,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static world.trecord.domain.notification.NotificationStatus.READ;
-import static world.trecord.domain.notification.NotificationStatus.UNREAD;
-import static world.trecord.domain.notification.NotificationType.COMMENT;
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.READ;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.UNREAD;
+import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
+import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
 import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
@@ -203,6 +203,7 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
                         get("/api/v1/notifications/type/{type}", RECORD_LIKE)
                                 .header(AUTHORIZATION, createToken(author.getId()))
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.notifications.size()").value(2));
     }

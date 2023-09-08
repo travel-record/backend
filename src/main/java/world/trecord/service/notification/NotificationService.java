@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -16,8 +16,8 @@ import world.trecord.service.notification.response.NotificationListResponse;
 
 import java.util.List;
 
-import static world.trecord.domain.notification.NotificationStatus.READ;
-import static world.trecord.domain.notification.NotificationStatus.UNREAD;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.READ;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.UNREAD;
 import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
 
 @Slf4j

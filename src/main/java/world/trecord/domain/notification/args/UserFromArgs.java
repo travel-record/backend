@@ -10,6 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserFromArgs {
-    private Long userFromId;
-    private String userFromNickname;
+    private Long id;
+    private String nickname;
 }

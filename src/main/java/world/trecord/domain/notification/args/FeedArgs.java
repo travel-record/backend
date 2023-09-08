@@ -10,6 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FeedArgs {
-    private Long feedId;
-    private String feedName;
+    private Long id;
+    private String name;
 }

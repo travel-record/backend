@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.service.sse.SseEmitterEvent;
 import world.trecord.service.sse.SseEmitterService;

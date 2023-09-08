@@ -7,8 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.NotificationStatus;
-import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.enumeration.NotificationStatus;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.notification.args.NotificationArgs;
 
 import java.time.LocalDateTime;
@@ -52,20 +52,20 @@ public class SseEmitterEvent {
         NotificationArgs args = notificationEntity.getArgs();
 
         if (Objects.nonNull(args.getUserFrom())) {
-            this.senderId = args.getUserFrom().getUserFromId();
-            this.senderNickname = args.getUserFrom().getUserFromNickname();
+            this.senderId = args.getUserFrom().getId();
+            this.senderNickname = args.getUserFrom().getNickname();
         }
 
         if (Objects.nonNull(args.getFeed())) {
-            this.feedId = args.getFeed().getFeedId();
+            this.feedId = args.getFeed().getId();
         }
 
         if (Objects.nonNull(args.getRecord())) {
-            this.recordId = args.getRecord().getRecordId();
+            this.recordId = args.getRecord().getId();
         }
 
         if (Objects.nonNull(args.getComment())) {
-            this.commentId = args.getComment().getCommentId();
+            this.commentId = args.getComment().getId();
         }
     }
 }

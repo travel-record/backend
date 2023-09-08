@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.notification.enumeration.NotificationStatus;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -19,10 +21,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static world.trecord.domain.notification.NotificationStatus.READ;
-import static world.trecord.domain.notification.NotificationStatus.UNREAD;
-import static world.trecord.domain.notification.NotificationType.COMMENT;
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.READ;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.UNREAD;
+import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
+import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
 
 @Transactional
 @IntegrationTestSupport
