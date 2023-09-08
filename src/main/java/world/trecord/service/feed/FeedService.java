@@ -16,7 +16,6 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedUpdateResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,19 +62,14 @@ public class FeedService {
                 .build();
     }
 
-    // TODO 응답 메시지 경량화
     @Transactional
-    public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
+    public void updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
         ensureUserHasPermissionOverFeed(feedEntity, userId);
 
         feedEntity.update(request.toUpdateEntity());
         feedRepository.saveAndFlush(feedEntity);
-
-        return FeedUpdateResponse.builder()
-                .feedEntity(feedEntity)
-                .build();
     }
 
     @Transactional

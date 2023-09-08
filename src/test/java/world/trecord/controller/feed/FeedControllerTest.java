@@ -188,7 +188,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity savedFeed = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -206,18 +206,24 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/feeds/{feedId}", feedEntity.getId())
+                        put("/api/v1/feeds/{feedId}", savedFeed.getId())
                                 .header("Authorization", createToken(userEntity.getId()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
 
-        FeedEntity updatedFeedEntity = feedRepository.findById(feedEntity.getId()).get();
-
-        Assertions.assertThat(updatedFeedEntity)
-                .extracting("name", "imageUrl", "description", "startAt", "endAt")
-                .containsExactly(updateFeedName, updatedFeedImage, updatedFeedDescription, updatedStartAt, updatedEndAt);
+        Assertions.assertThat(feedRepository.findById(savedFeed.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        feedEntity -> {
+                            Assertions.assertThat(feedEntity.getName()).isEqualTo(updateFeedName);
+                            Assertions.assertThat(feedEntity.getImageUrl()).isEqualTo(updatedFeedImage);
+                            Assertions.assertThat(feedEntity.getDescription()).isEqualTo(updatedFeedDescription);
+                            Assertions.assertThat(feedEntity.getStartAt()).isEqualTo(updatedStartAt);
+                            Assertions.assertThat(feedEntity.getEndAt()).isEqualTo(updatedEndAt);
+                        }
+                );
     }
 
     @Test

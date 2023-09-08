@@ -20,7 +20,6 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedUpdateResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -256,18 +255,12 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("사용자가 피드를 수정하면 수정된 내용으로 응답한다")
+    @DisplayName("피드 관리자가 피드 수정 요청을 하면 피드를 수정한다")
     void updateFeedTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
-        RecordEntity recordEntity1 = createRecord(feedEntity);
-        RecordEntity recordEntity2 = createRecord(feedEntity);
-        RecordEntity recordEntity3 = createRecord(feedEntity);
-
-        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
+        FeedEntity savedFeed = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated name";
         String updatedFeedImage = "updated feed image url";
@@ -284,15 +277,20 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        FeedUpdateResponse response = feedService.updateFeed(userEntity.getId(), feedEntity.getId(), request);
+        feedService.updateFeed(userEntity.getId(), savedFeed.getId(), request);
 
         //then
-        Assertions.assertThat(response)
-                .extracting("writerId", "feedId", "name", "description", "startAt", "endAt")
-                .containsExactly(userEntity.getId(), feedEntity.getId(), updateFeedName, updatedFeedDescription,
-                        feedEntity.convertStartAtToLocalDate(), feedEntity.convertEndAtToLocalDate());
-
-        Assertions.assertThat(response.getRecords().stream().map(FeedUpdateResponse.Record::getTitle)).containsExactly("title", "title", "title");
+        Assertions.assertThat(feedRepository.findById(savedFeed.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        feedEntity -> {
+                            Assertions.assertThat(feedEntity.getName()).isEqualTo(updateFeedName);
+                            Assertions.assertThat(feedEntity.getImageUrl()).isEqualTo(updatedFeedImage);
+                            Assertions.assertThat(feedEntity.getDescription()).isEqualTo(updatedFeedDescription);
+                            Assertions.assertThat(feedEntity.getStartAt()).isEqualTo(updatedStartAt);
+                            Assertions.assertThat(feedEntity.getEndAt()).isEqualTo(updatedEndAt);
+                        }
+                );
     }
 
     @Test

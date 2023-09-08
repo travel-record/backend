@@ -15,7 +15,6 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedUpdateResponse;
 import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
@@ -47,11 +46,12 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}")
-    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable Long feedId,
-                                                      @RequestBody @Valid FeedUpdateRequest request,
-                                                      @CurrentUser UserContext userContext) throws BindException {
+    public ApiResponse<Void> updateFeed(@PathVariable Long feedId,
+                                        @RequestBody @Valid FeedUpdateRequest request,
+                                        @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(request);
-        return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, request));
+        feedService.updateFeed(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
     }
 
     @DeleteMapping("/{feedId}")
