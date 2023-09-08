@@ -8,16 +8,11 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
-import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -60,10 +55,6 @@ public class FeedEntity extends BaseEntity {
     @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
     private UserEntity userEntity;
 
-    // TODO 제거
-    @OneToMany(mappedBy = "feedEntity")
-    private List<RecordEntity> recordEntities = new ArrayList<>();
-
     @Builder
     private FeedEntity(UserEntity userEntity, String name, String description, String imageUrl, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
         this.name = name;
@@ -77,10 +68,6 @@ public class FeedEntity extends BaseEntity {
         this.userEntity = userEntity;
     }
 
-    public void addRecordEntity(RecordEntity recordEntity) {
-        recordEntities.add(recordEntity);
-    }
-
     public void update(FeedEntity updateEntity) {
         this.name = updateEntity.getName();
         this.imageUrl = updateEntity.getImageUrl();
@@ -90,12 +77,6 @@ public class FeedEntity extends BaseEntity {
         this.companion = updateEntity.getCompanion();
         this.place = updateEntity.getPlace();
         this.satisfaction = updateEntity.getSatisfaction();
-    }
-
-    public Stream<RecordEntity> sortRecordEntitiesByDateAndCreatedTimeAsc() {
-        return this.recordEntities.stream()
-                .sorted(Comparator.comparing(RecordEntity::getDate)
-                        .thenComparing(RecordEntity::getCreatedDateTime));
     }
 
     public boolean isEqualTo(FeedEntity otherFeed) {

@@ -80,11 +80,7 @@ public class RecordEntity extends BaseEntity {
                          String companion,
                          String imageUrl,
                          int sequence) {
-        this.sequence = sequence;
-        if (feedEntity != null) {
-            this.feedEntity = feedEntity;
-            feedEntity.addRecordEntity(this);
-        }
+        this.feedEntity = feedEntity;
         this.title = title;
         this.date = date;
         this.place = place;
