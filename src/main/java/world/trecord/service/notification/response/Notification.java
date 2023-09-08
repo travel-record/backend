@@ -9,8 +9,10 @@ import lombok.Setter;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationStatus;
 import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.args.NotificationArgs;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @NoArgsConstructor
@@ -20,9 +22,9 @@ public class Notification {
 
     private NotificationType type;
     private NotificationStatus status;
+    private Long feedId;
     private Long recordId;
     private Long commentId;
-    private Long parentCommentId;
     private Long senderId;
     private String senderNickname;
     private String content;
@@ -34,12 +36,26 @@ public class Notification {
     private Notification(NotificationEntity notificationEntity) {
         this.type = notificationEntity.getType();
         this.status = notificationEntity.getStatus();
-        this.recordId = notificationEntity.getArgs().getRecordId();
-        this.commentId = notificationEntity.getArgs().getCommentId();
-        this.parentCommentId = notificationEntity.getArgs().getParentCommentId();
-        this.senderId = notificationEntity.getArgs().getUserFromId();
-        this.senderNickname = notificationEntity.getArgs().getUserFromNickname();
         this.content = notificationEntity.getNotificationContent();
         this.date = notificationEntity.getCreatedDateTime();
+
+        NotificationArgs args = notificationEntity.getArgs();
+
+        if (Objects.nonNull(args.getUserFrom())) {
+            this.senderId = args.getUserFrom().getUserFromId();
+            this.senderNickname = args.getUserFrom().getUserFromNickname();
+        }
+
+        if (Objects.nonNull(args.getFeed())) {
+            this.feedId = args.getFeed().getFeedId();
+        }
+
+        if (Objects.nonNull(args.getRecord())) {
+            this.recordId = args.getRecord().getRecordId();
+        }
+
+        if (Objects.nonNull(args.getComment())) {
+            this.commentId = args.getComment().getCommentId();
+        }
     }
 }

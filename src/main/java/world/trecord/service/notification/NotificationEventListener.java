@@ -6,11 +6,13 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationType;
+import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.service.sse.SseEmitterEvent;
 import world.trecord.service.sse.SseEmitterService;
+
+import java.util.Objects;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
@@ -31,9 +33,9 @@ public class NotificationEventListener {
         NotificationType type = notificationEvent.type();
         NotificationArgs args = notificationEvent.args();
 
-//        if (Objects.equals(userToId, userFromId)) {
-//            return;
-//        }
+        if (Objects.equals(userToId, userFromId)) {
+            return;
+        }
 
         NotificationEntity notificationEntity = notificationService.createNotification(userToId, type, args);
         log.info("NotificationEntity created with ID: [{}]", notificationEntity.getId());

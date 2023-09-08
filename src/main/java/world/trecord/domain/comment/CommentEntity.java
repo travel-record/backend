@@ -63,17 +63,16 @@ public class CommentEntity extends BaseEntity {
     public void addChildCommentEntity(CommentEntity childCommentEntity) {
         this.childCommentEntities.add(childCommentEntity);
     }
-
-    public void clear() {
-        this.parentCommentEntity = null;
-        this.childCommentEntities.clear();
-    }
-
+    
     public void update(CommentEntity updateEntity) {
         this.content = updateEntity.getContent();
     }
 
     public boolean isCommenter(Long userId) {
         return Objects.equals(this.userEntity.getId(), userId);
+    }
+
+    public Long getParentCommentId() {
+        return this.parentCommentEntity != null ? this.parentCommentEntity.getId() : null;
     }
 }

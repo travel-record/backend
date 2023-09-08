@@ -68,4 +68,26 @@ class CommentEntityTest {
         Assertions.assertThat(result).isFalse();
     }
 
+    // TODO
+    @Test
+    @DisplayName("원댓글 아이디를 반환한다")
+    void test() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
+    // TODO
+    @Test
+    @DisplayName("원댓글이면 원댓글 아이디 null을 반환한다")
+    void test1() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
 }

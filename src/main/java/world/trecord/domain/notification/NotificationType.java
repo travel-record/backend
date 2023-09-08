@@ -5,20 +5,22 @@ public enum NotificationType {
     COMMENT {
         @Override
         public String getContent(NotificationEntity notificationEntity) {
-            return notificationEntity.getArgs().getCommentContent();
+            return notificationEntity.getArgs().getComment().getCommentContent();
         }
     },
     RECORD_LIKE {
         @Override
         public String getContent(NotificationEntity notificationEntity) {
-            return notificationEntity.getArgs().getUserFromNickname() + "님이 회원님의 기록을 좋아합니다.";
+            return notificationEntity.getArgs().getUserFrom().getUserFromNickname() + "님이 회원님의 기록을 좋아합니다.";
         }
     },
-    MENTION,
-    SHARE,
-    SYSTEM_NOTIFICATION,
-    EVENT_INVITATION,
-    FRIEND_REQUEST;
+    FEED_INVITATION {
+        @Override
+        public String getContent(NotificationEntity notificationEntity) {
+            return notificationEntity.getArgs().getUserFrom().getUserFromNickname() + "님이 피드에 초대했어요.";
+        }
+    };
+
 
     public String getContent(NotificationEntity notificationEntity) {
         return "";
