@@ -18,7 +18,7 @@ configurations {
 }
 
 ext {
-    set('springCloudVersion', '2022.0.3')
+    set('springCloudVersion', '2022.0.4')
 }
 
 dependencyManagement {
@@ -39,14 +39,14 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     // Spring cloud
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign' // for FeignClient
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign' // For @FeignClient
 
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // QueryDsl
+    // QueryDSL
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
@@ -55,7 +55,7 @@ dependencies {
     // Data
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'io.hypersistence:hypersistence-utils-hibernate-62:3.5.1' // for JsonType
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-62:3.5.1' // For @Type(JsonType.class)
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
@@ -69,10 +69,9 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:1.19.0"
     testImplementation "org.testcontainers:junit-jupiter:1.19.0"
     testImplementation "org.testcontainers:mariadb:1.19.0"
-    testImplementation "org.testcontainers:junit-jupiter:1.19.0"
 
-    // Test
-    testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock' // For WiremockTest
+    // Spring Test
+    testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock' // For @AutoConfigureWireMock
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 }
@@ -81,10 +80,8 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-def generatedDir = 'src/main/generated'
-
 clean {
-    delete file(generatedDir)
+    delete file('src/main/generated')
 }
 
 jar.enabled = false

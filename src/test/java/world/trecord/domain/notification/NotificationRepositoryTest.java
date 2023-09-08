@@ -106,7 +106,6 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         Assertions.assertThat(notificationList).isEmpty();
     }
 
-    @Transactional
     @Test
     @DisplayName("사용자가 읽지 않은 알림을 모두 읽음 처리하여 처리된 개수를 반환한다")
     void updateNotificationStatusByUserIdTest() throws Exception {
