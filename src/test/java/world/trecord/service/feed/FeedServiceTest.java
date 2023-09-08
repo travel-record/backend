@@ -203,6 +203,38 @@ class FeedServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThat(feedRepository.findById(response.getFeedId())).isPresent();
     }
 
+    // TODO
+    @Test
+    @DisplayName("다른 사용자를 피드에 초대한다")
+    void test() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
+    // TODO
+    @Test
+    @DisplayName("자신이 주인인 피드에 자신을 초대할 수 없다")
+    void test1() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
+    @Test
+    @DisplayName("피드에 다른 사용자를 초대하면 초대된 사용자에게 알림이 전송된다")
+    void test2() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
     @Test
     @DisplayName("존재하지 않은 사용자 아이디로 피드를 생성하려고 하면 예외가 발생한다")
     void createFeedByNotExistingUserTest() throws Exception {
@@ -291,6 +323,16 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                             Assertions.assertThat(feedEntity.getEndAt()).isEqualTo(updatedEndAt);
                         }
                 );
+    }
+
+    @Test
+    @DisplayName("피드 주인이 자기 자신을 초대할 수는 없다")
+    void inviteUserTest() throws Exception {
+        //given
+
+        //when
+
+        //then
     }
 
     @Test

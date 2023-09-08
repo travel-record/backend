@@ -54,7 +54,7 @@ public class FeedService {
 
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+        UserEntity userEntity = findUserOrException(userId);
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
 
         return FeedCreateResponse.builder()
@@ -83,10 +83,10 @@ public class FeedService {
         feedRepository.delete(feedEntity);
     }
 
-    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
-        if (!feedEntity.isManagedBy(userId)) {
-            throw new CustomException(FORBIDDEN);
-        }
+
+    private UserEntity findUserOrException(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private FeedEntity findFeedOrException(Long feedId) {
@@ -95,5 +95,11 @@ public class FeedService {
 
     private FeedEntity findFeedForUpdateOrException(Long feedId) {
         return feedRepository.findByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    }
+
+    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+        if (!feedEntity.isManagedBy(userId)) {
+            throw new CustomException(FORBIDDEN);
+        }
     }
 }

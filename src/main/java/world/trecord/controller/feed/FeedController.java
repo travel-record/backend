@@ -11,10 +11,12 @@ import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
 import world.trecord.service.feed.FeedService;
 import world.trecord.service.feed.request.FeedCreateRequest;
+import world.trecord.service.feed.request.FeedInviteRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
+import world.trecord.service.invitation.InvitationService;
 import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class FeedController {
 
     private final FeedService feedService;
+    private final InvitationService invitationService;
     private final FeedValidator feedValidator;
 
     @GetMapping
@@ -43,6 +46,14 @@ public class FeedController {
     public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request, @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(request);
         return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
+    }
+
+    @PostMapping("/{feedId}/invite")
+    public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
+                                        @RequestBody @Valid FeedInviteRequest request,
+                                        @CurrentUser UserContext userContext) {
+        invitationService.inviteUser(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
     }
 
     @PutMapping("/{feedId}")
