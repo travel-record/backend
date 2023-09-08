@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
@@ -189,7 +188,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
     @DisplayName("닉네임으로 사용자를 조회하여 반환한다")
     void searchUserTest() throws Exception {
         //given
-        UserEntity userEntity1 = createUser("test1@email.com", "김김김");
+        UserEntity userEntity1 = createUser("test1@email.com", "김");
         UserEntity userEntity2 = createUser("test2@email.com", "이이이");
         UserEntity userEntity3 = createUser("test3@email.com", "김박박");
         UserEntity userEntity4 = createUser("test4@email.com", "김이박");
@@ -197,30 +196,29 @@ class UserServiceTest extends AbstractContainerBaseTest {
 
         userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
 
-        PageRequest pageRequest = PageRequest.of(0, 10);
         String keyword = "김";
 
         //when
-        Page<UserInfoResponse> response = userService.searchUser(keyword, pageRequest);
+        UserInfoResponse response = userService.searchUser(keyword);
 
         //then
-        Assertions.assertThat(response.getContent())
-                .extracting("nickname")
-                .containsExactly(userEntity1.getNickname(), userEntity3.getNickname(), userEntity4.getNickname());
+        Assertions.assertThat(response)
+                .extracting("userId")
+                .isEqualTo(userEntity1.getId());
     }
 
     @Test
-    @DisplayName("닉네임에 포함되는 사용자가 존재하지 않으면 빈 배열을 반환한다")
+    @DisplayName("닉네임에 포함되는 사용자가 존재하지 않으면 null을 반환한다")
     void searchUserWhenUserEmptyTest() throws Exception {
         //given
         PageRequest pageRequest = PageRequest.of(0, 10);
         String keyword = "김";
 
         //when
-        Page<UserInfoResponse> response = userService.searchUser(keyword, pageRequest);
+        UserInfoResponse response = userService.searchUser(keyword);
 
         //then
-        Assertions.assertThat(response.getContent()).isEmpty();
+        Assertions.assertThat(response).isNull();
     }
 
     private UserEntity createUser(String email, String nickname) {

@@ -2,7 +2,6 @@ package world.trecord.controller.users;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -43,9 +42,8 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ApiResponse<Page<UserInfoResponse>> searchUser(@RequestParam(name = "q") String keyword,
-                                                          @PageableDefault Pageable pageable) {
-        return ApiResponse.ok(userService.searchUser(keyword, pageable));
+    public ApiResponse<UserInfoResponse> searchUser(@RequestParam(name = "q") String keyword) {
+        return ApiResponse.ok(userService.searchUser(keyword));
     }
 
     @GetMapping("/comments")

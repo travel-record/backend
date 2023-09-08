@@ -1,11 +1,9 @@
 package world.trecord.domain.users;
 
-import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.JPQLQuery;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+
+import java.util.Optional;
 
 public class UserRepositoryExtensionImpl extends QuerydslRepositorySupport implements UserRepositoryExtension {
 
@@ -14,16 +12,15 @@ public class UserRepositoryExtensionImpl extends QuerydslRepositorySupport imple
     }
 
     @Override
-    public Page<UserEntity> findByKeyword(String keyword, Pageable pageable) {
+    public Optional<UserEntity> findByKeyword(String keyword) {
         QUserEntity userEntity = QUserEntity.userEntity;
 
         JPQLQuery<UserEntity> query = from(userEntity)
-                .where(userEntity.nickname.startsWithIgnoreCase(keyword))
+                .where(userEntity.nickname.eq(keyword))
                 .distinct();
 
-        JPQLQuery<UserEntity> pageableQuery = getQuerydsl().applyPagination(pageable, query);
-        QueryResults<UserEntity> fetchResults = pageableQuery.fetchResults();
+        UserEntity result = query.fetchOne();
 
-        return new PageImpl<>(fetchResults.getResults(), pageable, fetchResults.getTotal());
+        return Optional.ofNullable(result);
     }
 }

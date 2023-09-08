@@ -10,12 +10,14 @@ import world.trecord.domain.users.UserEntity;
 @Getter
 @Setter
 public class UserInfoResponse {
+    private Long userId;
     private String nickname;
     private String imageUrl;
     private String introduction;
 
     @Builder
     private UserInfoResponse(UserEntity userEntity) {
+        this.userId = userEntity.getId();
         this.nickname = userEntity.getNickname();
         this.imageUrl = userEntity.getImageUrl();
         this.introduction = userEntity.getIntroduction();
