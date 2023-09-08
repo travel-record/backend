@@ -51,7 +51,7 @@ public class CommentService {
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
-        eventPublisher.publishEvent(new NotificationEvent(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity)));
+        eventPublisher.publishEvent(new NotificationEvent(userToId, userFromId, COMMENT, buildNotificationArgs(recordEntity, commentEntity, userEntity)));
     }
 
     @Transactional
@@ -121,10 +121,10 @@ public class CommentService {
         }
     }
 
-    private NotificationArgs buildNotificationArgs(CommentEntity commentEntity, UserEntity userEntity) {
+    private NotificationArgs buildNotificationArgs(RecordEntity recordEntity, CommentEntity commentEntity, UserEntity userEntity) {
         return NotificationArgs.builder()
+                .recordEntity(recordEntity)
                 .commentEntity(commentEntity)
-                .recordEntity(commentEntity.getRecordEntity())
                 .userFromEntity(userEntity)
                 .build();
     }

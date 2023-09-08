@@ -64,7 +64,7 @@ class SseEmitterServiceMockTest {
         SseEmitterEvent mockEvent = mock(SseEmitterEvent.class);
 
         //when
-        sseEmitterService.send(1L, mockEvent);
+        sseEmitterService.send(0L, 1L, mockEvent);
 
         //then
         verify(mockEmitter).send(any(SseEmitter.SseEventBuilder.class));

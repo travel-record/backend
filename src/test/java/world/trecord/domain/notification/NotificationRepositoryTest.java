@@ -186,7 +186,6 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         NotificationEntity notificationEntity1 = createNotification(userEntity, recordEntity, RECORD_LIKE, UNREAD);
         NotificationEntity notificationEntity2 = createNotification(userEntity, recordEntity, RECORD_LIKE, UNREAD);
         NotificationEntity notificationEntity3 = createNotification(userEntity, recordEntity, RECORD_LIKE, UNREAD);
-
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when

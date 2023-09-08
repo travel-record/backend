@@ -7,8 +7,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.service.sse.SseEmitterEvent;
 import world.trecord.service.sse.SseEmitterService;
 
@@ -39,7 +39,7 @@ public class NotificationEventListener {
 
         NotificationEntity notificationEntity = notificationService.createNotification(userToId, type, args);
         log.info("NotificationEntity created with ID: [{}]", notificationEntity.getId());
-        sseEmitterService.send(notificationEntity.getId(), buildSseEmitterEvent(notificationEntity));
+        sseEmitterService.send(userToId, notificationEntity.getId(), buildSseEmitterEvent(notificationEntity));
     }
 
     private SseEmitterEvent buildSseEmitterEvent(NotificationEntity notificationEntity) {
