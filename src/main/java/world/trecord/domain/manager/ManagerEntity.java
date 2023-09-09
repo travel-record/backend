@@ -11,6 +11,8 @@ import world.trecord.domain.BaseEntity;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.users.UserEntity;
 
+import java.util.Set;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(
@@ -34,10 +36,17 @@ public class ManagerEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_feed", foreignKey = @ForeignKey(name = "fk_manager_feed"))
     private FeedEntity feedEntity;
-    
+
+    @ElementCollection(targetClass = ManagerPermission.class)
+    @CollectionTable(name = "manager_permission", joinColumns = @JoinColumn(name = "id_manager"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "permission", nullable = false)
+    private Set<ManagerPermission> permissions;
+
     @Builder
     private ManagerEntity(UserEntity userEntity, FeedEntity feedEntity) {
         this.userEntity = userEntity;
         this.feedEntity = feedEntity;
+        this.permissions = ManagerPermission.getAllPermissions();
     }
 }

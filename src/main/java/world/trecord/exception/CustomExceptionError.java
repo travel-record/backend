@@ -13,6 +13,8 @@ public enum CustomExceptionError {
     INVALID_GOOGLE_AUTHORIZATION_CODE(HttpStatus.UNAUTHORIZED, 600, "유효하지 않은 인가 코드입니다"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, 601, "유효하지 않은 토큰입니다"),
     INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, 602, "파라미터가 올바르지 않습니다"),
+    USER_ALREADY_INVITED(HttpStatus.CONFLICT, 603, "이미 초대된 사용자입니다"),
+    SELF_INVITATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, 604, "자신을 초대할 수 없습니다"),
     NICKNAME_DUPLICATED(HttpStatus.CONFLICT, 700, "이미 존재하는 닉네임입니다"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, 701, "존재하지 않는 사용자입니다"),
     FEED_NOT_FOUND(HttpStatus.NOT_FOUND, 702, "존재하지 않는 피드입니다"),

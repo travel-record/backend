@@ -27,6 +27,7 @@ public class NotificationEventListener {
     private final SseEmitterService sseEmitterService;
 
     @EventListener
+    //@TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     @Transactional(propagation = REQUIRES_NEW)
     public void handleNotificationEventListener(NotificationEvent notificationEvent) {
         Long userToId = notificationEvent.userToId();

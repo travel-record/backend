@@ -15,7 +15,10 @@ import static world.trecord.domain.invitation.InvitationStatus.COMPLETED;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "invitation")
+@Table(
+        name = "invitation",
+        indexes = @Index(name = "idx_invitation_users_feed", columnList = "id_users_to, id_feed", unique = true)
+)
 @SQLDelete(sql = "UPDATE invitation SET deleted_date_time = NOW() WHERE id_invitation = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity

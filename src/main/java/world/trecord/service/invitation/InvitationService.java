@@ -8,6 +8,8 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.invitation.InvitationEntity;
 import world.trecord.domain.invitation.InvitationRepository;
+import world.trecord.domain.manager.ManagerEntity;
+import world.trecord.domain.manager.ManagerRepository;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -28,30 +30,48 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final InvitationRepository invitationRepository;
+    private final ManagerRepository managerRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void inviteUser(Long userFromId, Long feedId, FeedInviteRequest request) {
-        FeedEntity feedEntity = findFeedOrException(feedId);
+        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
-        ensureUserHasPermissionOverFeed(feedEntity, userFromId);
+        ensureUserIsFeedOwner(feedEntity, userFromId);
 
         UserEntity userToEntity = findUserOrException(request.getUserToId());
 
-        if (Objects.equals(userToEntity.getId(), userFromId)) {
-            return;
+        ensureNotSelfInviting(userFromId, userToEntity.getId());
+
+        if (managerRepository.existsByUserEntityIdAndFeedEntityId(userToEntity.getId(), feedEntity.getId())) {
+            throw new CustomException(USER_ALREADY_INVITED);
         }
 
-        InvitationEntity invitationEntity = InvitationEntity.builder()
-                .userToEntity(userToEntity)
-                .feedEntity(feedEntity)
-                .build();
+        saveInvitation(feedEntity, userToEntity);
 
-        invitationRepository.save(invitationEntity);
-
-        //TODO 피드 매니저에 추가
+        saveManager(feedEntity, userToEntity);
 
         eventPublisher.publishEvent(new NotificationEvent(userToEntity.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(userToEntity, feedEntity)));
+    }
+
+    private void saveInvitation(FeedEntity feedEntity, UserEntity userToEntity) {
+        invitationRepository.save(InvitationEntity.builder()
+                .userToEntity(userToEntity)
+                .feedEntity(feedEntity)
+                .build());
+    }
+
+    private void saveManager(FeedEntity feedEntity, UserEntity userToEntity) {
+        managerRepository.save(ManagerEntity.builder()
+                .feedEntity(feedEntity)
+                .userEntity(userToEntity)
+                .build());
+    }
+
+    private void ensureNotSelfInviting(Long userFromId, Long userToId) {
+        if (Objects.equals(userFromId, userToId)) {
+            throw new CustomException(SELF_INVITATION_NOT_ALLOWED);
+        }
     }
 
     private UserEntity findUserOrException(Long userId) {
@@ -59,12 +79,13 @@ public class InvitationService {
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
-    private FeedEntity findFeedOrException(Long feedId) {
-        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    private FeedEntity findFeedForUpdateOrException(Long feedId) {
+        return feedRepository.findByIdForUpdate(feedId).
+                orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
-    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
-        if (!feedEntity.isManagedBy(userId)) {
+    private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {
+        if (!feedEntity.isOwnedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }
