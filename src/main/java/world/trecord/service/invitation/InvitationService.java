@@ -15,7 +15,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
-import world.trecord.service.feed.request.FeedInviteRequest;
+import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.util.Objects;
 

@@ -54,7 +54,7 @@ public class RecordService {
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest request) {
         FeedEntity feedEntity = findFeedOrException(request.getFeedId());
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverRecord(feedEntity, userId);
 
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
         RecordEntity savedRecordEntity = recordRepository.save(request.toEntity(feedEntity, nextSequence));
@@ -70,7 +70,7 @@ public class RecordService {
         RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverRecord(feedEntity, userId);
 
         recordEntity.update(request.toUpdateEntity());
         recordRepository.saveAndFlush(recordEntity);
@@ -85,7 +85,7 @@ public class RecordService {
 
         FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverRecord(feedEntity, userId);
 
         originalRecord.swapSequenceWith(targetRecord);
         recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
@@ -96,7 +96,7 @@ public class RecordService {
         RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserHasPermissionOverRecord(feedEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
         userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
@@ -141,7 +141,7 @@ public class RecordService {
         return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
-    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+    private void ensureUserHasPermissionOverRecord(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isOwnedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }

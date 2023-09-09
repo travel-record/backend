@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.invitation.InvitationRepository;
+import world.trecord.domain.manager.ManagerRepository;
+import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
@@ -30,9 +33,11 @@ public class FeedService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
+    private final ManagerRepository managerRepository;
+    private final InvitationRepository invitationRepository;
+    private final NotificationRepository notificationRepository;
     private final RecordSequenceRepository recordSequenceRepository;
 
-    // TODO pageable
     public FeedListResponse getFeedList(Long userId) {
         List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userId);
 
@@ -66,7 +71,7 @@ public class FeedService {
     public void updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserIsFeedOwner(feedEntity, userId);
 
         feedEntity.update(request.toUpdateEntity());
         feedRepository.saveAndFlush(feedEntity);
@@ -76,8 +81,9 @@ public class FeedService {
     public void deleteFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserIsFeedOwner(feedEntity, userId);
 
+        // TODO add deleteAllByFeedEntityId
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.delete(feedEntity);
@@ -97,7 +103,7 @@ public class FeedService {
         return feedRepository.findByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
-    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
+    private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isOwnedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }

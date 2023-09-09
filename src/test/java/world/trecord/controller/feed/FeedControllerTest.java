@@ -18,8 +18,8 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.service.feed.request.FeedCreateRequest;
-import world.trecord.service.feed.request.FeedInviteRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -17,7 +17,7 @@ import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.feed.request.FeedInviteRequest;
+import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
