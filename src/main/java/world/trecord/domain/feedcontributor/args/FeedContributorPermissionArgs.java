@@ -7,11 +7,11 @@ import lombok.Setter;
 @Setter
 public class FeedContributorPermissionArgs {
 
-    private FeedPermissionArgs feedPermission;
-    private RecordPermissionArgs recordPermission;
+    private FeedPermissionArgs feed;
+    private RecordPermissionArgs record;
 
     public FeedContributorPermissionArgs() {
-        this.feedPermission = new FeedPermissionArgs();
-        this.recordPermission = new RecordPermissionArgs();
+        this.feed = new FeedPermissionArgs();
+        this.record = new RecordPermissionArgs();
     }
 }

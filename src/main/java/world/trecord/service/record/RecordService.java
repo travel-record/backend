@@ -7,12 +7,16 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceEntity;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
+import world.trecord.domain.users.UserEntity;
+import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.service.record.request.RecordCreateRequest;
 import world.trecord.service.record.request.RecordSequenceSwapRequest;
@@ -32,12 +36,14 @@ import static world.trecord.exception.CustomExceptionError.*;
 @Service
 public class RecordService {
 
-    private final RecordRepository recordRepository;
+    private final UserRepository userRepository;
     private final FeedRepository feedRepository;
+    private final RecordRepository recordRepository;
+    private final RecordSequenceRepository recordSequenceRepository;
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final NotificationRepository notificationRepository;
     private final CommentRepository commentRepository;
-    private final RecordSequenceRepository recordSequenceRepository;
+    private final FeedContributorRepository feedContributorRepository;
 
     public RecordInfoResponse getRecord(Optional<Long> viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
@@ -52,16 +58,17 @@ public class RecordService {
 
     @Transactional
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest request) {
+        UserEntity userEntity = findUserOrException(userId);
         FeedEntity feedEntity = findFeedOrException(request.getFeedId());
 
-        ensureUserHasPermissionOverRecord(feedEntity, userId);
+        ensureUserHasWritePermissionOverRecord(userId, feedEntity);
 
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
-        RecordEntity savedRecordEntity = recordRepository.save(request.toEntity(feedEntity, nextSequence));
+        RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, nextSequence));
 
         return RecordCreateResponse.builder()
-                .writerEntity(feedEntity.getUserEntity())
-                .recordEntity(savedRecordEntity)
+                .writerEntity(userEntity)
+                .recordEntity(recordEntity)
                 .build();
     }
 
@@ -70,7 +77,7 @@ public class RecordService {
         RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
-        ensureUserHasPermissionOverRecord(feedEntity, userId);
+        ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
 
         recordEntity.update(request.toUpdateEntity());
         recordRepository.saveAndFlush(recordEntity);
@@ -85,7 +92,9 @@ public class RecordService {
 
         FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
 
-        ensureUserHasPermissionOverRecord(feedEntity, userId);
+        if (!feedEntity.isOwnedBy(userId)) {
+            throw new CustomException(FORBIDDEN);
+        }
 
         originalRecord.swapSequenceWith(targetRecord);
         recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
@@ -96,7 +105,7 @@ public class RecordService {
         RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
-        ensureUserHasPermissionOverRecord(feedEntity, userId);
+        ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
         userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
@@ -112,6 +121,20 @@ public class RecordService {
                 .commentEntities(commentEntities)
                 .viewerId(viewerId.orElse(null))
                 .build();
+    }
+
+    private void ensureUserHasWritePermissionOverRecord(Long userId, FeedEntity feedEntity) {
+        if (feedEntity.isOwnedBy(userId)) {
+            return;
+        }
+        Optional<FeedContributorEntity> contributor = feedContributorRepository.findByUserEntityIdAndFeedEntityId(userId, feedEntity.getId());
+        if (contributor.isEmpty() || !contributor.get().getPermission().getRecord().getWrite()) {
+            throw new CustomException(FORBIDDEN);
+        }
+    }
+
+    private UserEntity findUserOrException(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private FeedEntity findFeedOrException(Long feedId) {
@@ -141,8 +164,8 @@ public class RecordService {
         return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
-    private void ensureUserHasPermissionOverRecord(FeedEntity feedEntity, Long userId) {
-        if (!feedEntity.isOwnedBy(userId)) {
+    private void ensureUserHasPermissionOverRecord(FeedEntity feedEntity, RecordEntity recordEntity, Long userId) {
+        if (!feedEntity.isOwnedBy(userId) && !recordEntity.isCreatedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }

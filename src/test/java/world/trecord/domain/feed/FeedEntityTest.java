@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
@@ -140,12 +139,4 @@ class FeedEntityTest {
         //then
         Assertions.assertThat(result).isFalse();
     }
-
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, LocalDateTime date) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .date(date)
-                .build();
-    }
-
 }

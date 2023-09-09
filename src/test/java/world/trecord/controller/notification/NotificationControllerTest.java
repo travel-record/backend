@@ -14,9 +14,9 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
+import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.notification.enumeration.NotificationStatus;
 import world.trecord.domain.notification.enumeration.NotificationType;
-import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -303,6 +303,7 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
                 .place("place")

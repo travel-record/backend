@@ -71,7 +71,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
 
         } catch (Exception e) {
-            log.error("Error in JwtTokenFilter while processing the request [{}] Cause: [{}]", req.getRequestURI(), e.getMessage());
+            log.error("Error in JwtTokenFilter while processing the request [{}] [{}] Cause: [{}]", req.getRequestURI(), req.getRemoteAddr(), e.getMessage());
             returnInvalidTokenError(res);
         }
     }

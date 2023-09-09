@@ -9,9 +9,11 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -62,8 +64,13 @@ public class RecordEntity extends BaseEntity {
     @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_record_feed"))
     private FeedEntity feedEntity;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_author", nullable = false, foreignKey = @ForeignKey(name = "fk_record_users"))
+    private UserEntity userEntity;
+
     @Builder
-    private RecordEntity(FeedEntity feedEntity,
+    private RecordEntity(UserEntity userEntity,
+                         FeedEntity feedEntity,
                          String title,
                          LocalDateTime date,
                          String place,
@@ -74,6 +81,7 @@ public class RecordEntity extends BaseEntity {
                          String companion,
                          String imageUrl,
                          int sequence) {
+        this.userEntity = userEntity;
         this.feedEntity = feedEntity;
         this.title = title;
         this.date = date;
@@ -105,6 +113,10 @@ public class RecordEntity extends BaseEntity {
 
     public boolean hasSameFeed(RecordEntity otherRecord) {
         return this.feedEntity.isEqualTo(otherRecord.getFeedEntity());
+    }
+
+    public boolean isCreatedBy(Long userId) {
+        return Objects.equals(this.userEntity.getId(), userId);
     }
 
     public void swapSequenceWith(RecordEntity otherRecord) {

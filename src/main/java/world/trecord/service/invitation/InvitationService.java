@@ -49,7 +49,7 @@ public class InvitationService {
 
         saveInvitation(feedEntity, userToEntity);
 
-        saveManager(feedEntity, userToEntity);
+        saveFeedContributor(feedEntity, userToEntity);
 
         eventPublisher.publishEvent(new NotificationEvent(userToEntity.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(userToEntity, feedEntity)));
     }
@@ -61,7 +61,7 @@ public class InvitationService {
                 .build());
     }
 
-    private void saveManager(FeedEntity feedEntity, UserEntity userToEntity) {
+    private void saveFeedContributor(FeedEntity feedEntity, UserEntity userToEntity) {
         feedContributorRepository.save(FeedContributorEntity.builder()
                 .feedEntity(feedEntity)
                 .userEntity(userToEntity)

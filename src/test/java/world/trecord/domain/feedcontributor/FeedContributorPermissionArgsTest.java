@@ -15,7 +15,7 @@ class FeedContributorPermissionArgsTest {
         FeedContributorPermissionArgs permission = new FeedContributorPermissionArgs();
 
         //when //then
-        Assertions.assertThat(permission.getRecordPermission())
+        Assertions.assertThat(permission.getRecord())
                 .extracting("read", "write", "modify", "delete")
                 .containsExactly(true, true, true, true);
     }
