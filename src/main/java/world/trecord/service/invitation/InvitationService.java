@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feedcontributor.ManagerEntity;
-import world.trecord.domain.feedcontributor.ManagerRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.invitation.InvitationEntity;
 import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.notification.args.NotificationArgs;
@@ -30,7 +30,7 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final InvitationRepository invitationRepository;
-    private final ManagerRepository managerRepository;
+    private final FeedContributorRepository feedContributorRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -43,7 +43,7 @@ public class InvitationService {
 
         ensureNotSelfInviting(userFromId, userToEntity.getId());
 
-        if (managerRepository.existsByUserEntityIdAndFeedEntityId(userToEntity.getId(), feedEntity.getId())) {
+        if (feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userToEntity.getId(), feedEntity.getId())) {
             throw new CustomException(USER_ALREADY_INVITED);
         }
 
@@ -62,7 +62,7 @@ public class InvitationService {
     }
 
     private void saveManager(FeedEntity feedEntity, UserEntity userToEntity) {
-        managerRepository.save(ManagerEntity.builder()
+        feedContributorRepository.save(FeedContributorEntity.builder()
                 .feedEntity(feedEntity)
                 .userEntity(userToEntity)
                 .build());

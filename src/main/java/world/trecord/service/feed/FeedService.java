@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feedcontributor.ManagerRepository;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
@@ -33,7 +33,7 @@ public class FeedService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
-    private final ManagerRepository managerRepository;
+    private final FeedContributorRepository feedContributorRepository;
     private final InvitationRepository invitationRepository;
     private final NotificationRepository notificationRepository;
     private final RecordSequenceRepository recordSequenceRepository;

@@ -16,37 +16,37 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(
-        name = "manager",
-        indexes = @Index(name = "idx_manager_users_feed", columnList = "id_users, id_feed")
+        name = "feed_contributor",
+        indexes = @Index(name = "idx_contributor_users_feed", columnList = "id_users, id_feed")
 )
-@SQLDelete(sql = "UPDATE manager SET deleted_date_time = NOW() WHERE id_manager = ?")
+@SQLDelete(sql = "UPDATE feed_contributor SET deleted_date_time = NOW() WHERE id_contributor = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity
-public class ManagerEntity extends BaseEntity {
+public class FeedContributorEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_manager", nullable = false)
+    @Column(name = "id_contributor", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users", foreignKey = @ForeignKey(name = "fk_manager_users"))
+    @JoinColumn(name = "id_users", foreignKey = @ForeignKey(name = "fk_contributor_users"))
     private UserEntity userEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_feed", foreignKey = @ForeignKey(name = "fk_manager_feed"))
+    @JoinColumn(name = "id_feed", foreignKey = @ForeignKey(name = "fk_contributor_feed"))
     private FeedEntity feedEntity;
 
-    @ElementCollection(targetClass = ManagerPermission.class)
-    @CollectionTable(name = "manager_permission", joinColumns = @JoinColumn(name = "id_manager"))
+    @ElementCollection(targetClass = FeedContributorPermission.class)
+    @CollectionTable(name = "contributor_permission", joinColumns = @JoinColumn(name = "id_contributor"))
     @Enumerated(EnumType.STRING)
     @Column(name = "permission", nullable = false)
-    private Set<ManagerPermission> permissions;
+    private Set<FeedContributorPermission> permissions;
 
     @Builder
-    private ManagerEntity(UserEntity userEntity, FeedEntity feedEntity) {
+    private FeedContributorEntity(UserEntity userEntity, FeedEntity feedEntity) {
         this.userEntity = userEntity;
         this.feedEntity = feedEntity;
-        this.permissions = ManagerPermission.getAllPermissions();
+        this.permissions = FeedContributorPermission.getAllPermissions();
     }
 }

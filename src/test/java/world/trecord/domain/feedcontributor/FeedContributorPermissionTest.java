@@ -7,15 +7,15 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
-import static world.trecord.domain.feedcontributor.ManagerPermission.*;
+import static world.trecord.domain.feedcontributor.FeedContributorPermission.*;
 
-class ManagerPermissionTest {
+class FeedContributorPermissionTest {
 
     @Test
     @DisplayName("모든 권한을 가져온다")
     void getAllPermissionsTest() throws Exception {
         //when
-        Set<ManagerPermission> allPermissions = getAllPermissions();
+        Set<FeedContributorPermission> allPermissions = getAllPermissions();
 
         //then
         Assertions.assertThat(allPermissions)

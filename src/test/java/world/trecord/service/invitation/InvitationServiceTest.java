@@ -10,9 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feedcontributor.ManagerEntity;
-import world.trecord.domain.feedcontributor.ManagerPermission;
-import world.trecord.domain.feedcontributor.ManagerRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
+import world.trecord.domain.feedcontributor.FeedContributorPermission;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.invitation.InvitationStatus;
 import world.trecord.domain.users.UserEntity;
@@ -41,7 +41,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
     FeedRepository feedRepository;
 
     @Autowired
-    ManagerRepository managerRepository;
+    FeedContributorRepository feedContributorRepository;
 
     @Autowired
     InvitationRepository invitationRepository;
@@ -137,7 +137,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
         invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
 
         //then
-        Assertions.assertThat(managerRepository.findAll())
+        Assertions.assertThat(feedContributorRepository.findAll())
                 .hasSize(1)
                 .extracting("userEntity")
                 .containsOnly(invitedUser);
@@ -161,10 +161,10 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
         invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
 
         //then
-        Assertions.assertThat(managerRepository.findAll())
+        Assertions.assertThat(feedContributorRepository.findAll())
                 .hasSize(1)
                 .extracting("permissions")
-                .containsExactly(ManagerPermission.getAllPermissions());
+                .containsExactly(FeedContributorPermission.getAllPermissions());
     }
 
     @Test
@@ -239,7 +239,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
-        managerRepository.save(createManager(alreadyInvitedUser, feedEntity));
+        feedContributorRepository.save(createManager(alreadyInvitedUser, feedEntity));
 
         FeedInviteRequest request = FeedInviteRequest.builder()
                 .userToId(alreadyInvitedUser.getId())
@@ -267,8 +267,8 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private ManagerEntity createManager(UserEntity userEntity, FeedEntity feedEntity) {
-        return ManagerEntity.builder()
+    private FeedContributorEntity createManager(UserEntity userEntity, FeedEntity feedEntity) {
+        return FeedContributorEntity.builder()
                 .userEntity(userEntity)
                 .feedEntity(feedEntity)
                 .build();

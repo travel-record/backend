@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 
 @Transactional
 @IntegrationTestSupport
-class ManagerRepositoryTest extends AbstractContainerBaseTest {
+class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -25,7 +25,7 @@ class ManagerRepositoryTest extends AbstractContainerBaseTest {
     FeedRepository feedRepository;
 
     @Autowired
-    ManagerRepository managerRepository;
+    FeedContributorRepository feedContributorRepository;
 
     @Test
     @DisplayName("사용자가 피드의 매니저로 존재하면 true를 반환한다")
@@ -33,10 +33,10 @@ class ManagerRepositoryTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        managerRepository.save(createManager(userEntity, feedEntity));
+        feedContributorRepository.save(createManager(userEntity, feedEntity));
 
         //when
-        boolean result = managerRepository.existsByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId());
+        boolean result = feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId());
 
         //then
         Assertions.assertThat(result).isTrue();
@@ -50,7 +50,7 @@ class ManagerRepositoryTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
         //when
-        boolean result = managerRepository.existsByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId());
+        boolean result = feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId());
 
         //then
         Assertions.assertThat(result).isFalse();
@@ -71,8 +71,8 @@ class ManagerRepositoryTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private ManagerEntity createManager(UserEntity userEntity, FeedEntity feedEntity) {
-        return ManagerEntity.builder()
+    private FeedContributorEntity createManager(UserEntity userEntity, FeedEntity feedEntity) {
+        return FeedContributorEntity.builder()
                 .userEntity(userEntity)
                 .feedEntity(feedEntity)
                 .build();

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feedcontributor.ManagerRepository;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -34,7 +34,7 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
     FeedRepository feedRepository;
 
     @Autowired
-    ManagerRepository managerRepository;
+    FeedContributorRepository feedContributorRepository;
 
     @Autowired
     InvitationRepository invitationRepository;
@@ -48,7 +48,7 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
     @AfterEach
     void tearDown() {
         invitationRepository.deleteAllInBatch();
-        managerRepository.deleteAllInBatch();
+        feedContributorRepository.deleteAllInBatch();
         feedRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
     }
@@ -96,7 +96,7 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
         }
 
         Assertions.assertThat(exceptionCount).isEqualTo(inviteRequestCount - 1);
-        Assertions.assertThat(managerRepository.findAll()).hasSize(1);
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
         Assertions.assertThat(invitationRepository.findAll()).hasSize(1);
 
         executorService.shutdown();
