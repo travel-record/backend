@@ -8,13 +8,10 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
-import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -65,9 +62,6 @@ public class RecordEntity extends BaseEntity {
     @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_record_feed"))
     private FeedEntity feedEntity;
 
-    @OneToMany(mappedBy = "recordEntity")
-    private List<CommentEntity> commentEntities = new ArrayList<>();
-
     @Builder
     private RecordEntity(FeedEntity feedEntity,
                          String title,
@@ -103,10 +97,6 @@ public class RecordEntity extends BaseEntity {
         this.content = updateEntity.getContent();
         this.companion = updateEntity.getCompanion();
         this.imageUrl = updateEntity.getImageUrl();
-    }
-
-    public void addCommentEntity(CommentEntity commentEntity) {
-        this.commentEntities.add(commentEntity);
     }
 
     public LocalDate convertDateToLocalDate() {

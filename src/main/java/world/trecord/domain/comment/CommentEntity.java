@@ -50,10 +50,7 @@ public class CommentEntity extends BaseEntity {
     private CommentEntity(String content, UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         this.content = content;
         this.userEntity = userEntity;
-        if (recordEntity != null) {
-            this.recordEntity = recordEntity;
-            recordEntity.addCommentEntity(this);
-        }
+        this.recordEntity = recordEntity;
         if (parentCommentEntity != null) {
             this.parentCommentEntity = parentCommentEntity;
             parentCommentEntity.addChildCommentEntity(this);
@@ -63,7 +60,7 @@ public class CommentEntity extends BaseEntity {
     public void addChildCommentEntity(CommentEntity childCommentEntity) {
         this.childCommentEntities.add(childCommentEntity);
     }
-    
+
     public void update(CommentEntity updateEntity) {
         this.content = updateEntity.getContent();
     }
