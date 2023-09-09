@@ -27,6 +27,8 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -80,7 +82,7 @@ class AuthServiceTest {
 
         given(jwtTokenHandler.generateToken(null, secretKey, expiredTimeMs * 14))
                 .willReturn(token);
-        
+
         //when
         LoginResponse loginResponse = authService.googleLogin(accessToken, redirectionUri);
 
@@ -181,6 +183,10 @@ class AuthServiceTest {
         given(jwtTokenHandler.generateToken(eq(userId), anyString(), eq(expiredTimeMs)))
                 .willReturn(token);
 
+        UserEntity mockUser = mock(UserEntity.class);
+        when(mockUser.getId()).thenReturn(userId);
+        when(userRepository.findById(any())).thenReturn(Optional.of(mockUser));
+
         //when
         RefreshResponse refreshResponse = authService.reissueToken(token);
 
@@ -205,5 +211,29 @@ class AuthServiceTest {
         //when //then
         Assertions.assertThatThrownBy(() -> authService.reissueToken(invalidToken))
                 .isInstanceOf(JwtException.class);
+    }
+
+    @Test
+    @DisplayName("토큰에서 추출한 유저가 조회되지 않으면 예외가 발생한다")
+    void reissueTokenWhenUserNotFoundTest() throws Exception {
+        //given
+        long userId = 1L;
+        String token = "testToken";
+        String secretKey = "zOlJAgjm9iEZPqmzilEMh4NxvOfg1qBRP3xYkzUWpSE";
+        long expiredTimeMs = 86400000L;
+
+        ReflectionTestUtils.setField(authService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(authService, "tokenExpiredTimeMs", expiredTimeMs);
+
+        given(jwtTokenHandler.getUserIdFromToken(secretKey, token))
+                .willReturn(userId);
+        
+        when(userRepository.findById(any())).thenReturn(Optional.empty());
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> authService.reissueToken(token))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
     }
 }

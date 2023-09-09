@@ -5,12 +5,15 @@ import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.exception.CustomException;
 import world.trecord.service.auth.google.GoogleAuthService;
 import world.trecord.service.auth.response.LoginResponse;
 import world.trecord.service.auth.response.RefreshResponse;
 import world.trecord.service.users.UserCacheRepository;
 import world.trecord.service.users.UserContext;
 import world.trecord.service.users.UserService;
+
+import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
 
 @Service
 public class AuthService {
@@ -58,8 +61,10 @@ public class AuthService {
     public RefreshResponse reissueToken(String refreshToken) {
         jwtTokenHandler.verifyToken(secretKey, refreshToken);
         Long userId = jwtTokenHandler.getUserIdFromToken(secretKey, refreshToken);
-        String reissuedToken = createToken(userId);
-        String reissuedRefreshToken = createRefreshToken(userId);
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+        String reissuedToken = createToken(userEntity.getId());
+        String reissuedRefreshToken = createRefreshToken(userEntity.getId());
 
         return RefreshResponse.builder()
                 .token(reissuedToken)
