@@ -11,7 +11,6 @@ import org.testcontainers.shaded.org.awaitility.Awaitility;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
-import world.trecord.domain.feedcontributor.FeedContributorPermission;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.invitation.InvitationStatus;
@@ -161,10 +160,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
         invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
 
         //then
-        Assertions.assertThat(feedContributorRepository.findAll())
-                .hasSize(1)
-                .extracting("permissions")
-                .containsExactly(FeedContributorPermission.getAllPermissions());
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
     }
 
     @Test

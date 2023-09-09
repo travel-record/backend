@@ -28,7 +28,7 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
     FeedContributorRepository feedContributorRepository;
 
     @Test
-    @DisplayName("사용자가 피드의 매니저로 존재하면 true를 반환한다")
+    @DisplayName("사용자가 피드의 컨트리뷰터로 존재하면 true를 반환한다")
     void existsByUserEntityIdAndFeedEntityIdReturnsTrueTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
@@ -43,7 +43,7 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("사용자가 피드의 매니저로 존재하지 않으면 false를 반환한다")
+    @DisplayName("사용자가 피드의 컨트리뷰터로 존재하지 않으면 false를 반환한다")
     void existsByUserEntityIdAndFeedEntityIdReturnsFalseTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());

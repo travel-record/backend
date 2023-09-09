@@ -1,17 +1,18 @@
 package world.trecord.domain.feedcontributor;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.feedcontributor.args.FeedContributorPermissionArgs;
 import world.trecord.domain.users.UserEntity;
-
-import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -37,16 +38,14 @@ public class FeedContributorEntity extends BaseEntity {
     @JoinColumn(name = "id_feed", foreignKey = @ForeignKey(name = "fk_contributor_feed"))
     private FeedEntity feedEntity;
 
-    @ElementCollection(targetClass = FeedContributorPermission.class)
-    @CollectionTable(name = "contributor_permission", joinColumns = @JoinColumn(name = "id_contributor"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "permission", nullable = false)
-    private Set<FeedContributorPermission> permissions;
+    @Type(JsonType.class)
+    @Column(name = "permission", columnDefinition = "json")
+    private FeedContributorPermissionArgs permission;
 
     @Builder
     private FeedContributorEntity(UserEntity userEntity, FeedEntity feedEntity) {
         this.userEntity = userEntity;
         this.feedEntity = feedEntity;
-        this.permissions = FeedContributorPermission.getAllPermissions();
+        this.permission = new FeedContributorPermissionArgs();
     }
 }
