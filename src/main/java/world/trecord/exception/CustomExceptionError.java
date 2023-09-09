@@ -3,6 +3,7 @@ package world.trecord.exception;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+// TODO errorCode reset
 @RequiredArgsConstructor
 public enum CustomExceptionError {
 

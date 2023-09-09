@@ -33,7 +33,7 @@ public class RecordInfoResponse {
         this.writerId = recordEntity.getFeedEntity().getUserEntity().getId();
         this.feedId = recordEntity.getFeedEntity().getId();
         this.recordId = recordEntity.getId();
-        this.isUpdatable = recordEntity.getFeedEntity().isOwnedBy(viewerId);
+        this.isUpdatable = recordEntity.isCreatedBy(viewerId) || recordEntity.getFeedEntity().isOwnedBy(viewerId);
         this.liked = liked;
         this.title = recordEntity.getTitle();
         this.date = recordEntity.convertDateToLocalDate();

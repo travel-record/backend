@@ -11,6 +11,8 @@ import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -27,6 +29,7 @@ import java.util.List;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.exception.CustomExceptionError.*;
@@ -55,6 +58,8 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     JwtProperties jwtProperties;
+    @Autowired
+    private FeedContributorRepository feedContributorRepository;
 
     @Test
     @DisplayName("GET /api/v1/feeds - 성공 (등록된 피드가 없을때)")
@@ -184,26 +189,79 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
-    // TODO
     @Test
     @DisplayName("POST /api/v1/feeds/{feedId}/invite - 성공")
     void inviteUserTest() throws Exception {
         //given
+        UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
+        UserEntity invitedUser = userRepository.save(createUser("test1@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(feedOwner, LocalDateTime.now(), LocalDateTime.now()));
 
-        //when
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
 
-        //then
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(feedOwner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
     }
 
-    // TODO
     @Test
     @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (피드 주인이 자기 자신을 초대하는 경우)")
-    void test() throws Exception {
+    void inviteSelfTest() throws Exception {
         //given
+        UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(feedOwner, LocalDateTime.now(), LocalDateTime.now()));
 
-        //when
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(feedOwner.getId())
+                .build();
 
-        //then
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(feedOwner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(SELF_INVITATION_NOT_ALLOWED.code()));
+    }
+
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (이미 초대된 사용자를 초대하는 경우)")
+    void test2() throws Exception {
+        //given
+        UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
+        UserEntity invitedUser = userRepository.save(createUser("test1@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(feedOwner, LocalDateTime.now(), LocalDateTime.now()));
+        feedContributorRepository.save(FeedContributorEntity.builder()
+                .userEntity(invitedUser)
+                .feedEntity(feedEntity)
+                .build());
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(feedOwner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(USER_ALREADY_INVITED));
     }
 
     @Test
