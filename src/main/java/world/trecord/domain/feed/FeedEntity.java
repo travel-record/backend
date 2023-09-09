@@ -91,7 +91,7 @@ public class FeedEntity extends BaseEntity {
         return this.endAt != null ? this.endAt.toLocalDate() : null;
     }
 
-    public boolean isManagedBy(Long userId) {
+    public boolean isOwnedBy(Long userId) {
         return Objects.equals(this.userEntity.getId(), userId);
     }
 }

@@ -142,7 +142,7 @@ public class RecordService {
     }
 
     private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
-        if (!feedEntity.isManagedBy(userId)) {
+        if (!feedEntity.isOwnedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }

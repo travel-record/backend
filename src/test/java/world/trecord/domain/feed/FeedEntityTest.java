@@ -113,7 +113,7 @@ class FeedEntityTest {
                 .build();
 
         //when
-        boolean result = feedEntity.isManagedBy(userEntity.getId());
+        boolean result = feedEntity.isOwnedBy(userEntity.getId());
 
         //then
         Assertions.assertThat(result).isTrue();
@@ -135,7 +135,7 @@ class FeedEntityTest {
                 .build();
 
         //when
-        boolean result = feedEntity.isManagedBy(userEntity1.getId());
+        boolean result = feedEntity.isOwnedBy(userEntity1.getId());
 
         //then
         Assertions.assertThat(result).isFalse();
