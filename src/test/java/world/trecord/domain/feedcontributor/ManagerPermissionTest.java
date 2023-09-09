@@ -1,4 +1,4 @@
-package world.trecord.domain.manager;
+package world.trecord.domain.feedcontributor;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
-import static world.trecord.domain.manager.ManagerPermission.*;
+import static world.trecord.domain.feedcontributor.ManagerPermission.*;
 
 class ManagerPermissionTest {
 

@@ -1,4 +1,4 @@
-package world.trecord.domain.manager;
+package world.trecord.domain.feedcontributor;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

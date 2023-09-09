@@ -1,4 +1,4 @@
-package world.trecord.domain.manager;
+package world.trecord.domain.feedcontributor;
 
 import java.util.EnumSet;
 import java.util.Set;

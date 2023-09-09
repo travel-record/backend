@@ -1,4 +1,4 @@
-package world.trecord.domain.manager;
+package world.trecord.domain.feedcontributor;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
