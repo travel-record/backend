@@ -83,7 +83,9 @@ public class FeedService {
 
         ensureUserIsFeedOwner(feedEntity, userId);
 
-        // TODO add deleteAllByFeedEntityId
+        notificationRepository.deleteAllByFeedEntityId(feedId);
+        invitationRepository.deleteAllByFeedEntityId(feedId);
+        feedContributorRepository.deleteAllByFeedEntityId(feedId);
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.delete(feedEntity);

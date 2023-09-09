@@ -132,13 +132,25 @@ class CommentServiceTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("자신의 기록에 댓글을 남기면 알림이 전송되지 않는다")
-    void test() throws Exception {
-        // TODO
+    void doNotCreateCommentNotificationWhenCommentOnOtherRecordTest() throws Exception {
         //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .content("content")
+                .build();
+
+        //when
+        commentService.createComment(owner.getId(), request);
 
         //then
+        Awaitility.await()
+                .atMost(1, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(mockEventListener, Mockito.times(1)).handleNotificationEventListener(Mockito.any()));
     }
 
     @Test

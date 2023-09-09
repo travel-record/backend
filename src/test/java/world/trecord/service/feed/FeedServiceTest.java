@@ -315,6 +315,23 @@ class FeedServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
     }
 
+    @Test
+    @DisplayName("피드 삭제 권한이 없으면 예외가 발생한다")
+    void deleteFeedWhenPermissionNotExistsTest() throws Exception {
+        //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity other = createUser("test1@email.com");
+        userRepository.saveAll(List.of(owner, other));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> feedService.deleteFeed(other.getId(), feedEntity.getId()))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.FORBIDDEN);
+    }
+
     private UserEntity createUser(String email) {
         return UserEntity.builder()
                 .email(email)

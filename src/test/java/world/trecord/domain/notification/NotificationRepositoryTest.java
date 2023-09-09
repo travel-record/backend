@@ -48,7 +48,7 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
 
-        NotificationEntity notificationEntity = createNotification(userEntity, null, COMMENT, UNREAD);
+        NotificationEntity notificationEntity = createNotification(userEntity, null, null, COMMENT, UNREAD);
 
         notificationRepository.save(notificationEntity);
 
@@ -65,7 +65,7 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
 
-        NotificationEntity notificationEntity = createNotification(userEntity, null, COMMENT, READ);
+        NotificationEntity notificationEntity = createNotification(userEntity, null, null, COMMENT, READ);
 
         notificationRepository.save(notificationEntity);
 
@@ -82,9 +82,9 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
 
-        NotificationEntity notificationEntity1 = createNotification(userEntity, null, COMMENT, READ);
-        NotificationEntity notificationEntity2 = createNotification(userEntity, null, COMMENT, READ);
-        NotificationEntity notificationEntity3 = createNotification(userEntity, null, COMMENT, READ);
+        NotificationEntity notificationEntity1 = createNotification(userEntity, null, null, COMMENT, READ);
+        NotificationEntity notificationEntity2 = createNotification(userEntity, null, null, COMMENT, READ);
+        NotificationEntity notificationEntity3 = createNotification(userEntity, null, null, COMMENT, READ);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
@@ -115,10 +115,9 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
 
-        NotificationEntity notificationEntity1 = createNotification(userEntity, null, COMMENT, UNREAD);
-        NotificationEntity notificationEntity2 = createNotification(userEntity, null, COMMENT, READ);
-        NotificationEntity notificationEntity3 = createNotification(userEntity, null, COMMENT, UNREAD);
-
+        NotificationEntity notificationEntity1 = createNotification(userEntity, null, null, COMMENT, UNREAD);
+        NotificationEntity notificationEntity2 = createNotification(userEntity, null, null, COMMENT, READ);
+        NotificationEntity notificationEntity3 = createNotification(userEntity, null, null, COMMENT, UNREAD);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
@@ -137,9 +136,9 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
 
-        NotificationEntity notificationEntity1 = createNotification(userEntity, null, COMMENT, UNREAD);
-        NotificationEntity notificationEntity2 = createNotification(userEntity, null, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity3 = createNotification(userEntity, null, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity1 = createNotification(userEntity, null, null, COMMENT, UNREAD);
+        NotificationEntity notificationEntity2 = createNotification(userEntity, null, null, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity3 = createNotification(userEntity, null, null, RECORD_LIKE, UNREAD);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
@@ -162,10 +161,9 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
         //given
         UserEntity userEntity = userRepository.save(createUser());
 
-        NotificationEntity notificationEntity1 = createNotification(userEntity, null, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity2 = createNotification(userEntity, null, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity3 = createNotification(userEntity, null, RECORD_LIKE, UNREAD);
-
+        NotificationEntity notificationEntity1 = createNotification(userEntity, null, null, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity2 = createNotification(userEntity, null, null, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity3 = createNotification(userEntity, null, null, RECORD_LIKE, UNREAD);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
@@ -176,20 +174,40 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("기록으로 알림 리스트를 soft delete 한다")
+    @DisplayName("기록 아이디로 알림 리스트를 soft delete 한다")
     void deleteAllByRecordEntityTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
-        NotificationEntity notificationEntity1 = createNotification(userEntity, recordEntity, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity2 = createNotification(userEntity, recordEntity, RECORD_LIKE, UNREAD);
-        NotificationEntity notificationEntity3 = createNotification(userEntity, recordEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity1 = createNotification(userEntity, feedEntity, recordEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity2 = createNotification(userEntity, feedEntity, recordEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity3 = createNotification(userEntity, feedEntity, recordEntity, RECORD_LIKE, UNREAD);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
         //when
         notificationRepository.deleteAllByRecordEntityId(recordEntity.getId());
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("피드 아이디로 알림 리스트를 soft delete 한다")
+    void deleteAllByFeedEntityIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+
+        NotificationEntity notificationEntity1 = createNotification(userEntity, feedEntity, recordEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity2 = createNotification(userEntity, feedEntity, recordEntity, RECORD_LIKE, UNREAD);
+        NotificationEntity notificationEntity3 = createNotification(userEntity, feedEntity, recordEntity, RECORD_LIKE, UNREAD);
+        notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
+
+        //when
+        notificationRepository.deleteAllByFeedEntityId(feedEntity.getId());
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();
@@ -223,8 +241,9 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private NotificationEntity createNotification(UserEntity userEntity, RecordEntity recordEntity, NotificationType type, NotificationStatus status) {
+    private NotificationEntity createNotification(UserEntity userEntity, FeedEntity feedEntity, RecordEntity recordEntity, NotificationType type, NotificationStatus status) {
         NotificationArgs args = NotificationArgs.builder()
+                .feedEntity(feedEntity)
                 .recordEntity(recordEntity)
                 .build();
 

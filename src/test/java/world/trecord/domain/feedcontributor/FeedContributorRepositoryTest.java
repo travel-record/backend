@@ -13,6 +13,7 @@ import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Transactional
 @IntegrationTestSupport
@@ -31,9 +32,9 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 피드의 컨트리뷰터로 존재하면 true를 반환한다")
     void existsByUserEntityIdAndFeedEntityIdReturnsTrueTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser());
+        UserEntity userEntity = userRepository.save(createUser("email@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        feedContributorRepository.save(createManager(userEntity, feedEntity));
+        feedContributorRepository.save(createContributor(userEntity, feedEntity));
 
         //when
         boolean result = feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId());
@@ -46,7 +47,7 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 피드의 컨트리뷰터로 존재하지 않으면 false를 반환한다")
     void existsByUserEntityIdAndFeedEntityIdReturnsFalseTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser());
+        UserEntity userEntity = userRepository.save(createUser("email@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
 
         //when
@@ -56,9 +57,33 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
         Assertions.assertThat(result).isFalse();
     }
 
-    private UserEntity createUser() {
+    @Test
+    @DisplayName("피드 아이디로 피드 컨트리뷰터를 soft delete한다")
+    void deleteAllByFeedEntityIdTest() throws Exception {
+        //given
+        UserEntity owner = createUser("email@email.com");
+        UserEntity userEntity1 = createUser("email1@email.com");
+        UserEntity userEntity2 = createUser("email2@email.com");
+        UserEntity userEntity3 = createUser("email3@email.com");
+        userRepository.saveAll(List.of(owner, userEntity1, userEntity2, userEntity3));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+
+        FeedContributorEntity contributor1 = createContributor(userEntity1, feedEntity);
+        FeedContributorEntity contributor2 = createContributor(userEntity2, feedEntity);
+        FeedContributorEntity contributor3 = createContributor(userEntity3, feedEntity);
+        feedContributorRepository.saveAll(List.of(contributor1, contributor2, contributor3));
+
+        //when
+        feedContributorRepository.deleteAllByFeedEntityId(feedEntity.getId());
+
+        //then
+        Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
+    }
+
+    private UserEntity createUser(String email) {
         return UserEntity.builder()
-                .email("email@email.com")
+                .email(email)
                 .build();
     }
 
@@ -71,7 +96,7 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private FeedContributorEntity createManager(UserEntity userEntity, FeedEntity feedEntity) {
+    private FeedContributorEntity createContributor(UserEntity userEntity, FeedEntity feedEntity) {
         return FeedContributorEntity.builder()
                 .userEntity(userEntity)
                 .feedEntity(feedEntity)
