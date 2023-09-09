@@ -92,9 +92,7 @@ public class RecordService {
 
         FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
 
-        if (!feedEntity.isOwnedBy(userId)) {
-            throw new CustomException(FORBIDDEN);
-        }
+        ensureUserHasPermissionOverFeed(userId, feedEntity);
 
         originalRecord.swapSequenceWith(targetRecord);
         recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
@@ -153,6 +151,12 @@ public class RecordService {
     private void ensureRecordsHasSameFeed(RecordEntity originalRecord, RecordEntity targetRecord) {
         if (!originalRecord.hasSameFeed(targetRecord)) {
             throw new CustomException(INVALID_ARGUMENT);
+        }
+    }
+
+    private void ensureUserHasPermissionOverFeed(Long userId, FeedEntity feedEntity) {
+        if (!feedEntity.isOwnedBy(userId)) {
+            throw new CustomException(FORBIDDEN);
         }
     }
 

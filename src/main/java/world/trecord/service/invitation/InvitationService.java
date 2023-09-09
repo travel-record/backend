@@ -46,7 +46,7 @@ public class InvitationService {
         ensureUserNotAlreadyInvited(userToEntity.getId(), feedEntity.getId());
 
         saveInvitation(feedEntity, userToEntity);
-        
+
         eventPublisher.publishEvent(new NotificationEvent(userToEntity.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(userToEntity, feedEntity)));
     }
 
@@ -90,10 +90,10 @@ public class InvitationService {
         }
     }
 
-    private NotificationArgs buildNotificationArgs(UserEntity usrFromEntity, FeedEntity feedEntity) {
+    private NotificationArgs buildNotificationArgs(UserEntity userFromEntity, FeedEntity feedEntity) {
         return NotificationArgs.builder()
                 .feedEntity(feedEntity)
-                .userFromEntity(usrFromEntity)
+                .userFromEntity(userFromEntity)
                 .build();
     }
 }
