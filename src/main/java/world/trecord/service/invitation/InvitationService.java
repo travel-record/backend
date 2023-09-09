@@ -43,14 +43,10 @@ public class InvitationService {
 
         ensureNotSelfInviting(userFromId, userToEntity.getId());
 
-        if (feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userToEntity.getId(), feedEntity.getId())) {
-            throw new CustomException(USER_ALREADY_INVITED);
-        }
+        ensureUserNotAlreadyInvited(userToEntity.getId(), feedEntity.getId());
 
         saveInvitation(feedEntity, userToEntity);
-
-        saveFeedContributor(feedEntity, userToEntity);
-
+        
         eventPublisher.publishEvent(new NotificationEvent(userToEntity.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(userToEntity, feedEntity)));
     }
 
@@ -59,9 +55,7 @@ public class InvitationService {
                 .userToEntity(userToEntity)
                 .feedEntity(feedEntity)
                 .build());
-    }
 
-    private void saveFeedContributor(FeedEntity feedEntity, UserEntity userToEntity) {
         feedContributorRepository.save(FeedContributorEntity.builder()
                 .feedEntity(feedEntity)
                 .userEntity(userToEntity)
@@ -87,6 +81,12 @@ public class InvitationService {
     private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isOwnedBy(userId)) {
             throw new CustomException(FORBIDDEN);
+        }
+    }
+
+    private void ensureUserNotAlreadyInvited(Long userToId, Long feedId) {
+        if (feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userToId, feedId)) {
+            throw new CustomException(USER_ALREADY_INVITED);
         }
     }
 
