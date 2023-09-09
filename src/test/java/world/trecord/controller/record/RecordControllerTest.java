@@ -258,7 +258,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
+        RecordEntity savedRecord = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
 
         String changedTitle = "change title";
         LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
@@ -267,7 +267,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         String changedFeeling = "changed feeling";
         String changedWeather = "changed weather";
         String changedCompanion = "changed changedCompanion";
-        String changedSatisfaction = "changed satisfaction";
+        String changedTransportation = "changed transportation";
         String changedImageUrl = "changed image url";
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
@@ -278,21 +278,34 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .feeling(changedFeeling)
                 .weather(changedWeather)
                 .companion(changedCompanion)
-                .transportation(changedSatisfaction)
+                .transportation(changedTransportation)
                 .imageUrl(changedImageUrl)
                 .build();
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/records/{recordId}", recordEntity.getId())
+                        put("/api/v1/records/{recordId}", savedRecord.getId())
                                 .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.title").value(changedTitle))
-                .andExpect(jsonPath("$.data.content").value(changedContent))
-                .andExpect(jsonPath("$.data.date").value(changedDate.toLocalDate().toString()));
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(recordRepository.findById(savedRecord.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        recordEntity -> {
+                            Assertions.assertThat(recordEntity.getTitle()).isEqualTo(changedTitle);
+                            Assertions.assertThat(recordEntity.getDate()).isEqualTo(changedDate);
+                            Assertions.assertThat(recordEntity.getPlace()).isEqualTo(changedPlace);
+                            Assertions.assertThat(recordEntity.getContent()).isEqualTo(changedContent);
+                            Assertions.assertThat(recordEntity.getFeeling()).isEqualTo(changedFeeling);
+                            Assertions.assertThat(recordEntity.getWeather()).isEqualTo(changedWeather);
+                            Assertions.assertThat(recordEntity.getCompanion()).isEqualTo(changedCompanion);
+                            Assertions.assertThat(recordEntity.getTransportation()).isEqualTo(changedTransportation);
+                            Assertions.assertThat(recordEntity.getImageUrl()).isEqualTo(changedImageUrl);
+                        }
+                );
     }
 
     @Test
@@ -606,6 +619,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecord(FeedEntity feedEntity, LocalDateTime date, int sequence) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("record")
                 .place("place")

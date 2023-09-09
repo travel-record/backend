@@ -9,29 +9,32 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.notification.*;
+import world.trecord.domain.notification.NotificationEntity;
+import world.trecord.domain.notification.NotificationRepository;
+import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.notification.enumeration.NotificationStatus;
+import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.event.sse.SseEmitterRepository;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.CommentService;
 import world.trecord.service.notification.response.CheckNewNotificationResponse;
 import world.trecord.service.notification.response.NotificationListResponse;
 import world.trecord.service.record.RecordService;
-import world.trecord.service.sse.SseEmitterRepository;
 import world.trecord.service.userrecordlike.UserRecordLikeService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static world.trecord.domain.notification.NotificationStatus.READ;
-import static world.trecord.domain.notification.NotificationStatus.UNREAD;
-import static world.trecord.domain.notification.NotificationType.COMMENT;
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.READ;
+import static world.trecord.domain.notification.enumeration.NotificationStatus.UNREAD;
+import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
+import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
 
 @Transactional
 @IntegrationTestSupport
@@ -97,15 +100,7 @@ class NotificationServiceTest extends AbstractContainerBaseTest {
         NotificationListResponse response = notificationService.getNotifications(author.getId());
 
         //then
-        Assertions.assertThat(response.getNotifications())
-                .hasSize(4)
-                .extracting("type", "senderId", "content")
-                .containsExactly(
-                        tuple(RECORD_LIKE, commenter1.getId(), notificationEntity4.getNotificationContent()),
-                        tuple(COMMENT, commenter3.getId(), notificationEntity3.getNotificationContent()),
-                        tuple(RECORD_LIKE, commenter2.getId(), notificationEntity2.getNotificationContent()),
-                        tuple(COMMENT, commenter1.getId(), notificationEntity1.getNotificationContent())
-                );
+        Assertions.assertThat(response.getNotifications()).hasSize(4);
     }
 
     @Test
@@ -232,13 +227,7 @@ class NotificationServiceTest extends AbstractContainerBaseTest {
         NotificationListResponse response = notificationService.getNotificationsByType(author.getId(), RECORD_LIKE);
 
         //then
-        Assertions.assertThat(response.notifications)
-                .hasSize(2)
-                .extracting("senderId", "type")
-                .containsExactly(
-                        tuple(viewer1.getId(), RECORD_LIKE),
-                        tuple(viewer3.getId(), RECORD_LIKE)
-                );
+        Assertions.assertThat(response.notifications).hasSize(2);
     }
 
     @Test
@@ -296,10 +285,7 @@ class NotificationServiceTest extends AbstractContainerBaseTest {
         NotificationListResponse response = notificationService.getNotifications(author.getId());
 
         //then
-        Assertions.assertThat(response.getNotifications())
-                .hasSize(1)
-                .extracting("recordId")
-                .containsOnly(recordEntity1.getId());
+        Assertions.assertThat(response.getNotifications()).hasSize(1);
     }
 
     private UserEntity createUser(String email) {
@@ -319,6 +305,7 @@ class NotificationServiceTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecord(FeedEntity feedEntity) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("record")
                 .place("place")

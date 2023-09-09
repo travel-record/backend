@@ -190,7 +190,7 @@ class CommentRepositoryTest extends AbstractContainerBaseTest {
         commentRepository.save(commentEntity);
 
         //when
-        commentRepository.softDeleteById(commentEntity.getId());
+        commentRepository.delete(commentEntity);
 
         //then
         Assertions.assertThat(commentRepository.findAll()).isEmpty();
@@ -213,6 +213,7 @@ class CommentRepositoryTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecord(FeedEntity feedEntity, int sequence) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
                 .place("place")

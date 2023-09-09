@@ -7,8 +7,6 @@ spring.datasource:
   password: 1234
 
 spring.jpa:
-  hibernate:
-    ddl-auto: none # Do not change
   open-in-view: false
 
 spring.data:
@@ -34,6 +32,8 @@ google:
 spring.config.activate.on-profile: local
 
 spring.jpa:
+  hibernate:
+    ddl-auto: create
   show-sql: true
   properties:
     hibernate:

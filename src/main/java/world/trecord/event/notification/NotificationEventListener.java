@@ -1,4 +1,4 @@
-package world.trecord.service.notification;
+package world.trecord.event.notification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,11 +6,14 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.domain.notification.NotificationArgs;
 import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.NotificationType;
-import world.trecord.service.sse.SseEmitterEvent;
-import world.trecord.service.sse.SseEmitterService;
+import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.notification.enumeration.NotificationType;
+import world.trecord.event.sse.SseEmitterEvent;
+import world.trecord.event.sse.SseEmitterService;
+import world.trecord.service.notification.NotificationService;
+
+import java.util.Objects;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
@@ -31,13 +34,13 @@ public class NotificationEventListener {
         NotificationType type = notificationEvent.type();
         NotificationArgs args = notificationEvent.args();
 
-//        if (Objects.equals(userToId, userFromId)) {
-//            return;
-//        }
+        if (Objects.equals(userToId, userFromId)) {
+            return;
+        }
 
         NotificationEntity notificationEntity = notificationService.createNotification(userToId, type, args);
         log.info("NotificationEntity created with ID: [{}]", notificationEntity.getId());
-        sseEmitterService.send(notificationEntity.getId(), buildSseEmitterEvent(notificationEntity));
+        sseEmitterService.send(userToId, notificationEntity.getId(), buildSseEmitterEvent(notificationEntity));
     }
 
     private SseEmitterEvent buildSseEmitterEvent(NotificationEntity notificationEntity) {

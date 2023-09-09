@@ -4,35 +4,12 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 class FeedEntityTest {
-
-    @Test
-    @DisplayName("기록을 날짜 순으로 정렬한다")
-    void sortRecordEntitiesByDateAndCreatedTimeAscTest() throws Exception {
-        //given
-        FeedEntity feedEntity = FeedEntity.builder()
-                .build();
-
-        RecordEntity recordEntity4 = createRecordEntity(feedEntity, LocalDateTime.of(2022, 3, 4, 0, 0));
-        RecordEntity recordEntity3 = createRecordEntity(feedEntity, LocalDateTime.of(2022, 3, 3, 0, 0));
-        RecordEntity recordEntity2 = createRecordEntity(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0));
-        RecordEntity recordEntity1 = createRecordEntity(feedEntity, LocalDateTime.of(2022, 3, 1, 0, 0));
-
-        //when
-        List<RecordEntity> recordEntities = feedEntity.sortRecordEntitiesByDateAndCreatedTimeAsc().toList();
-
-        //then
-        Assertions.assertThat(recordEntities)
-                .hasSize(4)
-                .containsExactly(recordEntity1, recordEntity2, recordEntity3, recordEntity4);
-    }
 
     @Test
     @DisplayName("여행 시작 날짜를 LocalDate로 변환한다")
@@ -135,7 +112,7 @@ class FeedEntityTest {
                 .build();
 
         //when
-        boolean result = feedEntity.isManagedBy(userEntity.getId());
+        boolean result = feedEntity.isOwnedBy(userEntity.getId());
 
         //then
         Assertions.assertThat(result).isTrue();
@@ -157,17 +134,9 @@ class FeedEntityTest {
                 .build();
 
         //when
-        boolean result = feedEntity.isManagedBy(userEntity1.getId());
+        boolean result = feedEntity.isOwnedBy(userEntity1.getId());
 
         //then
         Assertions.assertThat(result).isFalse();
     }
-
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, LocalDateTime date) {
-        return RecordEntity.builder()
-                .feedEntity(feedEntity)
-                .date(date)
-                .build();
-    }
-
 }

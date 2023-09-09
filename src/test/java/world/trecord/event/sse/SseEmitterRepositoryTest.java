@@ -1,4 +1,4 @@
-package world.trecord.service.sse;
+package world.trecord.event.sse;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;

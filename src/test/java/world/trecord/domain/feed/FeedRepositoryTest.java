@@ -84,7 +84,7 @@ class FeedRepositoryTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         //when
-        feedRepository.softDeleteById(feedEntity.getId());
+        feedRepository.delete(feedEntity);
 
         //then
         Assertions.assertThat(feedRepository.findAll()).isEmpty();

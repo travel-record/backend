@@ -1,4 +1,4 @@
-package world.trecord.service.sse;
+package world.trecord.event.sse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,30 +22,28 @@ public class SseEmitterService {
     private final AtomicInteger currentConnections = new AtomicInteger(0);
     private final SseEmitterRepository sseEmitterRepository;
 
-    public void send(Long eventId, SseEmitterEvent sseEmitterEvent) {
-        Long userToId = sseEmitterEvent.getRecipientId();
-        Long userFromId = sseEmitterEvent.getSenderId();
+    public void send(Long userToId, Long eventId, SseEmitterEvent sseEmitterEvent) {
+        log.info("Starting send sse event with userToId: [{}]");
 
-        log.info("Starting send sse with userToId: [{}] and userFromId: [{}]", userToId, userFromId);
+        sseEmitterRepository.findByUserId(userToId)
+                .ifPresentOrElse(emitter -> {
+                            try {
+                                log.info("Emitter found for userToId: [{}]. Sending notification...", userToId);
+                                emitter.send(SseEmitter.event()
+                                        .id(eventId.toString())
+                                        .name(EVENT_NAME)
+                                        .data(sseEmitterEvent));
+                                log.info("Successfully sent notification with ID: [{}] to emitter for userToId: [{}]", eventId, userToId);
+                            } catch (IOException ex) {
+                                log.error("Error while sending notification to emitter for userToId: [{}]. Removing emitter.", userToId, ex);
+                                releaseExternalResources(userToId);
+                                throw new CustomException(NOTIFICATION_CONNECT_ERROR);
+                            }
+                        },
+                        () -> log.info("No emitter found for userToId: [{}]", userToId)
+                );
 
-        sseEmitterRepository.findByUserId(userToId).ifPresentOrElse(emitter -> {
-                    try {
-                        log.info("Emitter found for userToId: [{}]. Sending notification...", userToId);
-                        emitter.send(SseEmitter.event()
-                                .id(eventId.toString())
-                                .name(EVENT_NAME)
-                                .data(sseEmitterEvent));
-                        log.info("Successfully sent notification with ID: [{}] to emitter for userToId: [{}]", eventId, userToId);
-                    } catch (IOException ex) {
-                        log.error("Error while sending notification to emitter for userToId: [{}]. Removing emitter.", userToId, ex);
-                        releaseExternalResources(userFromId);
-                        throw new CustomException(NOTIFICATION_CONNECT_ERROR);
-                    }
-                },
-                () -> log.info("No emitter found for userToId: [{}]", userToId)
-        );
-
-        log.info("Finished send sse for userToId: [{}] and userFromId: [{}]", userToId, userFromId);
+        log.info("Finished send sse for userToId: [{}]", userToId);
     }
 
     public SseEmitter connect(Long userId, SseEmitter emitter) {

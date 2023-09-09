@@ -188,7 +188,7 @@ class RecordRepositoryTest extends AbstractContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
 
         //when
-        recordRepository.softDeleteById(recordEntity.getId());
+        recordRepository.delete(recordEntity);
 
         //then
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
@@ -211,6 +211,7 @@ class RecordRepositoryTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecord(FeedEntity feedEntity, int sequence) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
                 .place("place")

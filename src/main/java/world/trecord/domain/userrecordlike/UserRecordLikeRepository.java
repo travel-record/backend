@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEntity, Long> {
     Optional<UserRecordLikeEntity> findByUserEntityIdAndRecordEntityId(Long userId, Long recordId);
 
+    boolean existsByUserEntityIdAndRecordEntityId(Long userId, Long recordId);
+
     @Query("SELECT re.id as id, re.title as title, re.imageUrl as imageUrl , ue.id as authorId, ue.nickname as authorNickname " +
             "FROM UserRecordLikeEntity lrle " +
             "JOIN lrle.recordEntity re " +
@@ -24,19 +26,10 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
             "ORDER BY lrle.createdDateTime DESC ")
     List<UserRecordProjection> findLikeRecordsByUserEntityId(@Param("userId") Long userId);
 
-    boolean existsByUserEntityIdAndRecordEntityId(Long userId, Long recordId);
-
     @Transactional
     @Modifying
     @Query("UPDATE UserRecordLikeEntity le " +
             "SET le.deletedDateTime = NOW() " +
             "where le.recordEntity.id = :recordId")
     void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE UserRecordLikeEntity urle " +
-            "SET urle.deletedDateTime = NOW() " +
-            "where urle.id = :userRecordLikeId")
-    void softDeleteById(@Param("userRecordLikeId") Long userRecordLikeId);
 }

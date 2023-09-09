@@ -67,5 +67,4 @@ class CommentEntityTest {
         //then
         Assertions.assertThat(result).isFalse();
     }
-
 }

@@ -19,15 +19,14 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.event.notification.NotificationEventListener;
 import world.trecord.exception.CustomException;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
-import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
-import world.trecord.service.notification.NotificationEventListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -133,13 +132,25 @@ class CommentServiceTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("자신의 기록에 댓글을 남기면 알림이 전송되지 않는다")
-    void test() throws Exception {
-        // TODO
+    void doNotCreateCommentNotificationWhenCommentOnOtherRecordTest() throws Exception {
         //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         //when
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .recordId(recordEntity.getId())
+                .content("content")
+                .build();
+
+        //when
+        commentService.createComment(owner.getId(), request);
 
         //then
+        Awaitility.await()
+                .atMost(1, TimeUnit.SECONDS)
+                .untilAsserted(() -> Mockito.verify(mockEventListener, Mockito.times(1)).handleNotificationEventListener(Mockito.any()));
     }
 
     @Test
@@ -315,7 +326,7 @@ class CommentServiceTest extends AbstractContainerBaseTest {
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
+        CommentEntity savedComment = commentRepository.save(createComment(userEntity, recordEntity, null));
 
         String changedContent = "changed content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -323,12 +334,16 @@ class CommentServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        CommentUpdateResponse response = commentService.updateComment(userEntity.getId(), commentEntity.getId(), request);
+        commentService.updateComment(userEntity.getId(), savedComment.getId(), request);
 
         //then
-        Assertions.assertThat(response)
-                .extracting("recordId", "commentId", "content")
-                .containsExactly(recordEntity.getId(), commentEntity.getId(), changedContent);
+        Assertions.assertThat(commentRepository.findById(savedComment.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        commentEntity -> {
+                            Assertions.assertThat(commentEntity.getContent()).isEqualTo(changedContent);
+                        }
+                );
     }
 
     @Test
@@ -440,6 +455,7 @@ class CommentServiceTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecord(FeedEntity feedEntity) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("record")
                 .place("place")

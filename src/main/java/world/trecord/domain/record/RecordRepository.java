@@ -38,10 +38,4 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "SET re.deletedDateTime = NOW() " +
             "where re.feedEntity.id = :feedId")
     void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
-
-    @Modifying
-    @Query("UPDATE RecordEntity re " +
-            "SET re.deletedDateTime = NOW() " +
-            "WHERE re.id = :recordId")
-    void softDeleteById(@Param("recordId") Long recordId);
 }

@@ -1,4 +1,4 @@
-package world.trecord.service.sse;
+package world.trecord.event.sse;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,7 +64,7 @@ class SseEmitterServiceMockTest {
         SseEmitterEvent mockEvent = mock(SseEmitterEvent.class);
 
         //when
-        sseEmitterService.send(1L, mockEvent);
+        sseEmitterService.send(0L, 1L, mockEvent);
 
         //then
         verify(mockEmitter).send(any(SseEmitter.SseEventBuilder.class));

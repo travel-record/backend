@@ -9,23 +9,22 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
-import world.trecord.domain.notification.NotificationArgs;
+import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
-import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.comment.response.UserCommentsResponse;
-import world.trecord.service.notification.NotificationEvent;
 
 import java.util.List;
 import java.util.Optional;
 
-import static world.trecord.domain.notification.NotificationType.COMMENT;
+import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
 import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional(readOnly = true)
@@ -52,21 +51,17 @@ public class CommentService {
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
         Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
-        eventPublisher.publishEvent(new NotificationEvent(userToId, userFromId, COMMENT, buildNotificationArgs(commentEntity, userEntity)));
+        eventPublisher.publishEvent(new NotificationEvent(userToId, userFromId, COMMENT, buildNotificationArgs(recordEntity, commentEntity, userEntity)));
     }
 
     @Transactional
-    public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
+    public void updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
         CommentEntity commentEntity = findCommentOrException(commentId);
 
         ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
         commentRepository.saveAndFlush(commentEntity);
-
-        return CommentUpdateResponse.builder()
-                .commentEntity(commentEntity)
-                .build();
     }
 
     @Transactional
@@ -76,7 +71,7 @@ public class CommentService {
         ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntityId(commentId);
-        commentRepository.softDeleteById(commentId);
+        commentRepository.delete(commentEntity);
     }
 
     public Page<CommentResponse> getReplies(Optional<Long> viewerId, Long commentId, Pageable pageable) {
@@ -126,10 +121,10 @@ public class CommentService {
         }
     }
 
-    private NotificationArgs buildNotificationArgs(CommentEntity commentEntity, UserEntity userEntity) {
+    private NotificationArgs buildNotificationArgs(RecordEntity recordEntity, CommentEntity commentEntity, UserEntity userEntity) {
         return NotificationArgs.builder()
+                .recordEntity(recordEntity)
                 .commentEntity(commentEntity)
-                .recordEntity(commentEntity.getRecordEntity())
                 .userFromEntity(userEntity)
                 .build();
     }

@@ -7,11 +7,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import world.trecord.domain.comment.CommentEntity;
+import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.users.UserEntity;
 
 import static org.mockito.Mockito.when;
-import static world.trecord.domain.notification.NotificationType.COMMENT;
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
+import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationTypeTest {

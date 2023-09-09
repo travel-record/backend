@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.domain.notification.enumeration.NotificationStatus;
+import world.trecord.domain.notification.enumeration.NotificationType;
 
 import java.util.List;
 
@@ -30,6 +32,13 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
     @Modifying
     @Query(value = "UPDATE notification " +
             "SET deleted_date_time = NOW() " +
-            "WHERE JSON_EXTRACT(args, '$.recordId') = :recordId", nativeQuery = true)
+            "WHERE JSON_EXTRACT(args, '$.record.id') = :recordId", nativeQuery = true)
     void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE notification " +
+            "SET deleted_date_time = NOW() " +
+            "WHERE JSON_EXTRACT(args, '$.feed.id') = :feedId", nativeQuery = true)
+    void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
 }

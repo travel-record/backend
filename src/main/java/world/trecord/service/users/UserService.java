@@ -3,8 +3,6 @@ package world.trecord.service.users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
@@ -78,11 +76,12 @@ public class UserService {
                         }));
     }
 
-    public Page<UserInfoResponse> searchUser(String keyword, Pageable pageable) {
-        return userRepository.findByKeyword(keyword, pageable)
+    public UserInfoResponse searchUser(String keyword) {
+        return userRepository.findByKeyword(keyword)
                 .map(userEntity -> UserInfoResponse.builder()
                         .userEntity(userEntity)
-                        .build());
+                        .build())
+                .orElse(null);
     }
 
     private UserEntity findUserOrException(Long userId) {

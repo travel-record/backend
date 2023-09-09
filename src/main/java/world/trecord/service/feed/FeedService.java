@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
+import world.trecord.domain.invitation.InvitationRepository;
+import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
@@ -16,7 +19,6 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedUpdateResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +33,11 @@ public class FeedService {
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
+    private final FeedContributorRepository feedContributorRepository;
+    private final InvitationRepository invitationRepository;
+    private final NotificationRepository notificationRepository;
     private final RecordSequenceRepository recordSequenceRepository;
 
-    // TODO pageable
     public FeedListResponse getFeedList(Long userId) {
         List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userId);
 
@@ -55,7 +59,7 @@ public class FeedService {
 
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+        UserEntity userEntity = findUserOrException(userId);
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
 
         return FeedCreateResponse.builder()
@@ -63,36 +67,34 @@ public class FeedService {
                 .build();
     }
 
-    // TODO 응답 메시지 경량화
     @Transactional
-    public FeedUpdateResponse updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
+    public void updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserIsFeedOwner(feedEntity, userId);
 
         feedEntity.update(request.toUpdateEntity());
         feedRepository.saveAndFlush(feedEntity);
-
-        return FeedUpdateResponse.builder()
-                .feedEntity(feedEntity)
-                .build();
     }
 
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
 
-        ensureUserHasPermissionOverFeed(feedEntity, userId);
+        ensureUserIsFeedOwner(feedEntity, userId);
 
+        notificationRepository.deleteAllByFeedEntityId(feedId);
+        invitationRepository.deleteAllByFeedEntityId(feedId);
+        feedContributorRepository.deleteAllByFeedEntityId(feedId);
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
-        feedRepository.softDeleteById(feedId);
+        feedRepository.delete(feedEntity);
     }
 
-    private void ensureUserHasPermissionOverFeed(FeedEntity feedEntity, Long userId) {
-        if (!feedEntity.isManagedBy(userId)) {
-            throw new CustomException(FORBIDDEN);
-        }
+
+    private UserEntity findUserOrException(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private FeedEntity findFeedOrException(Long feedId) {
@@ -101,5 +103,11 @@ public class FeedService {
 
     private FeedEntity findFeedForUpdateOrException(Long feedId) {
         return feedRepository.findByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    }
+
+    private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {
+        if (!feedEntity.isOwnedBy(userId)) {
+            throw new CustomException(FORBIDDEN);
+        }
     }
 }

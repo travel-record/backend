@@ -15,7 +15,8 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedUpdateResponse;
+import world.trecord.service.invitation.InvitationService;
+import world.trecord.service.invitation.request.FeedInviteRequest;
 import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class FeedController {
 
     private final FeedService feedService;
+    private final InvitationService invitationService;
     private final FeedValidator feedValidator;
 
     @GetMapping
@@ -46,12 +48,21 @@ public class FeedController {
         return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
     }
 
+    @PostMapping("/{feedId}/invite")
+    public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
+                                        @RequestBody @Valid FeedInviteRequest request,
+                                        @CurrentUser UserContext userContext) {
+        invitationService.inviteUser(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
+    }
+
     @PutMapping("/{feedId}")
-    public ApiResponse<FeedUpdateResponse> updateFeed(@PathVariable Long feedId,
-                                                      @RequestBody @Valid FeedUpdateRequest request,
-                                                      @CurrentUser UserContext userContext) throws BindException {
+    public ApiResponse<Void> updateFeed(@PathVariable Long feedId,
+                                        @RequestBody @Valid FeedUpdateRequest request,
+                                        @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(request);
-        return ApiResponse.ok(feedService.updateFeed(userContext.getId(), feedId, request));
+        feedService.updateFeed(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
     }
 
     @DeleteMapping("/{feedId}")

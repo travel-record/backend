@@ -5,13 +5,14 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -20,11 +21,15 @@ import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static world.trecord.exception.CustomExceptionError.*;
@@ -53,6 +58,8 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     JwtProperties jwtProperties;
+    @Autowired
+    private FeedContributorRepository feedContributorRepository;
 
     @Test
     @DisplayName("GET /api/v1/feeds - 성공 (등록된 피드가 없을때)")
@@ -63,7 +70,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds")
-                                .header("Authorization", createToken(savedUserEntity.getId()))
+                                .header(AUTHORIZATION, createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.feeds").isArray())
@@ -76,16 +83,17 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity1 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-        FeedEntity feedEntity2 = createFeed(savedUserEntity, LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
-        FeedEntity feedEntity3 = createFeed(savedUserEntity, LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
-        FeedEntity feedEntity4 = createFeed(savedUserEntity, LocalDateTime.of(2021, 12, 21, 0, 0), LocalDateTime.of(2021, 12, 25, 0, 0));
+        FeedEntity feedEntity1 = createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now());
+        FeedEntity feedEntity2 = createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now());
+        FeedEntity feedEntity3 = createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now());
+        FeedEntity feedEntity4 = createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now());
+        ;
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds")
-                                .header("Authorization", createToken(savedUserEntity.getId()))
+                                .header(AUTHORIZATION, createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.feeds").isArray())
@@ -109,13 +117,12 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     void getFeedByAuthenticatedUserTest() throws Exception {
         //given
         UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now()));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", createToken(savedUserEntity.getId()))
+                                .header(AUTHORIZATION, createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk());
     }
@@ -126,7 +133,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now()));
 
         //when //then
         mockMvc.perform(
@@ -164,8 +171,8 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/feeds")
-                                .header("Authorization", createToken(savedUserEntity.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(savedUserEntity.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
@@ -183,12 +190,170 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 성공")
+    void inviteUserTest() throws Exception {
+        //given
+        UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
+        UserEntity invitedUser = userRepository.save(createUser("test1@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(feedOwner, LocalDateTime.now(), LocalDateTime.now()));
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(feedOwner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (피드 주인이 자기 자신을 초대하는 경우)")
+    void inviteSelfTest() throws Exception {
+        //given
+        UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(feedOwner, LocalDateTime.now(), LocalDateTime.now()));
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(feedOwner.getId())
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(feedOwner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(SELF_INVITATION_NOT_ALLOWED.code()));
+    }
+
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (이미 초대된 사용자를 초대하는 경우)")
+    void test2() throws Exception {
+        //given
+        UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
+        UserEntity invitedUser = userRepository.save(createUser("test1@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(feedOwner, LocalDateTime.now(), LocalDateTime.now()));
+        feedContributorRepository.save(FeedContributorEntity.builder()
+                .userEntity(invitedUser)
+                .feedEntity(feedEntity)
+                .build());
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(feedOwner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(USER_ALREADY_INVITED));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (유효하지 않은 토큰인 경우)")
+    void inviteUserWithInvalidTokenTest() throws Exception {
+        //given
+        long feedId = 1L;
+        long invalidToken = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedId)
+                                .header(AUTHORIZATION, invalidToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (피드가 없는 경우)")
+    void inviteUserWhenFeedNotFoundTest() throws Exception {
+        //given
+        long notExistingFeedId = 0L;
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(0L)
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", notExistingFeedId)
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (피드 관리자의 요청이 아닌 경우)")
+    void inviteUserWhenNotFeedOwnerRequestTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        UserEntity other = userRepository.save(createUser("test1@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(0L)
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(other.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (초대된 사용자가 없는 경우)")
+    void inviteUserWhenUserNotFoundTest() throws Exception {
+        //given
+        long notExistingUserId = 0L;
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(notExistingUserId)
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.code()));
+    }
+
+    @Test
     @DisplayName("PUT /api/v1/feeds/{feedId} - 성공")
     void updateFeedTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity savedFeed = feedRepository.save(createFeed(userEntity, LocalDateTime.now(), LocalDateTime.now()));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -206,27 +371,32 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        put("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", createToken(userEntity.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                        put("/api/v1/feeds/{feedId}", savedFeed.getId())
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isOk());
 
-        FeedEntity updatedFeedEntity = feedRepository.findById(feedEntity.getId()).get();
-
-        Assertions.assertThat(updatedFeedEntity)
-                .extracting("name", "imageUrl", "description", "startAt", "endAt")
-                .containsExactly(updateFeedName, updatedFeedImage, updatedFeedDescription, updatedStartAt, updatedEndAt);
+        Assertions.assertThat(feedRepository.findById(savedFeed.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        feedEntity -> {
+                            Assertions.assertThat(feedEntity.getName()).isEqualTo(updateFeedName);
+                            Assertions.assertThat(feedEntity.getImageUrl()).isEqualTo(updatedFeedImage);
+                            Assertions.assertThat(feedEntity.getDescription()).isEqualTo(updatedFeedDescription);
+                            Assertions.assertThat(feedEntity.getStartAt()).isEqualTo(updatedStartAt);
+                            Assertions.assertThat(feedEntity.getEndAt()).isEqualTo(updatedEndAt);
+                        }
+                );
     }
 
     @Test
     @DisplayName("PUT /api/v1/feeds/{feedId} - 실패 (존재하지 않는 피드)")
     void updateFeedWhenFeedNotExistingTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         long notExistingFeedId = 0L;
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -245,8 +415,8 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/feeds/{feedId}", notExistingFeedId)
-                                .header("Authorization", createToken(userEntity.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isNotFound())
@@ -259,8 +429,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com"));
         UserEntity other = userRepository.save(createUser("test1@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(author, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author, LocalDateTime.now(), LocalDateTime.now()));
 
         String updateFeedName = "updated feed name";
         String updatedFeedImage = "updated feed image url";
@@ -279,8 +448,8 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", createToken(other.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(other.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isForbidden())
@@ -291,16 +460,14 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     @DisplayName("PUT /api/v1/feeds/{feedId} - 실패 (파라미터 검증 오류)")
     void updateFeedWhenRequestParaemeterErrorTest() throws Exception {
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.now(), LocalDateTime.now()));
         FeedUpdateRequest request = FeedUpdateRequest.builder().build();
 
         //when //then
         mockMvc.perform(
                         put("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", createToken(userEntity.getId()))
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
+                                .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isBadRequest())
@@ -312,9 +479,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     void deleteFeedTest() throws Exception {
         //given
         UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
+        FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now()));
         RecordEntity recordEntity1 = createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0));
         RecordEntity recordEntity2 = createRecord(feedEntity, LocalDateTime.of(2022, 3, 3, 0, 0));
         RecordEntity recordEntity3 = createRecord(feedEntity, LocalDateTime.of(2022, 3, 1, 0, 0));
@@ -324,7 +489,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         delete("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", createToken(savedUserEntity.getId()))
+                                .header(AUTHORIZATION, createToken(savedUserEntity.getId()))
                 )
                 .andExpect(status().isOk());
 
@@ -338,13 +503,12 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //given
         UserEntity author = userRepository.save(createUser("test@email.com"));
         UserEntity other = userRepository.save(createUser("test1@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(author, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feedEntity = feedRepository.save(createFeed(author, LocalDateTime.now(), LocalDateTime.now()));
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/feeds/{feedId}", feedEntity.getId())
-                                .header("Authorization", createToken(other.getId()))
+                                .header(AUTHORIZATION, createToken(other.getId()))
                 )
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
@@ -361,7 +525,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         delete("/api/v1/feeds/{feedId}", notExistingFeedId)
-                                .header("Authorization", createToken(savedUser.getId()))
+                                .header(AUTHORIZATION, createToken(savedUser.getId()))
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
@@ -389,6 +553,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecord(FeedEntity feedEntity, LocalDateTime date) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
                 .place("place")

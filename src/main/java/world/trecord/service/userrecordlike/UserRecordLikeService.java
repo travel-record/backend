@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.domain.notification.NotificationArgs;
+import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
@@ -12,14 +12,14 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
-import world.trecord.service.notification.NotificationEvent;
 import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.util.List;
 
-import static world.trecord.domain.notification.NotificationType.RECORD_LIKE;
+import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
 import static world.trecord.exception.CustomExceptionError.RECORD_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
 
@@ -54,7 +54,7 @@ public class UserRecordLikeService {
     }
 
     private UserRecordLikeResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
-        userRecordLikeRepository.softDeleteById(userRecordLikeEntity.getId());
+        userRecordLikeRepository.delete(userRecordLikeEntity);
         return buildLikeResponse(false);
     }
 

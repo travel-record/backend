@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.record.RecordEntity;
+import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDateTime;
 
@@ -58,8 +59,9 @@ public class RecordCreateRequest {
         this.imageUrl = imageUrl;
     }
 
-    public RecordEntity toEntity(FeedEntity feedEntity, int sequence) {
+    public RecordEntity toEntity(UserEntity userEntity, FeedEntity feedEntity, int sequence) {
         return RecordEntity.builder()
+                .userEntity(userEntity)
                 .feedEntity(feedEntity)
                 .title(this.title)
                 .date(this.date)

@@ -17,9 +17,9 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.event.notification.NotificationEventListener;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.notification.NotificationEventListener;
 import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
 import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 
@@ -188,7 +188,7 @@ class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
 
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
-        userRecordLikeRepository.softDeleteById(userRecordLikeEntity2.getId());
+        userRecordLikeRepository.delete(userRecordLikeEntity2);
 
         //when
         UserRecordLikeListResponse response = userRecordLikeService.getUserRecordLikeList(other.getId());
@@ -217,6 +217,7 @@ class UserRecordLikeServiceTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecord(FeedEntity feedEntity) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("record")
                 .place("place")

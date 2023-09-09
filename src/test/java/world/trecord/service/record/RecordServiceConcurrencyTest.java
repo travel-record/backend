@@ -95,6 +95,8 @@ class RecordServiceConcurrencyTest extends AbstractContainerBaseTest {
         Assertions.assertThat(recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), createRequest(feedEntity).getDate()))
                 .isPresent()
                 .hasValue(NUMBER_OF_REQUESTS);
+
+        executorService.shutdown();
     }
 
     private UserEntity createUser() {

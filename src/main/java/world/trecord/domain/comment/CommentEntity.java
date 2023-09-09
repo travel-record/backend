@@ -50,10 +50,7 @@ public class CommentEntity extends BaseEntity {
     private CommentEntity(String content, UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         this.content = content;
         this.userEntity = userEntity;
-        if (recordEntity != null) {
-            this.recordEntity = recordEntity;
-            recordEntity.addCommentEntity(this);
-        }
+        this.recordEntity = recordEntity;
         if (parentCommentEntity != null) {
             this.parentCommentEntity = parentCommentEntity;
             parentCommentEntity.addChildCommentEntity(this);
@@ -64,16 +61,15 @@ public class CommentEntity extends BaseEntity {
         this.childCommentEntities.add(childCommentEntity);
     }
 
-    public void clear() {
-        this.parentCommentEntity = null;
-        this.childCommentEntities.clear();
-    }
-
     public void update(CommentEntity updateEntity) {
         this.content = updateEntity.getContent();
     }
 
     public boolean isCommenter(Long userId) {
         return Objects.equals(this.userEntity.getId(), userId);
+    }
+
+    public Long getParentCommentId() {
+        return this.parentCommentEntity != null ? this.parentCommentEntity.getId() : null;
     }
 }

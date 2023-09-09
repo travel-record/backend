@@ -13,7 +13,6 @@ import world.trecord.service.comment.CommentService;
 import world.trecord.service.comment.request.CommentCreateRequest;
 import world.trecord.service.comment.request.CommentUpdateRequest;
 import world.trecord.service.comment.response.CommentResponse;
-import world.trecord.service.comment.response.CommentUpdateResponse;
 import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
@@ -39,10 +38,11 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    public ApiResponse<CommentUpdateResponse> updateComment(@PathVariable Long commentId,
-                                                            @RequestBody @Valid CommentUpdateRequest request,
-                                                            @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(commentService.updateComment(userContext.getId(), commentId, request));
+    public ApiResponse<Void> updateComment(@PathVariable Long commentId,
+                                           @RequestBody @Valid CommentUpdateRequest request,
+                                           @CurrentUser UserContext userContext) {
+        commentService.updateComment(userContext.getId(), commentId, request);
+        return ApiResponse.ok();
     }
 
     @DeleteMapping("/{commentId}")

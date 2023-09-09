@@ -140,6 +140,7 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
 
     private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
         return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title(title)
                 .place(place)
