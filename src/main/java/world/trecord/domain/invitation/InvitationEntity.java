@@ -30,11 +30,11 @@ public class InvitationEntity extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users_to", foreignKey = @ForeignKey(name = "fk_invitation_users"))
+    @JoinColumn(name = "id_users_to", nullable = false, foreignKey = @ForeignKey(name = "fk_invitation_users"))
     private UserEntity userToEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_feed", foreignKey = @ForeignKey(name = "fk_invitation_feed"))
+    @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_invitation_feed"))
     private FeedEntity feedEntity;
 
     @Enumerated(EnumType.STRING)
