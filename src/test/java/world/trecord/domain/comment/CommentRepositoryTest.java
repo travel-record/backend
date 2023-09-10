@@ -81,24 +81,21 @@ class CommentRepositoryTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("기록에 등록된 댓글 리스트를 등록 시간 오름차순으로 조회한다")
+    @DisplayName("기록에 등록된 댓글 리스트를 댓글 작성자, 대댓글과 함께 등록 시간 오름차순으로 조회한다")
     void findCommentEntityByRecordEntityOrderByCreatedDateTimeAsc() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser());
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         CommentEntity commentEntity1 = createComment(userEntity, recordEntity, null);
         CommentEntity commentEntity2 = createComment(userEntity, recordEntity, null);
         CommentEntity commentEntity3 = createComment(userEntity, recordEntity, null);
         CommentEntity commentEntity4 = createComment(userEntity, recordEntity, null);
-
         commentRepository.saveAll(List.of(commentEntity4, commentEntity3, commentEntity2, commentEntity1));
 
         //when
-        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findParentCommentWithUserEntityAndChildCommentEntitiesByRecordEntityId(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentEntities)
@@ -118,7 +115,7 @@ class CommentRepositoryTest extends AbstractContainerBaseTest {
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 1));
 
         //when
-        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findParentCommentWithUserEntityAndChildCommentEntitiesByRecordEntityId(recordEntity.getId());
 
         //then
         Assertions.assertThat(commentEntities).isEmpty();

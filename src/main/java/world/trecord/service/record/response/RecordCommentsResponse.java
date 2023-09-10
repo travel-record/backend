@@ -37,6 +37,7 @@ public class RecordCommentsResponse {
         private Long commenterId;
         private String commenterImageUrl;
         private String commenterNickname;
+        private int replyCount;
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
         private LocalDateTime commentCreatedDate;
@@ -50,6 +51,7 @@ public class RecordCommentsResponse {
             this.commenterId = commentEntity.getUserEntity().getId();
             this.commenterImageUrl = commentEntity.getUserEntity().getImageUrl();
             this.commenterNickname = commentEntity.getUserEntity().getNickname();
+            this.replyCount = commentEntity.getChildCommentEntities().size();
         }
     }
 }
