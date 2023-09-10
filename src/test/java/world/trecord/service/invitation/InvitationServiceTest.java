@@ -12,6 +12,7 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
+import world.trecord.domain.invitation.InvitationEntity;
 import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.invitation.InvitationStatus;
 import world.trecord.domain.users.UserEntity;
@@ -21,6 +22,7 @@ import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.service.invitation.request.FeedExpelRequest;
 import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
@@ -235,7 +237,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
-        feedContributorRepository.save(createManager(alreadyInvitedUser, feedEntity));
+        feedContributorRepository.save(createFeedContributor(alreadyInvitedUser, feedEntity));
 
         FeedInviteRequest request = FeedInviteRequest.builder()
                 .userToId(alreadyInvitedUser.getId())
@@ -247,6 +249,110 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_ALREADY_INVITED);
     }
+
+    @Test
+    @DisplayName("피드 주인이 피드에 초대된 사용자를 내보내면 초대장과 피드 컨트리뷰터에서 제거된다")
+    void expelUserTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity invitedUser = createUser("invited@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+
+        invitationRepository.save(createInvitation(invitedUser, feedEntity));
+        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        //when
+        invitationService.expelUser(owner.getId(), feedEntity.getId(), request);
+
+        //then
+        Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
+        Assertions.assertThat(invitationRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 피드에서 사용자를 내보내려고 하면 예외가 발생한다")
+    void expelUserWhenNotExistingFeedTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("owner@email.com"));
+        long notExistingFeedId = 0L;
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> invitationService.expelUser(owner.getId(), notExistingFeedId, request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("피드 주인이 아닌 사람이 사용자를 내보려고 하면 예외가 발생한다")
+    void expelUserByNotFeedOwnerTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity other = createUser("other@email.com");
+        UserEntity invitedUser = createUser("invited@email.com");
+        userRepository.saveAll(List.of(owner, other, invitedUser));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> invitationService.expelUser(other.getId(), feedEntity.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터가 아닌 사용자를 내보려고 하면 예외가 발생한다")
+    void expelNotFeedContributorUserTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity other = createUser("other@email.com");
+        userRepository.saveAll(List.of(owner, other));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(other.getId())
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> invitationService.expelUser(owner.getId(), feedEntity.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.USER_NOT_INVITED);
+    }
+
+    @Test
+    @DisplayName("피드 주인이 자기 자신을 내보낼려고 할 수 없다")
+    void expelUserWhenFeedOwnerSelfExpelTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("owner@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(owner.getId())
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> invitationService.expelUser(owner.getId(), feedEntity.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.SELF_EXPELLING_NOT_ALLOWED);
+    }
+
 
     private UserEntity createUser(String email) {
         return UserEntity.builder()
@@ -263,7 +369,14 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private FeedContributorEntity createManager(UserEntity userEntity, FeedEntity feedEntity) {
+    private InvitationEntity createInvitation(UserEntity userEntity, FeedEntity feedEntity) {
+        return InvitationEntity.builder()
+                .userToEntity(userEntity)
+                .feedEntity(feedEntity)
+                .build();
+    }
+
+    private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
         return FeedContributorEntity.builder()
                 .userEntity(userEntity)
                 .feedEntity(feedEntity)

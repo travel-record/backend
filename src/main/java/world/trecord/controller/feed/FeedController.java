@@ -16,6 +16,7 @@ import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
 import world.trecord.service.invitation.InvitationService;
+import world.trecord.service.invitation.request.FeedExpelRequest;
 import world.trecord.service.invitation.request.FeedInviteRequest;
 import world.trecord.service.users.UserContext;
 
@@ -53,6 +54,14 @@ public class FeedController {
                                         @RequestBody @Valid FeedInviteRequest request,
                                         @CurrentUser UserContext userContext) {
         invitationService.inviteUser(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/{feedId}/expel")
+    public ApiResponse<Void> expelUser(@PathVariable Long feedId,
+                                       @RequestBody @Valid FeedExpelRequest request,
+                                       @CurrentUser UserContext userContext) {
+        invitationService.expelUser(userContext.getId(), feedId, request);
         return ApiResponse.ok();
     }
 

@@ -238,7 +238,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (이미 초대된 사용자를 초대하는 경우)")
-    void test2() throws Exception {
+    void inviteAlreadyInvitedUserTest() throws Exception {
         //given
         UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
         UserEntity invitedUser = userRepository.save(createUser("test1@email.com"));
@@ -529,6 +529,50 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
+    }
+
+    // TODO
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 성공")
+    void test() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
+    // TODO
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (피드 주인의 요청이 아닌 경우)")
+    void test1() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
+    // TODO
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (초대되지 않은 사용자를 내보내려는 경우)")
+    void test2() throws Exception {
+        //given
+
+        //when
+
+        //then
+    }
+
+    // TODO
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (피드가 존재하지 않는 경우)")
+    void test3() throws Exception {
+        //given
+
+        //when
+
+        //then
     }
 
 

@@ -83,6 +83,7 @@ public class RecordService {
         recordRepository.saveAndFlush(recordEntity);
     }
 
+    // TODO remove deadlock
     @Transactional
     public void swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
         RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
@@ -113,7 +114,7 @@ public class RecordService {
 
     public RecordCommentsResponse getRecordComments(Optional<Long> viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findParentCommentWithUserEntityAndChildCommentEntitiesByRecordEntityId(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
                 .commentEntities(commentEntities)

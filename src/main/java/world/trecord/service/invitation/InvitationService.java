@@ -15,10 +15,12 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
+import world.trecord.service.invitation.request.FeedExpelRequest;
 import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.util.Objects;
 
+import static world.trecord.domain.invitation.InvitationStatus.EXPELLED;
 import static world.trecord.domain.notification.enumeration.NotificationType.FEED_INVITATION;
 import static world.trecord.exception.CustomExceptionError.*;
 
@@ -48,6 +50,38 @@ public class InvitationService {
         saveInvitation(feedEntity, userToEntity);
 
         eventPublisher.publishEvent(new NotificationEvent(userToEntity.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(userToEntity, feedEntity)));
+    }
+
+    @Transactional
+    public void expelUser(Long userFromId, Long feedId, FeedExpelRequest request) {
+        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
+
+        ensureUserIsFeedOwner(feedEntity, userFromId);
+
+        UserEntity userToEntity = findUserOrException(request.getUserToId());
+
+        ensureNotSelfExpelling(userFromId, userToEntity.getId());
+
+        ensureUserIsFeedContributor(userToEntity.getId(), feedEntity.getId());
+
+        deleteInvitation(userToEntity.getId(), feedEntity.getId());
+    }
+
+    private void deleteInvitation(Long userToId, Long feedId) {
+        invitationRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userToId, feedId, EXPELLED);
+        feedContributorRepository.deleteByUserEntityIdAndFeedEntityId(userToId, feedId);
+    }
+
+    private void ensureUserIsFeedContributor(Long userToId, Long feedId) {
+        if (!feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userToId, feedId)) {
+            throw new CustomException(USER_NOT_INVITED);
+        }
+    }
+
+    private void ensureNotSelfExpelling(Long userFromId, Long userToId) {
+        if (Objects.equals(userFromId, userToId)) {
+            throw new CustomException(SELF_EXPELLING_NOT_ALLOWED);
+        }
     }
 
     private void saveInvitation(FeedEntity feedEntity, UserEntity userToEntity) {

@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class SseEmitterRepository {
 
-    private static final Map<String, SseEmitter> emitterMap = new ConcurrentHashMap<>();
+    private final Map<String, SseEmitter> emitterMap = new ConcurrentHashMap<>();
 
     public SseEmitter save(Long userId, SseEmitter emitter) {
         final String key = getKey(userId);

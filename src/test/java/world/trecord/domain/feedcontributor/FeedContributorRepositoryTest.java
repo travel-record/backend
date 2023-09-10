@@ -81,6 +81,44 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
     }
 
+    @Test
+    @DisplayName("유저 아이디와 피드 아이디로 피드 컨트리뷰터를 soft delete 한다")
+    void deleteByUserEntityIdAndFeedEntityIdTest() throws Exception {
+        //given
+        UserEntity owner = createUser("email@email.com");
+        UserEntity userEntity = createUser("email1@email.com");
+        userRepository.saveAll(List.of(owner, userEntity));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+
+        feedContributorRepository.save(createContributor(userEntity, feedEntity));
+
+        //when
+        feedContributorRepository.deleteByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("삭제한 유저 아이디와 피드 아이디로 피드 컨트리뷰터 다시 저장한다")
+    void deleteByUserEntityIdAndFeedEntityIdWhoDeletedTest() throws Exception {
+        //given
+        UserEntity owner = createUser("email@email.com");
+        UserEntity userEntity = createUser("email1@email.com");
+        userRepository.saveAll(List.of(owner, userEntity));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        feedContributorRepository.save(createContributor(userEntity, feedEntity));
+        feedContributorRepository.deleteByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId());
+
+        //when
+        feedContributorRepository.save(createContributor(userEntity, feedEntity));
+
+        //then
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
+    }
+
+
     private UserEntity createUser(String email) {
         return UserEntity.builder()
                 .email(email)

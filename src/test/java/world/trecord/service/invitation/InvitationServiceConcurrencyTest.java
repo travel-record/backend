@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
+import world.trecord.domain.invitation.InvitationEntity;
 import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -17,11 +19,13 @@ import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.service.invitation.request.FeedExpelRequest;
 import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 @IntegrationTestSupport
@@ -47,18 +51,18 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
 
     @AfterEach
     void tearDown() {
-        invitationRepository.deleteAllInBatch();
-        feedContributorRepository.deleteAllInBatch();
-        feedRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
+        feedContributorRepository.deleteAll();
+        invitationRepository.deleteAll();
+        feedRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
     @DisplayName("같은 사용자에게 초대를 동시에 해도 초대는 한 번만 된다")
-    void inviteConcurrencyTest() throws Exception {
+    void inviteUserConcurrencyTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = createUser();
+        UserEntity invitedUser = createUser();
         userRepository.saveAll(List.of(owner, invitedUser));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
@@ -99,12 +103,65 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
         Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
         Assertions.assertThat(invitationRepository.findAll()).hasSize(1);
 
+        //finally
         executorService.shutdown();
     }
 
-    private UserEntity createUser(String email) {
+    @Test
+    @DisplayName("피드 컨트리뷰터를 동시에 내보내도 내보내기는 한 번만 된다")
+    void expelUserConcurrencyTest() throws Exception {
+        //given
+        UserEntity owner = createUser();
+        UserEntity invitedUser = createUser();
+        userRepository.saveAll(List.of(owner, invitedUser));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        invitationRepository.save(createInvitation(invitedUser, feedEntity));
+        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        final int inviteRequestCount = 10;
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        ExecutorService executorService = Executors.newFixedThreadPool(numberOfCores);
+        List<Callable<Void>> tasks = new ArrayList<>();
+
+        for (int i = 0; i < inviteRequestCount; i++) {
+            tasks.add(() -> {
+                invitationService.expelUser(owner.getId(), feedEntity.getId(), request);
+                return null;
+            });
+        }
+
+        //when
+        List<Future<Void>> futures = executorService.invokeAll(tasks);
+
+        //then
+        int exceptionCount = 0;
+        for (Future<Void> future : futures) {
+            try {
+                future.get();
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof CustomException &&
+                        (((CustomException) e.getCause()).error() == CustomExceptionError.USER_NOT_INVITED)) {
+                    exceptionCount++;
+                }
+            }
+        }
+
+        Assertions.assertThat(exceptionCount).isEqualTo(inviteRequestCount - 1);
+        Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
+        Assertions.assertThat(invitationRepository.findAll()).isEmpty();
+
+        //finally
+        executorService.shutdown();
+    }
+
+    private UserEntity createUser() {
         return UserEntity.builder()
-                .email(email)
+                .email(UUID.randomUUID().toString())
                 .build();
     }
 
@@ -114,6 +171,20 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
                 .name("name")
                 .startAt(LocalDateTime.now())
                 .endAt(LocalDateTime.now())
+                .build();
+    }
+
+    private InvitationEntity createInvitation(UserEntity userEntity, FeedEntity feedEntity) {
+        return InvitationEntity.builder()
+                .userToEntity(userEntity)
+                .feedEntity(feedEntity)
+                .build();
+    }
+
+    private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
+        return FeedContributorEntity.builder()
+                .userEntity(userEntity)
+                .feedEntity(feedEntity)
                 .build();
     }
 }
