@@ -13,7 +13,19 @@ public interface InvitationRepository extends JpaRepository<InvitationEntity, Lo
     @Transactional
     @Modifying
     @Query("UPDATE InvitationEntity ie " +
+            "SET ie.status = :status, " +
+            "ie.deletedDateTime = NOW() " +
+            "WHERE ie.userToEntity.id = :userToId AND ie.feedEntity.id = :feedId")
+    void updateStatusAndDeleteByUserEntityIdAndFeedEntityId(@Param("userToId") Long userToId,
+                                                            @Param("feedId") Long feedId,
+                                                            @Param("status") InvitationStatus status);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE InvitationEntity ie " +
             "SET ie.deletedDateTime = NOW() " +
             "where ie.feedEntity.id = :feedId")
     void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
+
+    void deleteByUserToEntityIdAndFeedEntityId(Long userToId, Long feedId);
 }

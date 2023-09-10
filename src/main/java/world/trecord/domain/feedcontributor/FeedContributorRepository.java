@@ -21,4 +21,6 @@ public interface FeedContributorRepository extends JpaRepository<FeedContributor
             "SET fce.deletedDateTime = NOW() " +
             "where fce.feedEntity.id = :feedId")
     void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
+
+    void deleteByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
 }
