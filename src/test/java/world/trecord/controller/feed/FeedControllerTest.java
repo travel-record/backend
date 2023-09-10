@@ -13,6 +13,8 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
+import world.trecord.domain.invitation.InvitationEntity;
+import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -21,6 +23,8 @@ import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
+import world.trecord.service.invitation.InvitationService;
+import world.trecord.service.invitation.request.FeedExpelRequest;
 import world.trecord.service.invitation.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
@@ -58,8 +62,15 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     JwtProperties jwtProperties;
+
     @Autowired
-    private FeedContributorRepository feedContributorRepository;
+    FeedContributorRepository feedContributorRepository;
+
+    @Autowired
+    InvitationService invitationService;
+
+    @Autowired
+    InvitationRepository invitationRepository;
 
     @Test
     @DisplayName("GET /api/v1/feeds - 성공 (등록된 피드가 없을때)")
@@ -531,50 +542,248 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
     }
 
-    // TODO
     @Test
     @DisplayName("POST /api/v1/feeds/{feedId}/expel - 성공")
-    void test() throws Exception {
+    void expelUserTest() throws Exception {
         //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity invitedUser = createUser("test1@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+        invitationRepository.save(createInvitation(invitedUser, feedEntity));
+        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
 
-        //when
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
 
-        //then
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
+        Assertions.assertThat(invitationRepository.findAll()).isEmpty();
     }
 
-    // TODO
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (피드 주인이 자신을 내보내려고 하는 경우)")
+    void expelUserSelfTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(owner.getId())
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(SELF_EXPELLING_NOT_ALLOWED.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (유효하지 않은 토큰으로 요청)")
+    void expelUserWithInvalidTokenTest() throws Exception {
+        //given
+        String invalidToken = "invalid token";
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", 1L)
+                                .header(AUTHORIZATION, invalidToken)
+                                .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (인증 토큰 없이 요청)")
+    void expelUserWithoutTokenTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", 1L)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (요청 파라미터 없이 요청)")
+    void expelUserWithoutRequestBodyTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", 1L)
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (요청 파라미터 올바르지 않을 경우)")
+    void expelUserWithInvalidParameterTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (이미 내보내진 사용자를 내보내려고 하는 경우)")
+    void expelUserWhoAlreadyExpelled() throws Exception {
+        //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity invitedUser = createUser("test1@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+        invitationRepository.save(createInvitation(invitedUser, feedEntity));
+        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        invitationService.expelUser(owner.getId(), feedEntity.getId(), request);
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(USER_NOT_INVITED.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (내보려는 사용자가 DB에 없는 경우)")
+    void expelUserWhoNotFoundTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        long notExistingUserId = 0L;
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(notExistingUserId)
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.code()));
+    }
+
     @Test
     @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (피드 주인의 요청이 아닌 경우)")
-    void test1() throws Exception {
-        //given
+    void expelUserByNotOwnerTest() throws Exception {
+        UserEntity owner = createUser("test@email.com");
+        UserEntity other = createUser("test1@email.com");
+        UserEntity invitedUser = createUser("test2@email.com");
+        userRepository.saveAll(List.of(owner, other, invitedUser));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
 
-        //when
-
-        //then
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(other.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
     }
 
-    // TODO
     @Test
     @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (초대되지 않은 사용자를 내보내려는 경우)")
-    void test2() throws Exception {
+    void expelUserWhoNotInvitedTest() throws Exception {
         //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity invitedUser = createUser("test2@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
 
-        //when
-
-        //then
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(USER_NOT_INVITED.code()));
     }
 
-    // TODO
     @Test
     @DisplayName("POST /api/v1/feeds/{feedId}/expel - 실패 (피드가 존재하지 않는 경우)")
-    void test3() throws Exception {
+    void expelUserWhenFeedNotFoundTest() throws Exception {
         //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity invitedUser = createUser("test2@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
 
-        //when
-
-        //then
+        long notExisingFeedId = 0L;
+        FeedExpelRequest request = FeedExpelRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+        
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds/{feedId}/expel", notExisingFeedId)
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
     }
-
 
     private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
@@ -606,6 +815,20 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .weather("weather")
                 .transportation("satisfaction")
                 .feeling("feeling")
+                .build();
+    }
+
+    private InvitationEntity createInvitation(UserEntity userEntity, FeedEntity feedEntity) {
+        return InvitationEntity.builder()
+                .userToEntity(userEntity)
+                .feedEntity(feedEntity)
+                .build();
+    }
+
+    private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
+        return FeedContributorEntity.builder()
+                .userEntity(userEntity)
+                .feedEntity(feedEntity)
                 .build();
     }
 }

@@ -176,11 +176,8 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
-        FeedInviteRequest request = FeedInviteRequest.builder()
-                .build();
-
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.inviteUser(other.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> invitationService.inviteUser(other.getId(), feedEntity.getId(), null))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -303,12 +300,8 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
-        FeedExpelRequest request = FeedExpelRequest.builder()
-                .userToId(invitedUser.getId())
-                .build();
-
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.expelUser(other.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> invitationService.expelUser(other.getId(), feedEntity.getId(), null))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
