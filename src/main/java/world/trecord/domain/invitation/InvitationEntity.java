@@ -17,7 +17,7 @@ import static world.trecord.domain.invitation.InvitationStatus.COMPLETED;
 @Getter
 @Table(
         name = "invitation",
-        indexes = @Index(name = "idx_invitation_users_feed", columnList = "id_users_to, id_feed", unique = true)
+        indexes = @Index(name = "idx_invitation_users_feed", columnList = "id_users_to, id_feed")
 )
 @SQLDelete(sql = "UPDATE invitation SET deleted_date_time = NOW() WHERE id_invitation = ?")
 @Where(clause = "deleted_date_time is NULL")
