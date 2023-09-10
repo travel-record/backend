@@ -31,11 +31,11 @@ public class FeedContributorEntity extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users", foreignKey = @ForeignKey(name = "fk_contributor_users"))
+    @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_contributor_users"))
     private UserEntity userEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_feed", foreignKey = @ForeignKey(name = "fk_contributor_feed"))
+    @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_contributor_feed"))
     private FeedEntity feedEntity;
 
     @Type(JsonType.class)
