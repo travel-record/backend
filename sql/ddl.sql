@@ -20,7 +20,7 @@ create table feed
 (
     id_feed            int auto_increment comment '피드 PK'
         primary key,
-    id_users           int                                  not null comment '사용자 FK',
+    id_owner           int                                  not null comment '사용자 FK',
     image_url          text                                 null comment '썸네일 이미지 URL',
     description        varchar(255)                         null comment '설명',
     name               varchar(255)                         not null comment '피드 이름',
@@ -33,10 +33,29 @@ create table feed
     modified_date_time datetime                             null comment '기록 수정 시간',
     deleted_date_time  datetime                             null comment '피드 삭제 시간',
     constraint fk_feed_users
-        foreign key (id_users) references users (id_users)
+        foreign key (id_owner) references users (id_users)
             on update cascade on delete cascade
 )
     comment '피드';
+
+create table feed_contributor
+(
+    created_date_time  datetime                     null comment '컨트리뷰터 생성 시간',
+    deleted_date_time  datetime                     null comment '컨트리뷰터 삭제 시간',
+    id_contributor     int auto_increment comment '컨트리뷰터 PK'
+        primary key,
+    id_feed            int                          not null comment '피드 FK',
+    id_users           int                          not null comment '사용자 FK',
+    modified_date_time datetime                     null comment '컨트리뷰터 수정 시간',
+    permission         longtext collate utf8mb4_bin null comment '컨트리뷰터 권한'
+        check (json_valid(`permission`)),
+    status             varchar(20)                  not null comment '피드 컨트리뷰터 상태',
+    constraint fk_contributor_feed
+        foreign key (id_feed) references feed (id_feed),
+    constraint fk_contributor_users
+        foreign key (id_users) references users (id_users)
+)
+    comment '컨트리뷰터';
 
 create table notification
 (
@@ -58,8 +77,8 @@ create table notification
 
 create table record
 (
-    id_record          int auto_increment comment '기록 PK' primary key,
-    id_author           int           not null comment '작성자 FK',
+    id_record          int auto_increment comment '기록 PK'
+        primary key,
     content            longtext      not null comment '내용',
     date               datetime      not null comment '날짜',
     feeling            varchar(255)  not null comment '기분',
@@ -74,8 +93,13 @@ create table record
     created_date_time  datetime      null comment '기록 생성 시간',
     modified_date_time datetime      null comment '기록 수정 시간',
     deleted_date_time  datetime      null comment '기록 삭제 시간',
-    constraint fk_record_feed foreign key (id_feed) references feed (id_feed) on update cascade on delete cascade,
-    constraint fk_record_users foreign key (id_author) references users (id_users) on update cascade on delete cascade
+    id_author          int           null comment '사용자 PK',
+    constraint fk_record_feed
+        foreign key (id_feed) references feed (id_feed)
+            on update cascade on delete cascade,
+    constraint fk_record_users
+        foreign key (id_author) references users (id_users)
+            on delete cascade
 )
     comment '기록';
 
@@ -90,9 +114,15 @@ create table comment
     created_date_time  datetime     null comment '댓글 생성 시간',
     modified_date_time datetime     null comment '댓글 수정 시간',
     deleted_date_time  datetime     null comment '댓글 삭제 시간',
-    constraint fk_comment_comment foreign key (id_parent) references comment (id_comment) on delete cascade,
-    constraint fk_comment_record foreign key (id_record) references record (id_record) on delete cascade,
-    constraint fk_comment_user foreign key (id_users) references users (id_users) on delete cascade
+    constraint fk_comment_comment
+        foreign key (id_parent) references comment (id_comment)
+            on delete cascade,
+    constraint fk_comment_record
+        foreign key (id_record) references record (id_record)
+            on delete cascade,
+    constraint fk_comment_user
+        foreign key (id_users) references users (id_users)
+            on delete cascade
 )
     comment '댓글';
 
@@ -138,16 +168,3 @@ create index idx_user_id
     on user_record_like (id_users)
     comment '유저 PK 인덱스';
 
-create table feed_contributor
-(
-    created_date_time  datetime         comment '컨트리뷰터 생성 시간'          null,
-    deleted_date_time  datetime         comment '컨트리뷰터 삭제 시간'         null,
-    id_contributor     int auto_increment comment '컨트리뷰터 PK'
-        primary key,
-    id_feed            int           comment '피드 FK'            not null,
-    id_users           int            comment '사용자 FK'           not null,
-    modified_date_time datetime          comment '컨트리뷰터 수정 시간'       null,
-    permission         longtext collate utf8mb4_bin comment '컨트리뷰터 권한' null check (json_valid(`permission`)),
-    constraint fk_contributor_feed foreign key (id_feed) references feed (id_feed),
-    constraint fk_contributor_users foreign key (id_users) references users (id_users)
-) comment '컨트리뷰터' ;
