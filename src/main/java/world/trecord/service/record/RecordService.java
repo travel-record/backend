@@ -7,7 +7,6 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -87,7 +86,6 @@ public class RecordService {
     @Transactional
     public void swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
         List<Long> recordIds = Arrays.asList(request.getOriginalRecordId(), request.getTargetRecordId());
-
         List<RecordEntity> recordEntityList = recordRepository.findByIdsForUpdate(recordIds);
 
         if (recordEntityList.size() != recordIds.size()) {
@@ -134,8 +132,13 @@ public class RecordService {
         if (feedEntity.isOwnedBy(userId)) {
             return;
         }
-        Optional<FeedContributorEntity> contributor = feedContributorRepository.findByUserEntityIdAndFeedEntityId(userId, feedEntity.getId());
-        if (contributor.isEmpty() || !contributor.get().getPermission().getRecord().getWrite()) {
+
+        boolean hasWritePermission = feedContributorRepository
+                .findByUserEntityIdAndFeedEntityId(userId, feedEntity.getId())
+                .map(contributor -> contributor.getPermission().getRecord().getWrite())
+                .orElse(false);
+
+        if (!hasWritePermission) {
             throw new CustomException(FORBIDDEN);
         }
     }
