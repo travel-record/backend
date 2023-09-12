@@ -38,7 +38,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final Map<RegexRequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
     private final Set<RequestMatcher> tokenInParamSet = new HashSet<>();
 
-    public JwtTokenFilter(String secretKey, JwtTokenHandler jwtTokenHandler, UserService userService, ObjectMapper objectMapper, Map<String, List<HttpMethod>> whitelistMap, List<String> tokenInParamUrls) {
+    public JwtTokenFilter(String secretKey,
+                          JwtTokenHandler jwtTokenHandler,
+                          UserService userService,
+                          ObjectMapper objectMapper,
+                          Map<String, List<HttpMethod>> whitelistMap,
+                          List<String> tokenInParamUrls) {
         this.secretKey = secretKey;
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;

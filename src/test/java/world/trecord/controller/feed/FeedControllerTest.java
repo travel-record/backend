@@ -196,7 +196,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 성공")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 성공")
     void inviteUserTest() throws Exception {
         //given
         UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
@@ -209,7 +209,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                        post("/api/v1/feeds/{feedId}/contributors/invite", feedEntity.getId())
                                 .header(AUTHORIZATION, createToken(feedOwner.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -221,7 +221,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (피드 주인이 자기 자신을 초대하는 경우)")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 실패 (피드 주인이 자기 자신을 초대하는 경우)")
     void inviteSelfTest() throws Exception {
         //given
         UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
@@ -233,7 +233,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                        post("/api/v1/feeds/{feedId}/contributors/invite", feedEntity.getId())
                                 .header(AUTHORIZATION, createToken(feedOwner.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -243,7 +243,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(SELF_INVITATION_NOT_ALLOWED.code()));
     }
 
-    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (이미 초대된 사용자를 초대하는 경우)")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 실패 (이미 초대된 사용자를 초대하는 경우)")
     void inviteAlreadyInvitedUserTest() throws Exception {
         //given
         UserEntity feedOwner = userRepository.save(createUser("test@email.com"));
@@ -260,7 +260,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                        post("/api/v1/feeds/{feedId}/contributors/invite", feedEntity.getId())
                                 .header(AUTHORIZATION, createToken(feedOwner.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -271,7 +271,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (유효하지 않은 토큰인 경우)")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 실패 (유효하지 않은 토큰인 경우)")
     void inviteUserWithInvalidTokenTest() throws Exception {
         //given
         long feedId = 1L;
@@ -279,7 +279,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/feeds/{feedId}/invite", feedId)
+                        post("/api/v1/feeds/{feedId}/contributors/invite", feedId)
                                 .header(AUTHORIZATION, invalidToken)
                 )
                 .andExpect(status().isUnauthorized())
@@ -287,7 +287,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (피드가 없는 경우)")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 실패 (피드가 없는 경우)")
     void inviteUserWhenFeedNotFoundTest() throws Exception {
         //given
         long notExistingFeedId = 0L;
@@ -299,7 +299,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/feeds/{feedId}/invite", notExistingFeedId)
+                        post("/api/v1/feeds/{feedId}/contributors/invite", notExistingFeedId)
                                 .header(AUTHORIZATION, createToken(userEntity.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -309,7 +309,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (피드 관리자의 요청이 아닌 경우)")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 실패 (피드 관리자의 요청이 아닌 경우)")
     void inviteUserWhenNotFeedOwnerRequestTest() throws Exception {
         //given
         UserEntity owner = userRepository.save(createUser("test@email.com"));
@@ -322,7 +322,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                        post("/api/v1/feeds/{feedId}/contributors/invite", feedEntity.getId())
                                 .header(AUTHORIZATION, createToken(other.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -332,7 +332,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/feeds/{feedId}/invite - 실패 (초대된 사용자가 없는 경우)")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 실패 (초대된 사용자가 없는 경우)")
     void inviteUserWhenUserNotFoundTest() throws Exception {
         //given
         long notExistingUserId = 0L;
@@ -345,7 +345,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
         //when //then
         mockMvc.perform(
-                        post("/api/v1/feeds/{feedId}/invite", feedEntity.getId())
+                        post("/api/v1/feeds/{feedId}/contributors/invite", feedEntity.getId())
                                 .header(AUTHORIZATION, createToken(owner.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -832,7 +832,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     void expelUserWhenFeedNotFoundTest() throws Exception {
         //given
         UserEntity owner = createUser("test@email.com");
-        UserEntity invitedUser = createUser("test2@email.com");
+        UserEntity invitedUser = createUser("test1@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
         long notExisingFeedId = 0L;
@@ -849,6 +849,24 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
+    }
+
+    // TODO
+    // POST /api/v1/feeds/{feedId}/leave - 성공
+    // POST /api/v1/feeds/{feedId}/leave - 실패 (피드 컨트리뷰터가 아닌 경우)
+    // POST /api/v1/feeds/{feedId}/leave - 실패 (피드가 존재하지 않는 경우)
+    // POST /api/v1/feeds/{feedId}/leave - 실패 (인증 토큰 없이 요청한 경우)
+    // POST /api/v1/feeds/{feedId}/leave - 실패 (토큰이 올바르지 않은 경우)
+    // POST /api/v1/feeds/{feedId}/leave - 실패 (피드 주인인 경우)
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/leave - 성공")
+    void leaveFeedTest() throws Exception {
+        //given
+
+        //when
+
+        //then
     }
 
     private String createToken(Long userId) {

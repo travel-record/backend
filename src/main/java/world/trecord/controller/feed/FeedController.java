@@ -45,7 +45,7 @@ public class FeedController {
         Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
-    
+
     @GetMapping("/invited")
     public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
                                                                                         @CurrentUser UserContext userContext) {
@@ -59,7 +59,7 @@ public class FeedController {
         return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
     }
 
-    @PostMapping("/{feedId}/invite")
+    @PostMapping("/{feedId}/contributors/invite")
     public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
                                         @RequestBody @Valid FeedInviteRequest request,
                                         @CurrentUser UserContext userContext) {
@@ -72,6 +72,13 @@ public class FeedController {
                                        @RequestBody @Valid FeedExpelRequest request,
                                        @CurrentUser UserContext userContext) {
         feedContributorService.expelUserFromFeed(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/{feedId}/leave")
+    public ApiResponse<Void> leaveFeed(@PathVariable Long feedId,
+                                       @CurrentUser UserContext userContext) {
+        feedContributorService.leaveFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
     }
 

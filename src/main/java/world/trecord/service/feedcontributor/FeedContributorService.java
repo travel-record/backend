@@ -10,6 +10,7 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
+import world.trecord.domain.feedcontributor.FeedContributorStatus;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
@@ -22,6 +23,7 @@ import world.trecord.service.feedcontributor.response.UserFeedContributorListRes
 import java.util.Objects;
 
 import static world.trecord.domain.feedcontributor.FeedContributorStatus.EXPELLED;
+import static world.trecord.domain.feedcontributor.FeedContributorStatus.LEFT;
 import static world.trecord.domain.notification.enumeration.NotificationType.FEED_INVITATION;
 import static world.trecord.exception.CustomExceptionError.*;
 
@@ -54,13 +56,23 @@ public class FeedContributorService {
         UserEntity expelled = findUserOrException(request.getUserToId());
         ensureNotSelfExpelling(requestUserId, expelled.getId());
         ensureExpelledUserIsFeedContributor(feedEntity, expelled.getId());
-        deleteFeedContributor(feedEntity, expelled.getId());
+        deleteFeedContributor(feedEntity, expelled.getId(), EXPELLED);
     }
 
     public Page<UserFeedContributorListResponse> getUserParticipatingFeeds(Long userId, Pageable pageable) {
         return feedContributorRepository.findWithFeedEntityByUserEntityId(userId, pageable)
                 .map(FeedContributorEntity::getFeedEntity)
                 .map(UserFeedContributorListResponse::fromEntity);
+    }
+
+    @Transactional
+    public void leaveFeed(Long userId, Long feedId) {
+        FeedEntity feedEntity = findFeedWithContributorsForUpdateOrException(feedId);
+        ensureRequestUserIsNotFeedOwner(feedEntity, userId);
+        if (!feedEntity.isContributor(userId)) {
+            throw new CustomException(USER_NOT_INVITED);
+        }
+        deleteFeedContributor(feedEntity, userId, LEFT);
     }
 
     private void saveFeedContributor(FeedEntity feedEntity, UserEntity userEntity) {
@@ -70,9 +82,9 @@ public class FeedContributorService {
                 .build());
     }
 
-    private void deleteFeedContributor(FeedEntity feedEntity, Long userId) {
+    private void deleteFeedContributor(FeedEntity feedEntity, Long userId, FeedContributorStatus status) {
         feedEntity.removeFeedContributor(userId);
-        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userId, feedEntity.getId(), EXPELLED);
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userId, feedEntity.getId(), status);
     }
 
     private void ensureNotSelfExpelling(Long requestUserId, Long expelledId) {
@@ -94,6 +106,12 @@ public class FeedContributorService {
 
     private FeedEntity findFeedWithContributorsForUpdateOrException(Long feedId) {
         return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    }
+
+    private void ensureRequestUserIsNotFeedOwner(FeedEntity feedEntity, Long userId) {
+        if (feedEntity.isOwnedBy(userId)) {
+            throw new CustomException(SELF_LEAVING_NOT_ALLOWED);
+        }
     }
 
     private void ensureRequestUserIsFeedOwner(FeedEntity feedEntity, Long userId) {

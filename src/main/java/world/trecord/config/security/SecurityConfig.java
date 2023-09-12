@@ -66,7 +66,12 @@ public class SecurityConfig {
 
         List<String> tokenInParamUrls = List.of("/api/*/notifications/subscribe");
 
-        return new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, whitelistMap, tokenInParamUrls);
+        return new JwtTokenFilter(jwtProperties.getSecretKey(),
+                jwtTokenHandler,
+                userService,
+                objectMapper,
+                whitelistMap,
+                tokenInParamUrls);
     }
 
     @Bean
