@@ -62,7 +62,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), notExistingFeedId, request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
@@ -83,7 +83,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
@@ -104,7 +104,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request);
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll())
@@ -128,7 +128,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request);
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
@@ -146,7 +146,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(other.getId(), feedEntity.getId(), null))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(other.getId(), feedEntity.getId(), null))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -164,7 +164,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.SELF_INVITATION_NOT_ALLOWED);
@@ -185,7 +185,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request);
 
         //then
         Awaitility.await()
@@ -210,7 +210,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_ALREADY_INVITED);
@@ -233,7 +233,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request);
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
@@ -250,7 +250,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(owner.getId(), notExistingFeedId, request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
@@ -268,7 +268,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(other.getId(), feedEntity.getId(), null))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(other.getId(), feedEntity.getId(), null))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -289,7 +289,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_NOT_INVITED);
@@ -307,7 +307,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.SELF_EXPELLING_NOT_ALLOWED);

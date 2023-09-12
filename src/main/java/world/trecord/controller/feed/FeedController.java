@@ -55,7 +55,7 @@ public class FeedController {
     public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
                                         @RequestBody @Valid FeedInviteRequest request,
                                         @CurrentUser UserContext userContext) {
-        feedContributorService.inviteUser(userContext.getId(), feedId, request);
+        feedContributorService.inviteUserToFeed(userContext.getId(), feedId, request);
         return ApiResponse.ok();
     }
 
@@ -63,7 +63,7 @@ public class FeedController {
     public ApiResponse<Void> expelUser(@PathVariable Long feedId,
                                        @RequestBody @Valid FeedExpelRequest request,
                                        @CurrentUser UserContext userContext) {
-        feedContributorService.expelUser(userContext.getId(), feedId, request);
+        feedContributorService.expelUserFromFeed(userContext.getId(), feedId, request);
         return ApiResponse.ok();
     }
 

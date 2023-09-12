@@ -72,7 +72,7 @@ class FeedContributorServiceConcurrencyTest extends AbstractContainerBaseTest {
 
         for (int i = 0; i < inviteRequestCount; i++) {
             tasks.add(() -> {
-                feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
+                feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request);
                 return null;
             });
         }
@@ -122,7 +122,7 @@ class FeedContributorServiceConcurrencyTest extends AbstractContainerBaseTest {
 
         for (int i = 0; i < inviteRequestCount; i++) {
             tasks.add(() -> {
-                feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request);
+                feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request);
                 return null;
             });
         }

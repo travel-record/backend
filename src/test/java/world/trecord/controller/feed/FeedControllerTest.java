@@ -669,7 +669,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .userToId(invitedUser.getId())
                 .build();
 
-        feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request);
 
         //when //then
         mockMvc.perform(
@@ -809,7 +809,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .feeling("feeling")
                 .build();
     }
-    
+
     private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
         return FeedContributorEntity.builder()
                 .userEntity(userEntity)
