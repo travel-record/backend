@@ -16,7 +16,6 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
-import world.trecord.service.feedcontributor.request.FeedExpelRequest;
 import world.trecord.service.feedcontributor.request.FeedInviteRequest;
 import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 
@@ -50,13 +49,13 @@ public class FeedContributorService {
     }
 
     @Transactional
-    public void expelUserFromFeed(Long requestUserId, Long feedId, FeedExpelRequest request) {
+    public void expelUserFromFeed(Long requestUserId, Long contributorId, Long feedId) {
         FeedEntity feedEntity = findFeedWithContributorsForUpdateOrException(feedId);
         ensureRequestUserIsFeedOwner(feedEntity, requestUserId);
-        UserEntity expelled = findUserOrException(request.getUserToId());
-        ensureNotSelfExpelling(requestUserId, expelled.getId());
-        ensureExpelledUserIsFeedContributor(feedEntity, expelled.getId());
-        deleteFeedContributor(feedEntity, expelled.getId(), EXPELLED);
+        UserEntity contributor = findUserOrException(contributorId);
+        ensureNotSelfExpelling(requestUserId, contributor.getId());
+        ensureUserIsFeedContributor(feedEntity, contributor.getId());
+        deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
     }
 
     public Page<UserFeedContributorListResponse> getUserParticipatingFeeds(Long userId, Pageable pageable) {
@@ -120,7 +119,7 @@ public class FeedContributorService {
         }
     }
 
-    private void ensureExpelledUserIsFeedContributor(FeedEntity feedEntity, Long userId) {
+    private void ensureUserIsFeedContributor(FeedEntity feedEntity, Long userId) {
         if (!feedEntity.isContributor(userId)) {
             throw new CustomException(USER_NOT_INVITED);
         }

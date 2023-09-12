@@ -233,7 +233,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.expelUserFromFeed(owner.getId(), request.getUserToId(), feedEntity.getId());
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
@@ -250,7 +250,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), notExistingFeedId, request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), request.getUserToId(), notExistingFeedId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
@@ -268,7 +268,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(other.getId(), feedEntity.getId(), null))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(other.getId(), invitedUser.getId(), feedEntity.getId()))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -289,7 +289,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), request.getUserToId(), feedEntity.getId()))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_NOT_INVITED);
@@ -307,7 +307,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(owner.getId(), request.getUserToId(), feedEntity.getId()))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.SELF_EXPELLING_NOT_ALLOWED);

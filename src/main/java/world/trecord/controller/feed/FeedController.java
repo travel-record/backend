@@ -17,7 +17,6 @@ import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
 import world.trecord.service.feedcontributor.FeedContributorService;
-import world.trecord.service.feedcontributor.request.FeedExpelRequest;
 import world.trecord.service.feedcontributor.request.FeedInviteRequest;
 import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.service.users.UserContext;
@@ -67,11 +66,11 @@ public class FeedController {
         return ApiResponse.ok();
     }
 
-    @PostMapping("/{feedId}/expel")
+    @DeleteMapping("/{feedId}/contributors/{contributorId}")
     public ApiResponse<Void> expelUser(@PathVariable Long feedId,
-                                       @RequestBody @Valid FeedExpelRequest request,
+                                       @PathVariable Long contributorId,
                                        @CurrentUser UserContext userContext) {
-        feedContributorService.expelUserFromFeed(userContext.getId(), feedId, request);
+        feedContributorService.expelUserFromFeed(userContext.getId(), contributorId, feedId);
         return ApiResponse.ok();
     }
 
