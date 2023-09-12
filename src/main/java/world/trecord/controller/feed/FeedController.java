@@ -2,6 +2,7 @@ package world.trecord.controller.feed;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -18,6 +19,7 @@ import world.trecord.service.feed.response.FeedListResponse;
 import world.trecord.service.feedcontributor.FeedContributorService;
 import world.trecord.service.feedcontributor.request.FeedExpelRequest;
 import world.trecord.service.feedcontributor.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
@@ -42,6 +44,12 @@ public class FeedController {
                                                  @CurrentUser UserContext userContext) {
         Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
+    }
+    
+    @GetMapping("/invited")
+    public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                                        @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
     }
 
     @PostMapping
