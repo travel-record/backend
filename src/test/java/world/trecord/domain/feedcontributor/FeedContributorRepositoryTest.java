@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
@@ -14,6 +16,8 @@ import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static world.trecord.domain.feedcontributor.FeedContributorStatus.EXPELLED;
 
 @Transactional
 @IntegrationTestSupport
@@ -116,6 +120,43 @@ class FeedContributorRepositoryTest extends AbstractContainerBaseTest {
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터 상태를 변경하고 soft delete한다")
+    void updateStatusAndDeleteByUserEntityIdAndFeedEntityIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test1@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        feedContributorRepository.save(createContributor(userEntity, feedEntity));
+
+        //when
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userEntity.getId(), feedEntity.getId(), EXPELLED);
+
+        //then
+        Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터 아이디로 피드 정보와 피드 주인의 정보를 페이지네이션으로 조회한다")
+    void findWithFeedEntityByUserEntityIdTest() throws Exception {
+        //given
+        UserEntity owner = createUser("email@email.com");
+        UserEntity contributor = createUser("email1@email.com");
+        userRepository.saveAll(List.of(owner, contributor));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        feedContributorRepository.save(createContributor(contributor, feedEntity));
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        //when
+        Page<FeedContributorEntity> result = feedContributorRepository.findWithFeedEntityByUserEntityId(contributor.getId(), pageRequest);
+
+        //then
+        Assertions.assertThat(result.getContent())
+                .hasSize(1)
+                .extracting("feedEntity")
+                .containsExactly(feedEntity);
     }
 
 

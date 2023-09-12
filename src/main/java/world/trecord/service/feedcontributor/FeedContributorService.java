@@ -1,37 +1,37 @@
-package world.trecord.service.invitation;
+package world.trecord.service.feedcontributor;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
-import world.trecord.domain.invitation.InvitationEntity;
-import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
-import world.trecord.service.invitation.request.FeedExpelRequest;
-import world.trecord.service.invitation.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.request.FeedExpelRequest;
+import world.trecord.service.feedcontributor.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 
 import java.util.Objects;
 
-import static world.trecord.domain.invitation.InvitationStatus.EXPELLED;
+import static world.trecord.domain.feedcontributor.FeedContributorStatus.EXPELLED;
 import static world.trecord.domain.notification.enumeration.NotificationType.FEED_INVITATION;
 import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
-public class InvitationService {
+public class FeedContributorService {
 
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
-    private final InvitationRepository invitationRepository;
     private final FeedContributorRepository feedContributorRepository;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -47,7 +47,7 @@ public class InvitationService {
 
         ensureUserNotAlreadyInvited(userToEntity.getId(), feedEntity.getId());
 
-        saveInvitation(feedEntity, userToEntity);
+        saveFeedContributor(feedEntity, userToEntity);
 
         eventPublisher.publishEvent(new NotificationEvent(userToEntity.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(userToEntity, feedEntity)));
     }
@@ -64,12 +64,17 @@ public class InvitationService {
 
         ensureUserIsFeedContributor(userToEntity.getId(), feedEntity.getId());
 
-        deleteInvitation(userToEntity.getId(), feedEntity.getId());
+        deleteFeedContributor(userToEntity.getId(), feedEntity.getId());
     }
 
-    private void deleteInvitation(Long userToId, Long feedId) {
-        invitationRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userToId, feedId, EXPELLED);
-        feedContributorRepository.deleteByUserEntityIdAndFeedEntityId(userToId, feedId);
+    public Page<UserFeedContributorListResponse> getUserFeedContributors(Long userId, Pageable pageable) {
+        return feedContributorRepository.findWithFeedEntityByUserEntityId(userId, pageable)
+                .map(FeedContributorEntity::getFeedEntity)
+                .map(UserFeedContributorListResponse::fromEntity);
+    }
+
+    private void deleteFeedContributor(Long userToId, Long feedId) {
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userToId, feedId, EXPELLED);
     }
 
     private void ensureUserIsFeedContributor(Long userToId, Long feedId) {
@@ -84,12 +89,7 @@ public class InvitationService {
         }
     }
 
-    private void saveInvitation(FeedEntity feedEntity, UserEntity userToEntity) {
-        invitationRepository.save(InvitationEntity.builder()
-                .userToEntity(userToEntity)
-                .feedEntity(feedEntity)
-                .build());
-
+    private void saveFeedContributor(FeedEntity feedEntity, UserEntity userToEntity) {
         feedContributorRepository.save(FeedContributorEntity.builder()
                 .feedEntity(feedEntity)
                 .userEntity(userToEntity)

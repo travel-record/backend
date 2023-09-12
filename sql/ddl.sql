@@ -151,17 +151,3 @@ create table feed_contributor
     constraint fk_contributor_feed foreign key (id_feed) references feed (id_feed),
     constraint fk_contributor_users foreign key (id_users) references users (id_users)
 ) comment '컨트리뷰터' ;
-
-create table invitation
-(
-    created_date_time  datetime        comment '초대 생성 시간'                         null,
-    deleted_date_time  datetime         comment '초대 삭제 시간'                        null,
-    id_feed            int                comment '피드 FK'                      not null,
-    id_invitation      int auto_increment comment '초대 PK' primary key,
-    id_users_to        int                   comment '사용자 FK'                   not null,
-    modified_date_time datetime           comment '초대 수정 시간'                      null,
-    status             varchar(20)    comment '초대 상태'  null,
-    INDEX idx_invitation_users_feed (id_users_to, id_feed),
-    constraint fk_invitation_feed foreign key (id_feed) references feed (id_feed),
-    constraint fk_invitation_users foreign key (id_users_to) references users (id_users)
-) comment '피드 초대';

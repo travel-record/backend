@@ -1,4 +1,4 @@
-package world.trecord.service.invitation;
+package world.trecord.service.feedcontributor;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -10,8 +10,6 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
-import world.trecord.domain.invitation.InvitationEntity;
-import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEventListener;
@@ -19,8 +17,8 @@ import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.invitation.request.FeedExpelRequest;
-import world.trecord.service.invitation.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.request.FeedExpelRequest;
+import world.trecord.service.feedcontributor.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,7 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.*;
 
 @IntegrationTestSupport
-class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
+class FeedContributorServiceConcurrencyTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -41,10 +39,7 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
     FeedContributorRepository feedContributorRepository;
 
     @Autowired
-    InvitationRepository invitationRepository;
-
-    @Autowired
-    InvitationService invitationService;
+    FeedContributorService feedContributorService;
 
     @MockBean
     NotificationEventListener mockEventListener;
@@ -52,7 +47,6 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
     @AfterEach
     void tearDown() {
         feedContributorRepository.deleteAll();
-        invitationRepository.deleteAll();
         feedRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -78,7 +72,7 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
 
         for (int i = 0; i < inviteRequestCount; i++) {
             tasks.add(() -> {
-                invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
+                feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
                 return null;
             });
         }
@@ -101,7 +95,6 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
 
         Assertions.assertThat(exceptionCount).isEqualTo(inviteRequestCount - 1);
         Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
-        Assertions.assertThat(invitationRepository.findAll()).hasSize(1);
 
         //finally
         executorService.shutdown();
@@ -116,7 +109,6 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
         userRepository.saveAll(List.of(owner, invitedUser));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
-        invitationRepository.save(createInvitation(invitedUser, feedEntity));
         feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
 
         FeedExpelRequest request = FeedExpelRequest.builder()
@@ -130,7 +122,7 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
 
         for (int i = 0; i < inviteRequestCount; i++) {
             tasks.add(() -> {
-                invitationService.expelUser(owner.getId(), feedEntity.getId(), request);
+                feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request);
                 return null;
             });
         }
@@ -153,7 +145,6 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
 
         Assertions.assertThat(exceptionCount).isEqualTo(inviteRequestCount - 1);
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
-        Assertions.assertThat(invitationRepository.findAll()).isEmpty();
 
         //finally
         executorService.shutdown();
@@ -171,13 +162,6 @@ class InvitationServiceConcurrencyTest extends AbstractContainerBaseTest {
                 .name("name")
                 .startAt(LocalDateTime.now())
                 .endAt(LocalDateTime.now())
-                .build();
-    }
-
-    private InvitationEntity createInvitation(UserEntity userEntity, FeedEntity feedEntity) {
-        return InvitationEntity.builder()
-                .userToEntity(userEntity)
-                .feedEntity(feedEntity)
                 .build();
     }
 

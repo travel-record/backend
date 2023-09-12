@@ -13,8 +13,6 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
-import world.trecord.domain.invitation.InvitationEntity;
-import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -23,9 +21,9 @@ import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
 import world.trecord.service.feed.request.FeedCreateRequest;
 import world.trecord.service.feed.request.FeedUpdateRequest;
-import world.trecord.service.invitation.InvitationService;
-import world.trecord.service.invitation.request.FeedExpelRequest;
-import world.trecord.service.invitation.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.FeedContributorService;
+import world.trecord.service.feedcontributor.request.FeedExpelRequest;
+import world.trecord.service.feedcontributor.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,10 +65,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     FeedContributorRepository feedContributorRepository;
 
     @Autowired
-    InvitationService invitationService;
-
-    @Autowired
-    InvitationRepository invitationRepository;
+    FeedContributorService feedContributorService;
 
     @Test
     @DisplayName("GET /api/v1/feeds - 성공 (등록된 피드가 없을때)")
@@ -551,7 +546,6 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         userRepository.saveAll(List.of(owner, invitedUser));
         LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
         FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
-        invitationRepository.save(createInvitation(invitedUser, feedEntity));
         feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
 
         FeedExpelRequest request = FeedExpelRequest.builder()
@@ -568,7 +562,6 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
-        Assertions.assertThat(invitationRepository.findAll()).isEmpty();
     }
 
     @Test
@@ -670,14 +663,13 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         userRepository.saveAll(List.of(owner, invitedUser));
         LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
         FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
-        invitationRepository.save(createInvitation(invitedUser, feedEntity));
         feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
 
         FeedExpelRequest request = FeedExpelRequest.builder()
                 .userToId(invitedUser.getId())
                 .build();
 
-        invitationService.expelUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request);
 
         //when //then
         mockMvc.perform(
@@ -773,7 +765,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         FeedExpelRequest request = FeedExpelRequest.builder()
                 .userToId(invitedUser.getId())
                 .build();
-        
+
         //when //then
         mockMvc.perform(
                         post("/api/v1/feeds/{feedId}/expel", notExisingFeedId)
@@ -817,14 +809,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .feeling("feeling")
                 .build();
     }
-
-    private InvitationEntity createInvitation(UserEntity userEntity, FeedEntity feedEntity) {
-        return InvitationEntity.builder()
-                .userToEntity(userEntity)
-                .feedEntity(feedEntity)
-                .build();
-    }
-
+    
     private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
         return FeedContributorEntity.builder()
                 .userEntity(userEntity)

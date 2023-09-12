@@ -1,4 +1,4 @@
-package world.trecord.service.invitation;
+package world.trecord.service.feedcontributor;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -12,9 +12,6 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
-import world.trecord.domain.invitation.InvitationEntity;
-import world.trecord.domain.invitation.InvitationRepository;
-import world.trecord.domain.invitation.InvitationStatus;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEventListener;
@@ -22,18 +19,16 @@ import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.invitation.request.FeedExpelRequest;
-import world.trecord.service.invitation.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.request.FeedExpelRequest;
+import world.trecord.service.feedcontributor.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.groups.Tuple.tuple;
-
 @Transactional
 @IntegrationTestSupport
-class InvitationServiceTest extends AbstractContainerBaseTest {
+class FeedContributorServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRepository userRepository;
@@ -45,39 +40,10 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
     FeedContributorRepository feedContributorRepository;
 
     @Autowired
-    InvitationRepository invitationRepository;
-
-    @Autowired
-    InvitationService invitationService;
+    FeedContributorService feedContributorService;
 
     @MockBean
     NotificationEventListener mockEventListener;
-
-    @Test
-    @DisplayName("피드 주인이 다른 사용자를 피드에 초대하면 사용자를 향한 초대가 생성된다")
-    void inviteUserTest() throws Exception {
-        //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
-        userRepository.saveAll(List.of(owner, invitedUser));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
-
-        FeedInviteRequest request = FeedInviteRequest.builder()
-                .userToId(invitedUser.getId())
-                .build();
-
-        //when
-        invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
-
-        //then
-        Assertions.assertThat(invitationRepository.findAll())
-                .hasSize(1)
-                .extracting("userToEntity", "status")
-                .containsExactly(
-                        tuple(invitedUser, InvitationStatus.COMPLETED)
-                );
-    }
 
     @Test
     @DisplayName("존재하지 않는 피드에 사용자를 초대할 수 없다")
@@ -93,7 +59,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.inviteUser(owner.getId(), notExistingFeedId, request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
@@ -114,7 +80,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.inviteUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
@@ -135,7 +101,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll())
@@ -159,7 +125,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
@@ -177,7 +143,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.inviteUser(other.getId(), feedEntity.getId(), null))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(other.getId(), feedEntity.getId(), null))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -195,7 +161,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.inviteUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.SELF_INVITATION_NOT_ALLOWED);
@@ -216,7 +182,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        invitationService.inviteUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request);
 
         //then
         Awaitility.await()
@@ -241,14 +207,14 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.inviteUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUser(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_ALREADY_INVITED);
     }
 
     @Test
-    @DisplayName("피드 주인이 피드에 초대된 사용자를 내보내면 초대장과 피드 컨트리뷰터에서 제거된다")
+    @DisplayName("피드 주인이 피드에 초대된 사용자를 내보내면 피드 컨트리뷰터에서 제거된다")
     void expelUserTest() throws Exception {
         //given
         UserEntity owner = createUser("owner@email.com");
@@ -257,7 +223,6 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
-        invitationRepository.save(createInvitation(invitedUser, feedEntity));
         feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
 
         FeedExpelRequest request = FeedExpelRequest.builder()
@@ -265,11 +230,10 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        invitationService.expelUser(owner.getId(), feedEntity.getId(), request);
+        feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request);
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
-        Assertions.assertThat(invitationRepository.findAll()).isEmpty();
     }
 
     @Test
@@ -283,7 +247,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.expelUser(owner.getId(), notExistingFeedId, request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(owner.getId(), notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
@@ -301,7 +265,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.expelUser(other.getId(), feedEntity.getId(), null))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(other.getId(), feedEntity.getId(), null))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.FORBIDDEN);
@@ -322,7 +286,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.expelUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.USER_NOT_INVITED);
@@ -340,7 +304,7 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> invitationService.expelUser(owner.getId(), feedEntity.getId(), request))
+        Assertions.assertThatThrownBy(() -> feedContributorService.expelUser(owner.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(CustomExceptionError.SELF_EXPELLING_NOT_ALLOWED);
@@ -359,13 +323,6 @@ class InvitationServiceTest extends AbstractContainerBaseTest {
                 .name("name")
                 .startAt(LocalDateTime.now())
                 .endAt(LocalDateTime.now())
-                .build();
-    }
-
-    private InvitationEntity createInvitation(UserEntity userEntity, FeedEntity feedEntity) {
-        return InvitationEntity.builder()
-                .userToEntity(userEntity)
-                .feedEntity(feedEntity)
                 .build();
     }
 

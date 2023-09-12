@@ -1,4 +1,4 @@
-package world.trecord.service.invitation.request;
+package world.trecord.service.feedcontributor.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
