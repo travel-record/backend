@@ -2,6 +2,7 @@ package world.trecord.controller.feed;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -15,8 +16,9 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.invitation.InvitationService;
-import world.trecord.service.invitation.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.FeedContributorService;
+import world.trecord.service.feedcontributor.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
@@ -27,7 +29,7 @@ import java.util.Optional;
 public class FeedController {
 
     private final FeedService feedService;
-    private final InvitationService invitationService;
+    private final FeedContributorService feedContributorService;
     private final FeedValidator feedValidator;
 
     @GetMapping
@@ -37,23 +39,17 @@ public class FeedController {
     }
 
     @GetMapping("/{feedId}")
-    public ApiResponse<FeedInfoResponse> getFeed(@PathVariable Long feedId, @CurrentUser UserContext userContext) {
+    public ApiResponse<FeedInfoResponse> getFeed(@PathVariable Long feedId,
+                                                 @CurrentUser UserContext userContext) {
         Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
 
     @PostMapping
-    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request, @CurrentUser UserContext userContext) throws BindException {
+    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request,
+                                                      @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(request);
         return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
-    }
-
-    @PostMapping("/{feedId}/invite")
-    public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
-                                        @RequestBody @Valid FeedInviteRequest request,
-                                        @CurrentUser UserContext userContext) {
-        invitationService.inviteUser(userContext.getId(), feedId, request);
-        return ApiResponse.ok();
     }
 
     @PutMapping("/{feedId}")
@@ -66,8 +62,38 @@ public class FeedController {
     }
 
     @DeleteMapping("/{feedId}")
-    public ApiResponse<Void> deleteFeed(@PathVariable Long feedId, @CurrentUser UserContext userContext) {
+    public ApiResponse<Void> deleteFeed(@PathVariable Long feedId,
+                                        @CurrentUser UserContext userContext) {
         feedService.deleteFeed(userContext.getId(), feedId);
+        return ApiResponse.ok();
+    }
+
+    @GetMapping("/invited")
+    public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                                        @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
+    }
+
+    @PostMapping("/{feedId}/contributors/invite")
+    public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
+                                        @RequestBody @Valid FeedInviteRequest request,
+                                        @CurrentUser UserContext userContext) {
+        feedContributorService.inviteUserToFeed(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/{feedId}/contributors/{contributorId}")
+    public ApiResponse<Void> expelUser(@PathVariable Long feedId,
+                                       @PathVariable Long contributorId,
+                                       @CurrentUser UserContext userContext) {
+        feedContributorService.expelUserFromFeed(userContext.getId(), contributorId, feedId);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/{feedId}/contributors/leave")
+    public ApiResponse<Void> leaveFeed(@PathVariable Long feedId,
+                                       @CurrentUser UserContext userContext) {
+        feedContributorService.leaveFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
     }
 }

@@ -8,11 +8,14 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -55,6 +58,9 @@ public class FeedEntity extends BaseEntity {
     @JoinColumn(name = "id_owner", nullable = false, foreignKey = @ForeignKey(name = "fk_feed_users"))
     private UserEntity userEntity;
 
+    @OneToMany(mappedBy = "feedEntity")
+    private Set<FeedContributorEntity> feedContributors = new HashSet<>();
+
     @Builder
     private FeedEntity(UserEntity userEntity, String name, String description, String imageUrl, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
         this.name = name;
@@ -93,5 +99,18 @@ public class FeedEntity extends BaseEntity {
 
     public boolean isOwnedBy(Long userId) {
         return Objects.equals(this.userEntity.getId(), userId);
+    }
+
+    public void addFeedContributor(FeedContributorEntity feedContributorEntity) {
+        this.feedContributors.add(feedContributorEntity);
+    }
+
+    public boolean isContributor(Long userId) {
+        return feedContributors.stream()
+                .anyMatch(contributor -> Objects.equals(contributor.getUserEntity().getId(), userId));
+    }
+
+    public void removeFeedContributor(Long userId) {
+        feedContributors.removeIf(contributor -> Objects.equals(contributor.getUserEntity().getId(), userId));
     }
 }

@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
-import world.trecord.domain.invitation.InvitationRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
@@ -34,7 +33,6 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
     private final FeedContributorRepository feedContributorRepository;
-    private final InvitationRepository invitationRepository;
     private final NotificationRepository notificationRepository;
     private final RecordSequenceRepository recordSequenceRepository;
 
@@ -46,6 +44,9 @@ public class FeedService {
                 .build();
     }
 
+    // TODO
+    // records와 분리
+    // feed contributors 같이 추가
     public FeedInfoResponse getFeed(Optional<Long> viewerId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedId);
@@ -84,7 +85,6 @@ public class FeedService {
         ensureUserIsFeedOwner(feedEntity, userId);
 
         notificationRepository.deleteAllByFeedEntityId(feedId);
-        invitationRepository.deleteAllByFeedEntityId(feedId);
         feedContributorRepository.deleteAllByFeedEntityId(feedId);
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);

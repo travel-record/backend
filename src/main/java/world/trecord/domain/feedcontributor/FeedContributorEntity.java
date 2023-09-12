@@ -30,12 +30,16 @@ public class FeedContributorEntity extends BaseEntity {
     @Column(name = "id_contributor", nullable = false)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private FeedContributorStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_users", foreignKey = @ForeignKey(name = "fk_contributor_users"))
+    @JoinColumn(name = "id_users", nullable = false, foreignKey = @ForeignKey(name = "fk_contributor_users"))
     private UserEntity userEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_feed", foreignKey = @ForeignKey(name = "fk_contributor_feed"))
+    @JoinColumn(name = "id_feed", nullable = false, foreignKey = @ForeignKey(name = "fk_contributor_feed"))
     private FeedEntity feedEntity;
 
     @Type(JsonType.class)
@@ -46,6 +50,10 @@ public class FeedContributorEntity extends BaseEntity {
     private FeedContributorEntity(UserEntity userEntity, FeedEntity feedEntity) {
         this.userEntity = userEntity;
         this.feedEntity = feedEntity;
+        if (feedEntity != null) {
+            feedEntity.addFeedContributor(this);
+        }
+        this.status = FeedContributorStatus.PARTICIPATING;
         this.permission = new FeedContributorPermissionArgs();
     }
 }

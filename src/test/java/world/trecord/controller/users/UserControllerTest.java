@@ -12,6 +12,7 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
@@ -61,6 +62,9 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
+
+    @Autowired
+    FeedContributorRepository feedContributorRepository;
 
     @Autowired
     JwtProperties jwtProperties;

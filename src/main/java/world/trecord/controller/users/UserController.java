@@ -32,7 +32,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest request, @CurrentUser UserContext userContext) {
+    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest request,
+                                                    @CurrentUser UserContext userContext) {
         return ApiResponse.ok(userService.updateUser(userContext.getId(), request));
     }
 

@@ -31,6 +31,20 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final SseEmitterService sseEmitterService;
 
+    @GetMapping
+    public ApiResponse<NotificationListResponse> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
+                                                                  @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(notificationService.getNotifications(userContext.getId()));
+    }
+
+    // TODO
+//    @DeleteMapping("/remove/{notificationId}")
+//    public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
+//                                                                    @CurrentUser UserContext userContext) {
+//        notificationService.deleteNotification(userContext.getId());
+//        return ApiResponse.ok();
+//    }
+
     @GetMapping("/check")
     public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.checkUnreadNotifications(userContext.getId()));
@@ -39,12 +53,6 @@ public class NotificationController {
     @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
     public SseEmitter connectNotification(@CurrentUser UserContext userContext) {
         return sseEmitterService.connect(userContext.getId(), new SseEmitter(Duration.ofHours(3).toMillis()));
-    }
-
-    @GetMapping
-    public ApiResponse<NotificationListResponse> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                                  @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(notificationService.getNotifications(userContext.getId()));
     }
 
     @GetMapping("/type/{type}")

@@ -7,7 +7,6 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -26,6 +25,7 @@ import world.trecord.service.record.response.RecordCreateResponse;
 import world.trecord.service.record.response.RecordInfoResponse;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,8 +85,15 @@ public class RecordService {
 
     @Transactional
     public void swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
-        RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
-        RecordEntity targetRecord = findRecordForUpdateOrException(request.getTargetRecordId());
+        List<Long> recordIds = Arrays.asList(request.getOriginalRecordId(), request.getTargetRecordId());
+        List<RecordEntity> recordEntityList = recordRepository.findByIdsForUpdate(recordIds);
+
+        if (recordEntityList.size() != recordIds.size()) {
+            throw new CustomException(RECORD_NOT_FOUND);
+        }
+
+        RecordEntity originalRecord = recordEntityList.get(0);
+        RecordEntity targetRecord = recordEntityList.get(1);
 
         ensureRecordsHasSameFeed(originalRecord, targetRecord);
 
@@ -113,7 +120,7 @@ public class RecordService {
 
     public RecordCommentsResponse getRecordComments(Optional<Long> viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        List<CommentEntity> commentEntities = commentRepository.findWithUserEntityByRecordEntityIdOrderByCreatedDateTimeAsc(recordEntity.getId());
+        List<CommentEntity> commentEntities = commentRepository.findParentCommentWithUserEntityAndChildCommentEntitiesByRecordEntityId(recordEntity.getId());
 
         return RecordCommentsResponse.builder()
                 .commentEntities(commentEntities)
@@ -125,8 +132,13 @@ public class RecordService {
         if (feedEntity.isOwnedBy(userId)) {
             return;
         }
-        Optional<FeedContributorEntity> contributor = feedContributorRepository.findByUserEntityIdAndFeedEntityId(userId, feedEntity.getId());
-        if (contributor.isEmpty() || !contributor.get().getPermission().getRecord().getWrite()) {
+
+        boolean hasWritePermission = feedContributorRepository
+                .findByUserEntityIdAndFeedEntityId(userId, feedEntity.getId())
+                .map(contributor -> contributor.getPermission().getRecord().getWrite())
+                .orElse(false);
+
+        if (!hasWritePermission) {
             throw new CustomException(FORBIDDEN);
         }
     }

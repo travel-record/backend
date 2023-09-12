@@ -59,8 +59,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
+
     @Autowired
-    private FeedContributorRepository feedContributorRepository;
+    FeedContributorRepository feedContributorRepository;
 
     @Test
     @DisplayName("존재하지 않는 사용자가 기록 생성 요청을 하면 예외가 발생한다")
@@ -213,8 +214,8 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
         RecordEntity recordEntity = recordRepository.save(createRecord(writer, feedEntity, 0));
 
-        CommentEntity commentEntity1 = createComment(commenter1, recordEntity);
-        CommentEntity commentEntity2 = createComment(commenter2, recordEntity);
+        CommentEntity commentEntity1 = createComment(commenter1, recordEntity, null);
+        CommentEntity commentEntity2 = createComment(commenter2, recordEntity, null);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
@@ -238,8 +239,8 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
         RecordEntity recordEntity = recordRepository.save(createRecord(writer, feedEntity, 0));
 
-        CommentEntity commentEntity1 = createComment(commenter1, recordEntity);
-        CommentEntity commentEntity2 = createComment(commenter2, recordEntity);
+        CommentEntity commentEntity1 = createComment(commenter1, recordEntity, null);
+        CommentEntity commentEntity2 = createComment(commenter2, recordEntity, null);
 
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
@@ -546,8 +547,8 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         UserEntity commenter2 = userRepository.save(createUser("test2@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
         RecordEntity recordEntity = recordRepository.save(createRecord(writer, feedEntity, 0));
-        CommentEntity commentEntity1 = createComment(commenter1, recordEntity);
-        CommentEntity commentEntity2 = createComment(commenter2, recordEntity);
+        CommentEntity commentEntity1 = createComment(commenter1, recordEntity, null);
+        CommentEntity commentEntity2 = createComment(commenter2, recordEntity, null);
 
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1));
 
@@ -572,9 +573,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         UserEntity commenter = userRepository.save(createUser("test1@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
         RecordEntity recordEntity = recordRepository.save(createRecord(writer, feedEntity, 0));
-        CommentEntity commentEntity1 = createComment(commenter, recordEntity);
-        CommentEntity commentEntity2 = createComment(commenter, recordEntity);
-        CommentEntity commentEntity3 = createComment(commenter, recordEntity);
+        CommentEntity commentEntity1 = createComment(commenter, recordEntity, null);
+        CommentEntity commentEntity2 = createComment(commenter, recordEntity, null);
+        CommentEntity commentEntity3 = createComment(commenter, recordEntity, null);
 
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1, commentEntity3));
 
@@ -603,6 +604,29 @@ class RecordServiceTest extends AbstractContainerBaseTest {
 
         //then
         Assertions.assertThat(response.getComments()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("기록에 등록된 댓글들을 조회할 때, 대댓글 개수도 같이 조회하여 반환한다")
+    void getRecordCommentsWithChildCommentsSizeTest() throws Exception {
+        //given
+        UserEntity writer = userRepository.save(createUser("test@email.com"));
+        UserEntity commenter1 = userRepository.save(createUser("test1@email.com"));
+        UserEntity commenter2 = userRepository.save(createUser("test2@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
+        RecordEntity recordEntity = recordRepository.save(createRecord(writer, feedEntity, 0));
+        CommentEntity parentCommentEntity = commentRepository.save(createComment(commenter1, recordEntity, null));
+        CommentEntity commentEntity1 = createComment(commenter2, recordEntity, parentCommentEntity);
+        CommentEntity commentEntity2 = createComment(commenter1, recordEntity, parentCommentEntity);
+        CommentEntity commentEntity3 = createComment(commenter2, recordEntity, parentCommentEntity);
+        CommentEntity commentEntity4 = createComment(commenter1, recordEntity, parentCommentEntity);
+        commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
+
+        //when
+        RecordCommentsResponse response = recordService.getRecordComments(Optional.of(commenter1.getId()), recordEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getComments()).hasSize(1);
     }
 
     @Test
@@ -661,6 +685,38 @@ class RecordServiceTest extends AbstractContainerBaseTest {
     }
 
     @Test
+    @DisplayName("기록에 달린 댓글을 조회할 때 대댓글 개수도 함께 조회한다")
+    void getRecordCommentsWithReplyCountTest() throws Exception {
+        //given
+        UserEntity writer = createUser("test@email.com");
+        UserEntity commenter1 = createUser("test1@email.com");
+        UserEntity commenter2 = createUser("test2@email.com");
+        UserEntity commenter3 = createUser("test3@email.com");
+        userRepository.saveAll(List.of(writer, commenter1, commenter2, commenter3));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
+        RecordEntity recordEntity = recordRepository.save(createRecord(writer, feedEntity, 1));
+
+        CommentEntity parentComment = createComment(commenter1, recordEntity, null);
+        commentRepository.save(parentComment);
+
+        CommentEntity childComment1 = createComment(commenter2, recordEntity, parentComment);
+        CommentEntity childComment2 = createComment(commenter2, recordEntity, parentComment);
+        CommentEntity childComment3 = createComment(commenter2, recordEntity, parentComment);
+        CommentEntity childComment4 = createComment(commenter2, recordEntity, parentComment);
+        commentRepository.saveAll(List.of(childComment1, childComment2, childComment3, childComment4));
+
+        //when
+        RecordCommentsResponse response = recordService.getRecordComments(Optional.of(writer.getId()), recordEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getComments())
+                .hasSize(1)
+                .extracting("replyCount")
+                .containsOnly(4);
+    }
+
+    @Test
     @DisplayName("피드 수정 권한이 없는 사용자가 기록 순서 스왑 요청하면 FORBIDDEN 예외가 발생한다")
     void updateRecordSequenceWhenUserForbiddenTest() throws Exception {
         //given
@@ -712,10 +768,11 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity) {
+    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
+                .parentCommentEntity(parentCommentEntity)
                 .content("content")
                 .build();
     }
