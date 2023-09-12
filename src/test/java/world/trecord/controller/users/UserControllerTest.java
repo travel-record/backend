@@ -343,7 +343,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
         userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
 
-        String keyword = "김박김";
+        String keyword = "이이이";
 
         //when //then
         mockMvc.perform(
@@ -353,7 +353,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.userId").value(userEntity1.getId()));
+                .andExpect(jsonPath("$.data.userId").value(userEntity2.getId()));
     }
 
     @Test
@@ -369,6 +369,31 @@ class UserControllerTest extends AbstractContainerBaseTest {
         userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
 
         String keyword = "김박김김";
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/search")
+                                .param("q", keyword)
+                                .header(AUTHORIZATION, createToken(userEntity1.getId()))
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/search?q= - 성공 (자신의 닉네임으로 검색한 경우)")
+    void searchUserWhenKeywordIsSelfNicknameTest() throws Exception {
+        //given
+        UserEntity userEntity1 = createUser("test1@email.com", "김박김");
+        UserEntity userEntity2 = createUser("test2@email.com", "이이이");
+        UserEntity userEntity3 = createUser("test3@email.com", "김박박");
+        UserEntity userEntity4 = createUser("test4@email.com", "김이박");
+        UserEntity userEntity5 = createUser("test5@email.com", "박이김");
+
+        userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
+
+        String keyword = "김박김";
 
         //when //then
         mockMvc.perform(

@@ -199,7 +199,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
         String keyword = "김";
 
         //when
-        UserInfoResponse response = userService.searchUser(keyword);
+        UserInfoResponse response = userService.searchUser(userEntity5.getId(), keyword);
 
         //then
         Assertions.assertThat(response)
@@ -215,7 +215,21 @@ class UserServiceTest extends AbstractContainerBaseTest {
         String keyword = "김";
 
         //when
-        UserInfoResponse response = userService.searchUser(keyword);
+        UserInfoResponse response = userService.searchUser(0L, keyword);
+
+        //then
+        Assertions.assertThat(response).isNull();
+    }
+
+    @Test
+    @DisplayName("자신의 닉네임으로 사용자를 검색하는 경우 검색 결과에서 제외된다")
+    void searchUserWhenSelfNicknameTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test1@email.com", "김"));
+        String keyword = "김";
+
+        //when
+        UserInfoResponse response = userService.searchUser(userEntity.getId(), keyword);
 
         //then
         Assertions.assertThat(response).isNull();
