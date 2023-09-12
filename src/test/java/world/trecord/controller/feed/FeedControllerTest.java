@@ -788,23 +788,111 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
     }
 
-    // TODO
-    // POST /api/v1/feeds/{feedId}/leave - 성공
-    // POST /api/v1/feeds/{feedId}/leave - 실패 (피드 컨트리뷰터가 아닌 경우)
-    // POST /api/v1/feeds/{feedId}/leave - 실패 (피드가 존재하지 않는 경우)
-    // POST /api/v1/feeds/{feedId}/leave - 실패 (인증 토큰 없이 요청한 경우)
-    // POST /api/v1/feeds/{feedId}/leave - 실패 (토큰이 올바르지 않은 경우)
-    // POST /api/v1/feeds/{feedId}/leave - 실패 (피드 주인인 경우)
-
     @Test
-    @DisplayName("POST /api/v1/feeds/{feedId}/leave - 성공")
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/leave - 성공")
     void leaveFeedTest() throws Exception {
         //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity invitedUser = createUser("test1@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
 
-        //when
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/feeds/{feedId}/contributors/leave", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(invitedUser.getId()))
+                )
+                .andExpect(status().isOk());
 
-        //then
+        Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
     }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/leave - 실패 (피드 주인인 경우)")
+    void leaveFeedByFeedOwnerTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("test@email.com"));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/feeds/{feedId}/contributors/leave", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(owner.getId()))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(FEED_OWNER_LEAVING_NOT_ALLOWED.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/leave - 실패 (피드 컨트리뷰터가 아닌 경우)")
+    void leaveFeedByWhoNotFeedContributorTest() throws Exception {
+        //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity other = createUser("test1@email.com");
+        userRepository.saveAll(List.of(owner, other));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, feedTime, feedTime));
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/feeds/{feedId}/contributors/leave", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(other.getId()))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(USER_NOT_INVITED.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/leave - 실패 (피드가 존재하지 않는 경우)")
+    void leaveFeedThatNotExistsTest() throws Exception {
+        //given
+        UserEntity owner = createUser("test@email.com");
+        UserEntity other = createUser("test1@email.com");
+        userRepository.saveAll(List.of(owner, other));
+        long notExistingFeedId = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/feeds/{feedId}/contributors/leave", notExistingFeedId)
+                                .header(AUTHORIZATION, createToken(other.getId()))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/leave - 실패 (인증 토큰 없이 요청한 경우)")
+    void leaveFeedWithoutTokenTest() throws Exception {
+        //given
+        long notExistingFeedId = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/feeds/{feedId}/contributors/leave", notExistingFeedId)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds/{feedId}/contributors/leave - 실패 (유효하지 않은 토큰으로 요청한 경우)")
+    void leaveFeedWithInvalidTokenTest() throws Exception {
+        //given
+        String invalidToken = "invalid token";
+        long notExistingFeedId = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/feeds/{feedId}/contributors/leave", notExistingFeedId)
+                                .header(AUTHORIZATION, invalidToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
 
     private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());

@@ -29,6 +29,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static world.trecord.domain.feedcontributor.FeedContributorStatus.LEFT;
+
 @Transactional
 @IntegrationTestSupport
 class FeedContributorServiceTest extends AbstractContainerBaseTest {
@@ -47,47 +49,6 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
 
     @MockBean
     NotificationEventListener mockEventListener;
-
-    @Test
-    @DisplayName("존재하지 않는 피드에 사용자를 초대할 수 없다")
-    void inviteUserInNotExistingFeedThrowExceptionTest() throws Exception {
-        //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
-        userRepository.saveAll(List.of(owner, invitedUser));
-        long notExistingFeedId = -1L;
-
-        FeedInviteRequest request = FeedInviteRequest.builder()
-                .userToId(invitedUser.getId())
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), notExistingFeedId, request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
-    }
-
-    // TODO 사용자가 초대를 거절한 상태에서 다시 초대 요청 테스트
-
-    @Test
-    @DisplayName("존재하지 않는 사용자를 초대할 수 없다")
-    void inviteNotExistingUserThrowExceptionTest() throws Exception {
-        //given
-        UserEntity owner = userRepository.save(createUser("owner@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
-        long notExistingUserId = -1L;
-
-        FeedInviteRequest request = FeedInviteRequest.builder()
-                .userToId(notExistingUserId)
-                .build();
-
-        //when //then
-        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request))
-                .isInstanceOf(CustomException.class)
-                .extracting("error")
-                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
-    }
 
     @Test
     @DisplayName("피드 주인이 다른 사용자를 피드에 초대하면 초대된 사용자는 피드 매니저가 된다")
@@ -111,6 +72,73 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .hasSize(1)
                 .extracting("userEntity")
                 .containsOnly(invitedUser);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 피드에 사용자를 초대할 수 없다")
+    void inviteUserInNotExistingFeedThrowExceptionTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity invitedUser = createUser("invited@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+        long notExistingFeedId = -1L;
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), notExistingFeedId, request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("피드에서 나간 사용자를 다시 초대할 수 있다")
+    void inviteUserWhoLeaveFeedBeforeTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity invitedUser = createUser("invited@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+
+        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+
+        feedEntity.removeFeedContributor(invitedUser.getId());
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(invitedUser.getId(), feedEntity.getId(), LEFT);
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(invitedUser.getId())
+                .build();
+
+        //when
+        feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request);
+
+        //then
+        Assertions.assertThat(feedContributorRepository.findAll())
+                .hasSize(1)
+                .extracting("userEntity")
+                .containsOnly(invitedUser);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 사용자를 초대할 수 없다")
+    void inviteNotExistingUserThrowExceptionTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("owner@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        long notExistingUserId = -1L;
+
+        FeedInviteRequest request = FeedInviteRequest.builder()
+                .userToId(notExistingUserId)
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
     }
 
     @Test

@@ -20,7 +20,7 @@ public enum CustomExceptionError {
     SELF_INVITATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, 604, "자신을 초대할 수 없습니다"),
     SELF_EXPELLING_NOT_ALLOWED(HttpStatus.BAD_REQUEST, 605, "자신을 내보낼 수 없습니다"),
     USER_NOT_INVITED(HttpStatus.BAD_REQUEST, 606, "초대되지 않은 사용자입니다"),
-    SELF_LEAVING_NOT_ALLOWED(HttpStatus.BAD_REQUEST, 607, "피드 주인은 피드에서 나갈 수 없습니다"),
+    FEED_OWNER_LEAVING_NOT_ALLOWED(HttpStatus.BAD_REQUEST, 607, "피드 주인은 피드에서 나갈 수 없습니다"),
 
     NICKNAME_DUPLICATED(HttpStatus.CONFLICT, 700, "이미 존재하는 닉네임입니다"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, 701, "존재하지 않는 사용자입니다"),

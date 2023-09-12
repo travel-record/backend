@@ -109,7 +109,7 @@ public class FeedContributorService {
 
     private void ensureRequestUserIsNotFeedOwner(FeedEntity feedEntity, Long userId) {
         if (feedEntity.isOwnedBy(userId)) {
-            throw new CustomException(SELF_LEAVING_NOT_ALLOWED);
+            throw new CustomException(FEED_OWNER_LEAVING_NOT_ALLOWED);
         }
     }
 

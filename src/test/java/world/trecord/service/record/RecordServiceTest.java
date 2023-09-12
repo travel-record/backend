@@ -59,8 +59,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     UserRecordLikeRepository userRecordLikeRepository;
+
     @Autowired
-    private FeedContributorRepository feedContributorRepository;
+    FeedContributorRepository feedContributorRepository;
 
     @Test
     @DisplayName("존재하지 않는 사용자가 기록 생성 요청을 하면 예외가 발생한다")
@@ -682,6 +683,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .extracting("error")
                 .isEqualTo(INVALID_ARGUMENT);
     }
+
+    // TODO
+    // 댓글을 조회할 때 대댓글 개수까지 같이 조회한다
 
     @Test
     @DisplayName("피드 수정 권한이 없는 사용자가 기록 순서 스왑 요청하면 FORBIDDEN 예외가 발생한다")

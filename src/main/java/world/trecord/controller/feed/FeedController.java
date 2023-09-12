@@ -45,17 +45,33 @@ public class FeedController {
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
 
-    @GetMapping("/invited")
-    public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                                        @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
-    }
-
     @PostMapping
     public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request,
                                                       @CurrentUser UserContext userContext) throws BindException {
         feedValidator.verify(request);
         return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
+    }
+
+    @PutMapping("/{feedId}")
+    public ApiResponse<Void> updateFeed(@PathVariable Long feedId,
+                                        @RequestBody @Valid FeedUpdateRequest request,
+                                        @CurrentUser UserContext userContext) throws BindException {
+        feedValidator.verify(request);
+        feedService.updateFeed(userContext.getId(), feedId, request);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/{feedId}")
+    public ApiResponse<Void> deleteFeed(@PathVariable Long feedId,
+                                        @CurrentUser UserContext userContext) {
+        feedService.deleteFeed(userContext.getId(), feedId);
+        return ApiResponse.ok();
+    }
+
+    @GetMapping("/invited")
+    public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                                        @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
     }
 
     @PostMapping("/{feedId}/contributors/invite")
@@ -74,26 +90,10 @@ public class FeedController {
         return ApiResponse.ok();
     }
 
-    @PostMapping("/{feedId}/leave")
+    @DeleteMapping("/{feedId}/contributors/leave")
     public ApiResponse<Void> leaveFeed(@PathVariable Long feedId,
                                        @CurrentUser UserContext userContext) {
         feedContributorService.leaveFeed(userContext.getId(), feedId);
-        return ApiResponse.ok();
-    }
-
-    @PutMapping("/{feedId}")
-    public ApiResponse<Void> updateFeed(@PathVariable Long feedId,
-                                        @RequestBody @Valid FeedUpdateRequest request,
-                                        @CurrentUser UserContext userContext) throws BindException {
-        feedValidator.verify(request);
-        feedService.updateFeed(userContext.getId(), feedId, request);
-        return ApiResponse.ok();
-    }
-
-    @DeleteMapping("/{feedId}")
-    public ApiResponse<Void> deleteFeed(@PathVariable Long feedId,
-                                        @CurrentUser UserContext userContext) {
-        feedService.deleteFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
     }
 }

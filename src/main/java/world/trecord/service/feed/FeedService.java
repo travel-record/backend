@@ -44,6 +44,9 @@ public class FeedService {
                 .build();
     }
 
+    // TODO
+    // records와 분리
+    // feed contributors 같이 추가
     public FeedInfoResponse getFeed(Optional<Long> viewerId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
         List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedId);
