@@ -91,7 +91,6 @@ public class FeedService {
         feedRepository.delete(feedEntity);
     }
 
-
     private UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));

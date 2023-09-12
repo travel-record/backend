@@ -45,6 +45,15 @@ public class FeedController {
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
 
+//    TODO
+//    @GetMapping("/{feedId}/records")
+//    public ApiResponse<FeedInfoResponse> getFeedRecords(@PathVariable Long feedId,
+//                                                        @PageableDefault(sort = "date", direction = Sort.Direction.DESC) Pageable pageable,
+//                                                        @CurrentUser UserContext userContext) {
+//        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
+//        return ApiResponse.ok(feedService.getFeedRecords(viewerId, feedId, pageable));
+//    }
+
     @PostMapping
     public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request,
                                                       @CurrentUser UserContext userContext) throws BindException {

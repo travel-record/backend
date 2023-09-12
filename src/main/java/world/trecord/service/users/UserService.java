@@ -77,6 +77,7 @@ public class UserService {
     }
 
     public UserInfoResponse searchUser(String keyword) {
+        // TODO except query user in result
         return userRepository.findByKeyword(keyword)
                 .map(userEntity -> UserInfoResponse.builder()
                         .userEntity(userEntity)

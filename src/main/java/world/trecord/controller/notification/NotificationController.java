@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
@@ -38,10 +35,10 @@ public class NotificationController {
     }
 
     // TODO
-//    @DeleteMapping("/remove/{notificationId}")
+//    @DeleteMapping("/{notificationId}")
 //    public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
-//                                                                    @CurrentUser UserContext userContext) {
-//        notificationService.deleteNotification(userContext.getId());
+//                                                @CurrentUser UserContext userContext) {
+//        notificationService.deleteNotification(userContext.getId(), notificationId);
 //        return ApiResponse.ok();
 //    }
 

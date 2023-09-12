@@ -96,8 +96,20 @@ class RecordServiceConcurrencyTest extends AbstractContainerBaseTest {
                 .isPresent()
                 .hasValue(NUMBER_OF_REQUESTS);
 
+        //finally
         executorService.shutdown();
     }
+
+//    TODO
+//    @Test
+//    @DisplayName("같은 날짜에 기록된 순서 변경 요청을 동시에 해도 순서가 정상적으로 변경된다")
+//    void swapSequenceConcurrencyTest() throws Exception {
+//        //given
+//
+//        //when
+//
+//        //then
+//    }
 
     private UserEntity createUser() {
         return UserEntity.builder()
