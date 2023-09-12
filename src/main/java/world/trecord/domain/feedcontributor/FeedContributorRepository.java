@@ -13,9 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface FeedContributorRepository extends JpaRepository<FeedContributorEntity, Long> {
-
-    boolean existsByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
-
+    
     Optional<FeedContributorEntity> findByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
 
     @Query("SELECT fce " +

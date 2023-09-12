@@ -37,34 +37,24 @@ public class FeedContributorService {
 
     @Transactional
     public void inviteUser(Long userFromId, Long feedId, FeedInviteRequest request) {
-        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
-
+        FeedEntity feedEntity = findFeedWithContributorsForUpdateOrException(feedId);
         ensureUserIsFeedOwner(feedEntity, userFromId);
+        UserEntity invitedUser = findUserOrException(request.getUserToId());
+        ensureNotSelfInviting(userFromId, invitedUser.getId());
+        ensureUserNotAlreadyInvited(feedEntity, invitedUser.getId());
+        saveFeedContributor(feedEntity, invitedUser);
 
-        UserEntity userToEntity = findUserOrException(request.getUserToId());
-
-        ensureNotSelfInviting(userFromId, userToEntity.getId());
-
-        ensureUserNotAlreadyInvited(userToEntity.getId(), feedEntity.getId());
-
-        saveFeedContributor(feedEntity, userToEntity);
-
-        eventPublisher.publishEvent(new NotificationEvent(userToEntity.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(userToEntity, feedEntity)));
+        eventPublisher.publishEvent(new NotificationEvent(invitedUser.getId(), userFromId, FEED_INVITATION, buildNotificationArgs(invitedUser, feedEntity)));
     }
 
     @Transactional
     public void expelUser(Long userFromId, Long feedId, FeedExpelRequest request) {
-        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
-
+        FeedEntity feedEntity = findFeedWithContributorsForUpdateOrException(feedId);
         ensureUserIsFeedOwner(feedEntity, userFromId);
-
-        UserEntity userToEntity = findUserOrException(request.getUserToId());
-
-        ensureNotSelfExpelling(userFromId, userToEntity.getId());
-
-        ensureUserIsFeedContributor(userToEntity.getId(), feedEntity.getId());
-
-        deleteFeedContributor(userToEntity.getId(), feedEntity.getId());
+        UserEntity expelledUser = findUserOrException(request.getUserToId());
+        ensureNotSelfExpelling(userFromId, expelledUser.getId());
+        ensureUserIsFeedContributor(feedEntity, expelledUser.getId());
+        deleteFeedContributor(feedEntity, expelledUser.getId());
     }
 
     public Page<UserFeedContributorListResponse> getUserParticipatingFeeds(Long userId, Pageable pageable) {
@@ -73,14 +63,9 @@ public class FeedContributorService {
                 .map(UserFeedContributorListResponse::fromEntity);
     }
 
-    private void deleteFeedContributor(Long userToId, Long feedId) {
-        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userToId, feedId, EXPELLED);
-    }
-
-    private void ensureUserIsFeedContributor(Long userToId, Long feedId) {
-        if (!feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userToId, feedId)) {
-            throw new CustomException(USER_NOT_INVITED);
-        }
+    private void deleteFeedContributor(FeedEntity feedEntity, Long userToId) {
+        feedEntity.removeFeedContributor(userToId);
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userToId, feedEntity.getId(), EXPELLED);
     }
 
     private void ensureNotSelfExpelling(Long userFromId, Long userToId) {
@@ -107,9 +92,8 @@ public class FeedContributorService {
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
-    private FeedEntity findFeedForUpdateOrException(Long feedId) {
-        return feedRepository.findByIdForUpdate(feedId).
-                orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    private FeedEntity findFeedWithContributorsForUpdateOrException(Long feedId) {
+        return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {
@@ -118,8 +102,14 @@ public class FeedContributorService {
         }
     }
 
-    private void ensureUserNotAlreadyInvited(Long userToId, Long feedId) {
-        if (feedContributorRepository.existsByUserEntityIdAndFeedEntityId(userToId, feedId)) {
+    private void ensureUserIsFeedContributor(FeedEntity feedEntity, Long userId) {
+        if (!feedEntity.isContributor(userId)) {
+            throw new CustomException(USER_NOT_INVITED);
+        }
+    }
+
+    private void ensureUserNotAlreadyInvited(FeedEntity feedEntity, Long userId) {
+        if (feedEntity.isContributor(userId)) {
             throw new CustomException(USER_ALREADY_INVITED);
         }
     }

@@ -19,4 +19,12 @@ public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
             "FROM FeedEntity fe " +
             "WHERE fe.id = :feedId")
     Optional<FeedEntity> findByIdForUpdate(@Param("feedId") Long feedId);
+
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT fe " +
+            "FROM FeedEntity fe " +
+            "LEFT JOIN FETCH fe.feedContributors fc " +
+            "WHERE fe.id = :feedId")
+    Optional<FeedEntity> findWithFeedContributorsByIdForUpdate(@Param("feedId") Long feedId);
 }

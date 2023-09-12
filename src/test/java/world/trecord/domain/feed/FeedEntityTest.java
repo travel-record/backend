@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
@@ -138,5 +139,77 @@ class FeedEntityTest {
 
         //then
         Assertions.assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터이면 true를 반환한다")
+    void isContributorReturnsTrueTest() throws Exception {
+        //given
+        UserEntity userEntity = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
+
+        FeedEntity feedEntity = FeedEntity
+                .builder()
+                .build();
+
+        FeedContributorEntity.builder()
+                .userEntity(userEntity)
+                .feedEntity(feedEntity)
+                .build();
+
+        //when
+        boolean result = feedEntity.isContributor(userEntity.getId());
+
+        //then
+        Assertions.assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터가 아니면 false를 반환한다")
+    void isContributorReturnsFalseTest() throws Exception {
+        //given
+        UserEntity userEntity1 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity1, "id", 1L);
+
+        UserEntity userEntity2 = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity2, "id", 2L);
+
+        FeedEntity feedEntity = FeedEntity
+                .builder()
+                .build();
+
+        FeedContributorEntity.builder()
+                .userEntity(userEntity2)
+                .feedEntity(feedEntity)
+                .build();
+
+        //when
+        boolean result = feedEntity.isContributor(userEntity1.getId());
+
+        //then
+        Assertions.assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터 집합에서 제거한다")
+    void removeFeedContributorTest() throws Exception {
+        //given
+        UserEntity userEntity = UserEntity.builder().build();
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
+
+        FeedEntity feedEntity = FeedEntity
+                .builder()
+                .build();
+
+        FeedContributorEntity.builder()
+                .userEntity(userEntity)
+                .feedEntity(feedEntity)
+                .build();
+
+        //when
+        feedEntity.removeFeedContributor(userEntity.getId());
+
+        //then
+        Assertions.assertThat(feedEntity.getFeedContributors()).isEmpty();
     }
 }

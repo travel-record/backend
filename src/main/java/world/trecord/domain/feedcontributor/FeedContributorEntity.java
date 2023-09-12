@@ -50,6 +50,9 @@ public class FeedContributorEntity extends BaseEntity {
     private FeedContributorEntity(UserEntity userEntity, FeedEntity feedEntity) {
         this.userEntity = userEntity;
         this.feedEntity = feedEntity;
+        if (feedEntity != null) {
+            feedEntity.addFeedContributor(this);
+        }
         this.status = FeedContributorStatus.PARTICIPATING;
         this.permission = new FeedContributorPermissionArgs();
     }
