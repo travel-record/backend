@@ -64,8 +64,8 @@ public class UserController {
     }
 
     @GetMapping("/invited")
-    public ApiResponse<Page<UserFeedContributorListResponse>> getFeedInvited(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                             @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(feedContributorService.getUserFeedContributors(userContext.getId(), pageable));
+    public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                                        @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
     }
 }

@@ -67,7 +67,7 @@ public class FeedContributorService {
         deleteFeedContributor(userToEntity.getId(), feedEntity.getId());
     }
 
-    public Page<UserFeedContributorListResponse> getUserFeedContributors(Long userId, Pageable pageable) {
+    public Page<UserFeedContributorListResponse> getUserParticipatingFeeds(Long userId, Pageable pageable) {
         return feedContributorRepository.findWithFeedEntityByUserEntityId(userId, pageable)
                 .map(FeedContributorEntity::getFeedEntity)
                 .map(UserFeedContributorListResponse::fromEntity);

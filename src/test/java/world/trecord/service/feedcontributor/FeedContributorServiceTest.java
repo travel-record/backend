@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import world.trecord.domain.feed.FeedEntity;
@@ -21,6 +23,7 @@ import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.feedcontributor.request.FeedExpelRequest;
 import world.trecord.service.feedcontributor.request.FeedInviteRequest;
+import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -293,7 +296,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("피드 주인이 자기 자신을 내보낼려고 할 수 없다")
+    @DisplayName("피드 주인이 자기 자신을 내보낼 수 없다")
     void expelUserWhenFeedOwnerSelfExpelTest() throws Exception {
         //given
         UserEntity owner = userRepository.save(createUser("owner@email.com"));
@@ -310,6 +313,34 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .isEqualTo(CustomExceptionError.SELF_EXPELLING_NOT_ALLOWED);
     }
 
+    @Test
+    @DisplayName("자신이 피드 컨트리뷰터로 참여하는 피드 정보와 피드 주인 정보를 페이지네이션으로 조회한다")
+    void getUserFeedContributorsTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity invitedUser = createUser("invited@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+
+        FeedEntity feedEntity1 = createFeed(owner);
+        FeedEntity feedEntity2 = createFeed(owner);
+        FeedEntity feedEntity3 = createFeed(owner);
+        FeedEntity feedEntity4 = createFeed(owner);
+        feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
+
+        FeedContributorEntity feedContributor1 = createFeedContributor(invitedUser, feedEntity1);
+        FeedContributorEntity feedContributor2 = createFeedContributor(invitedUser, feedEntity2);
+        FeedContributorEntity feedContributor3 = createFeedContributor(invitedUser, feedEntity3);
+        FeedContributorEntity feedContributor4 = createFeedContributor(invitedUser, feedEntity4);
+        feedContributorRepository.saveAll(List.of(feedContributor1, feedContributor2, feedContributor3, feedContributor4));
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        //when
+        Page<UserFeedContributorListResponse> page = feedContributorService.getUserParticipatingFeeds(invitedUser.getId(), pageRequest);
+
+        //then
+        Assertions.assertThat(page.getContent()).hasSize(4);
+    }
 
     private UserEntity createUser(String email) {
         return UserEntity.builder()
