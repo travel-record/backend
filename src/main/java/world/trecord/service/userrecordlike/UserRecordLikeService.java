@@ -35,6 +35,7 @@ public class UserRecordLikeService {
 
     @Transactional
     public UserRecordLikeResponse toggleLike(Long userId, Long recordId) {
+        // TODO concurrency control
         UserEntity userEntity = findUserOrException(userId);
         RecordEntity recordEntity = findRecordOrException(recordId);
 

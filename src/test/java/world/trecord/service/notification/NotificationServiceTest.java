@@ -20,6 +20,8 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.sse.SseEmitterRepository;
+import world.trecord.exception.CustomException;
+import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.CommentService;
@@ -286,6 +288,34 @@ class NotificationServiceTest extends AbstractContainerBaseTest {
 
         //then
         Assertions.assertThat(response.getNotifications()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("사용자 아이디와 알림 아이디로 알림을 조회한 뒤, 알림을 soft delete 한다")
+    void deleteNotificationTest() throws Exception {
+        //given
+        UserEntity user = userRepository.save(createUser("test@email.com"));
+        NotificationEntity notificationEntity = notificationRepository.save(createNotification(user, null, null, null, UNREAD, COMMENT));
+
+        //when
+        notificationService.deleteNotification(user.getId(), notificationEntity.getId());
+
+        //then
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("사용자 아이디와 알림 아이디로 알림이 조회되지 않으면 예외가 발생한다")
+    void deleteNotificationWhenNotificationNotFoundTest() throws Exception {
+        //given
+        UserEntity user = userRepository.save(createUser("test@email.com"));
+        long notExistingNotificationId = 0L;
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> notificationService.deleteNotification(user.getId(), notExistingNotificationId))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.NOTIFICATION_NOT_FOUND);
     }
 
     private UserEntity createUser(String email) {

@@ -10,10 +10,13 @@ import world.trecord.domain.notification.enumeration.NotificationStatus;
 import world.trecord.domain.notification.enumeration.NotificationType;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
     boolean existsByUsersToEntityIdAndStatus(Long userId, NotificationStatus status);
+
+    Optional<NotificationEntity> findByIdAndUsersToEntityId(Long notificationId, Long userToEntityId);
 
     List<NotificationEntity> findByUsersToEntityIdOrderByCreatedDateTimeDesc(Long userToEntityId);
 

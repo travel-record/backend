@@ -1,6 +1,7 @@
 package world.trecord.controller.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,8 +41,7 @@ import static world.trecord.domain.notification.enumeration.NotificationStatus.R
 import static world.trecord.domain.notification.enumeration.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
 import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
-import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
-import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
+import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
 @MockMvcTestSupport
@@ -281,6 +282,70 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
+    
+    @Test
+    @DisplayName("DELETE /api/v1/notifications/{notificationId} - 성공")
+    void deleteNotificationTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
+        NotificationEntity notificationEntity = notificationRepository.save(createNotification(userEntity, UNREAD));
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/notifications/{notificationId}", notificationEntity.getId())
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
+                )
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/notifications/{notificationId} - 실패 (존재하지 않는 알림)")
+    void deleteNotificationWhenNotificationNotFoundTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
+        long notExistingNotificationId = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/notifications/{notificationId}", notExistingNotificationId)
+                                .header(AUTHORIZATION, createToken(userEntity.getId()))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(NOTIFICATION_NOT_FOUND.code()));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/notifications/{notificationId} - 실패 (토큰 없이 요청한 경우)")
+    void deleteNotificationWithoutTokenTest() throws Exception {
+        //given
+        long notExistingNotificationId = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/notifications/{notificationId}", notExistingNotificationId)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/notifications/{notificationId} - 실패 (유효하지 않은 토큰으로 요청한 경우)")
+    void deleteNotificationWithInvalidTokenTest() throws Exception {
+        //given
+        long notExistingNotificationId = 0L;
+        String invalidToken = "invalid Token";
+
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/notifications/{notificationId}", notExistingNotificationId)
+                                .header(AUTHORIZATION, invalidToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
 
     private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());

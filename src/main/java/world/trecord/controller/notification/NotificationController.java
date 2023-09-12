@@ -34,14 +34,6 @@ public class NotificationController {
         return ApiResponse.ok(notificationService.getNotifications(userContext.getId()));
     }
 
-    // TODO
-//    @DeleteMapping("/{notificationId}")
-//    public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
-//                                                @CurrentUser UserContext userContext) {
-//        notificationService.deleteNotification(userContext.getId(), notificationId);
-//        return ApiResponse.ok();
-//    }
-
     @GetMapping("/check")
     public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.checkUnreadNotifications(userContext.getId()));
@@ -57,5 +49,12 @@ public class NotificationController {
                                                                         @PathVariable NotificationType type,
                                                                         @CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.getNotificationsByType(userContext.getId(), type));
+    }
+
+    @DeleteMapping("/{notificationId}")
+    public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
+                                                @CurrentUser UserContext userContext) {
+        notificationService.deleteNotification(userContext.getId(), notificationId);
+        return ApiResponse.ok();
     }
 }
