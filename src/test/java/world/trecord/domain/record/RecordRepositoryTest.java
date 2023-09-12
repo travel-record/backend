@@ -146,6 +146,26 @@ class RecordRepositoryTest extends AbstractContainerBaseTest {
     }
 
     @Test
+    @DisplayName("기록 아이디 리스트에 포함된 기록들을 write lock으로 조회한다")
+    void findByIdsForUpdate() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        RecordEntity recordEntity1 = createRecord(feedEntity, 0);
+        RecordEntity recordEntity2 = createRecord(feedEntity, 1);
+        RecordEntity recordEntity3 = createRecord(feedEntity, 2);
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
+
+        //when
+        List<RecordEntity> result = recordRepository.findByIdsForUpdate(List.of(recordEntity1.getId(), recordEntity2.getId(), recordEntity3.getId()));
+
+        //then
+        Assertions.assertThat(result)
+                .hasSize(3)
+                .containsAll(List.of(recordEntity1, recordEntity2, recordEntity3));
+    }
+
+    @Test
     @DisplayName("피드에 등록된 같은 날짜에 있는 기록이 없으면 0을 반환한다")
     void findMaxSequenceByFeedAndDateWhenSameDateIsEmptyTest() throws Exception {
         //given

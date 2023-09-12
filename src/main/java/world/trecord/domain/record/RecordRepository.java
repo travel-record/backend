@@ -21,6 +21,12 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "WHERE re.id = :recordId")
     Optional<RecordEntity> findByIdForUpdate(@Param("recordId") Long recordId);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT re " +
+            "FROM RecordEntity re " +
+            "WHERE re.id IN :recordIds")
+    List<RecordEntity> findByIdsForUpdate(@Param("recordIds") List<Long> recordIds);
+
     @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
             "FROM RecordEntity re " +
             "WHERE re.feedEntity.id = :feedId " +

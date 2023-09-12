@@ -26,6 +26,7 @@ import world.trecord.service.record.response.RecordCreateResponse;
 import world.trecord.service.record.response.RecordInfoResponse;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,11 +84,18 @@ public class RecordService {
         recordRepository.saveAndFlush(recordEntity);
     }
 
-    // TODO remove deadlock
     @Transactional
     public void swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
-        RecordEntity originalRecord = findRecordForUpdateOrException(request.getOriginalRecordId());
-        RecordEntity targetRecord = findRecordForUpdateOrException(request.getTargetRecordId());
+        List<Long> recordIds = Arrays.asList(request.getOriginalRecordId(), request.getTargetRecordId());
+
+        List<RecordEntity> recordEntityList = recordRepository.findByIdsForUpdate(recordIds);
+
+        if (recordEntityList.size() != recordIds.size()) {
+            throw new CustomException(RECORD_NOT_FOUND);
+        }
+
+        RecordEntity originalRecord = recordEntityList.get(0);
+        RecordEntity targetRecord = recordEntityList.get(1);
 
         ensureRecordsHasSameFeed(originalRecord, targetRecord);
 

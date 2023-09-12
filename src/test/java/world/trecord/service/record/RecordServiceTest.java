@@ -684,8 +684,37 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .isEqualTo(INVALID_ARGUMENT);
     }
 
-    // TODO
-    // 댓글을 조회할 때 대댓글 개수까지 같이 조회한다
+    @Test
+    @DisplayName("기록에 달린 댓글을 조회할 때 대댓글 개수도 함께 조회한다")
+    void getRecordCommentsWithReplyCountTest() throws Exception {
+        //given
+        UserEntity writer = createUser("test@email.com");
+        UserEntity commenter1 = createUser("test1@email.com");
+        UserEntity commenter2 = createUser("test2@email.com");
+        UserEntity commenter3 = createUser("test3@email.com");
+        userRepository.saveAll(List.of(writer, commenter1, commenter2, commenter3));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(writer));
+        RecordEntity recordEntity = recordRepository.save(createRecord(writer, feedEntity, 1));
+
+        CommentEntity parentComment = createComment(commenter1, recordEntity, null);
+        commentRepository.save(parentComment);
+
+        CommentEntity childComment1 = createComment(commenter2, recordEntity, parentComment);
+        CommentEntity childComment2 = createComment(commenter2, recordEntity, parentComment);
+        CommentEntity childComment3 = createComment(commenter2, recordEntity, parentComment);
+        CommentEntity childComment4 = createComment(commenter2, recordEntity, parentComment);
+        commentRepository.saveAll(List.of(childComment1, childComment2, childComment3, childComment4));
+
+        //when
+        RecordCommentsResponse response = recordService.getRecordComments(Optional.of(writer.getId()), recordEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getComments())
+                .hasSize(1)
+                .extracting("replyCount")
+                .containsOnly(4);
+    }
 
     @Test
     @DisplayName("피드 수정 권한이 없는 사용자가 기록 순서 스왑 요청하면 FORBIDDEN 예외가 발생한다")
