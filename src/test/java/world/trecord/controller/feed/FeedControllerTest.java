@@ -193,10 +193,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
-
-    // TODO
-    // GET /api/v1/feeds/{feedId}/records - 실패 (유효하지 않은 토큰으로 요청한 경우)
-
+    
     @Test
     @DisplayName("GET /api/v1/feeds/{feedId}/records - 성공 (인증된 사용자)")
     void getFeedRecordsTest() throws Exception {
