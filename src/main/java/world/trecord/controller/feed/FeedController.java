@@ -16,6 +16,7 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
+import world.trecord.service.feed.response.FeedRecordsResponse;
 import world.trecord.service.feedcontributor.FeedContributorService;
 import world.trecord.service.feedcontributor.request.FeedInviteRequest;
 import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
@@ -45,14 +46,11 @@ public class FeedController {
         return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
     }
 
-//    TODO
-//    @GetMapping("/{feedId}/records")
-//    public ApiResponse<FeedInfoResponse> getFeedRecords(@PathVariable Long feedId,
-//                                                        @PageableDefault(sort = "date", direction = Sort.Direction.DESC) Pageable pageable,
-//                                                        @CurrentUser UserContext userContext) {
-//        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
-//        return ApiResponse.ok(feedService.getFeedRecords(viewerId, feedId, pageable));
-//    }
+    @GetMapping("/{feedId}/records")
+    public ApiResponse<Page<FeedRecordsResponse>> getFeedRecords(@PathVariable Long feedId,
+                                                                 @PageableDefault(sort = "date", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.ok(feedService.getFeedRecords(feedId, pageable));
+    }
 
     @PostMapping
     public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request,

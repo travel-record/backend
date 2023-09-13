@@ -59,6 +59,7 @@ public class SecurityConfig {
                 "/api/.+/auth/token", List.of(POST),
                 "/api/.+/users/\\d+", List.of(GET),
                 "/api/.+/feeds/\\d+", List.of(GET),
+                "/api/.+/feeds/\\d+/records", List.of(GET),
                 "/api/.+/records/\\d+", List.of(GET),
                 "/api/.+/records/\\d+/comments", List.of(GET),
                 "/api/.+/comments/\\d+/replies", List.of(GET)

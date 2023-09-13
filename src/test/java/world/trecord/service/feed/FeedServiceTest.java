@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
@@ -12,7 +14,6 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.exception.CustomException;
-import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.feed.request.FeedCreateRequest;
@@ -20,6 +21,7 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
+import world.trecord.service.feed.response.FeedRecordsResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
 @Transactional
 @IntegrationTestSupport
@@ -167,7 +171,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> feedService.getFeed(Optional.of(notExistingUserId), notExistingFeedId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
+                .isEqualTo(FEED_NOT_FOUND);
     }
 
     @Test
@@ -226,7 +230,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> feedService.updateFeed(userId, notExistingFeedId, request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FEED_NOT_FOUND);
+                .isEqualTo(FEED_NOT_FOUND);
     }
 
     @Test
@@ -251,7 +255,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> feedService.updateFeed(other.getId(), feedEntity.getId(), request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FORBIDDEN);
+                .isEqualTo(FORBIDDEN);
     }
 
     @Test
@@ -259,8 +263,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     void updateFeedTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity savedFeed = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        FeedEntity feed = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated name";
         String updatedFeedImage = "updated feed image url";
@@ -277,10 +280,10 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                 .build();
 
         //when
-        feedService.updateFeed(userEntity.getId(), savedFeed.getId(), request);
+        feedService.updateFeed(userEntity.getId(), feed.getId(), request);
 
         //then
-        Assertions.assertThat(feedRepository.findById(savedFeed.getId()))
+        Assertions.assertThat(feedRepository.findById(feed.getId()))
                 .isPresent()
                 .hasValueSatisfying(
                         feedEntity -> {
@@ -291,6 +294,46 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                             Assertions.assertThat(feedEntity.getEndAt()).isEqualTo(updatedEndAt);
                         }
                 );
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 피드 아이디로 피드 기록 리스트를 조회하면 예외가 발생한다")
+    void getFeedRecordsWhenFeedNotFoundTest() throws Exception {
+        //given
+        long notExistingFeedId = 0L;
+        PageRequest page = PageRequest.of(0, 10);
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> feedService.getFeedRecords(notExistingFeedId, page))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(FEED_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("피드 아이디로 기록 리스트를 페이지네이션으로 조회한다")
+    void getFeedRecordsTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+        LocalDateTime feedTime = LocalDateTime.of(2021, 9, 30, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, feedTime, feedTime));
+        RecordEntity recordEntity1 = createRecord(feedEntity);
+        RecordEntity recordEntity2 = createRecord(feedEntity);
+        RecordEntity recordEntity3 = createRecord(feedEntity);
+        RecordEntity recordEntity4 = createRecord(feedEntity);
+        RecordEntity recordEntity5 = createRecord(feedEntity);
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4, recordEntity5));
+
+        PageRequest page = PageRequest.of(0, 2);
+
+        //when
+        Page<FeedRecordsResponse> response = feedService.getFeedRecords(feedEntity.getId(), page);
+
+        //then
+        Assertions.assertThat(response.getTotalPages()).isEqualTo(3);
+        Assertions.assertThat(response.getTotalElements()).isEqualTo(5);
+        Assertions.assertThat(response.getContent()).hasSize(2);
+        Assertions.assertThat(response.getNumberOfElements()).isEqualTo(2);
     }
 
     @Test
@@ -329,7 +372,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThatThrownBy(() -> feedService.deleteFeed(other.getId(), feedEntity.getId()))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
-                .isEqualTo(CustomExceptionError.FORBIDDEN);
+                .isEqualTo(FORBIDDEN);
     }
 
     private UserEntity createUser(String email) {
