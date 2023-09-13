@@ -19,6 +19,7 @@ import world.trecord.infra.IntegrationTestSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.domain.notification.enumeration.NotificationStatus.READ;
@@ -211,6 +212,26 @@ class NotificationRepositoryTest extends AbstractContainerBaseTest {
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("알림 아이디와 사용자 아이디로 알림을 조회한다")
+    void findByIdAndUsersToEntityIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+        NotificationEntity notificationEntity = notificationRepository.save(createNotification(userEntity, null, null, RECORD_LIKE, UNREAD));
+
+        //when
+        Optional<NotificationEntity> optional = notificationRepository.findByIdAndUsersToEntityId(notificationEntity.getId(), userEntity.getId());
+
+        //then
+        Assertions.assertThat(optional)
+                .isPresent()
+                .hasValueSatisfying(
+                        entity -> {
+                            Assertions.assertThat(entity).isEqualTo(notificationEntity);
+                        }
+                );
     }
 
     private UserEntity createUser() {

@@ -43,8 +43,9 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ApiResponse<UserInfoResponse> searchUser(@RequestParam(name = "q") String keyword) {
-        return ApiResponse.ok(userService.searchUser(keyword));
+    public ApiResponse<UserInfoResponse> searchUser(@RequestParam(name = "q") String keyword,
+                                                    @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(userService.searchUser(userContext.getId(), keyword));
     }
 
     @GetMapping("/comments")

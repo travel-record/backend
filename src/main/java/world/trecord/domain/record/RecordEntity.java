@@ -51,6 +51,7 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
+    // TODO delete
     @Column(name = "companion")
     private String companion;
 

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.users.UserEntity;
@@ -14,6 +15,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.record.request.RecordCreateRequest;
+import world.trecord.service.record.request.RecordSequenceSwapRequest;
 import world.trecord.service.record.response.RecordCreateResponse;
 
 import java.time.LocalDateTime;
@@ -96,6 +98,69 @@ class RecordServiceConcurrencyTest extends AbstractContainerBaseTest {
                 .isPresent()
                 .hasValue(NUMBER_OF_REQUESTS);
 
+        //finally
+        executorService.shutdown();
+    }
+
+    @Test
+    @DisplayName("같은 날짜를 가진 기록들의 순서 변경 요청을 동시에 해도 순서가 정상적으로 변경된다")
+    void swapSequenceConcurrencyTest() throws Exception {
+        //given
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        final ExecutorService executorService = Executors.newFixedThreadPool(numberOfCores);
+
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        int recordSeq1 = 1;
+        RecordEntity recordEntity1 = createRecord(feedEntity, recordSeq1);
+        int recordSeq2 = 2;
+        RecordEntity recordEntity2 = createRecord(feedEntity, recordSeq2);
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
+
+        final int NUMBER_OF_REQUESTS = 11;
+
+        List<Callable<Void>> tasks = new ArrayList<>();
+
+        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+
+        for (int i = 0; i < NUMBER_OF_REQUESTS; i++) {
+            tasks.add(() -> {
+                recordService.swapRecordSequence(userEntity.getId(), request);
+                return null;
+            });
+        }
+
+        //when
+        List<Future<Void>> futures = executorService.invokeAll(tasks);
+
+        //then
+        for (Future<Void> future : futures) {
+            try {
+                future.get();
+            } catch (ExecutionException e) {
+            }
+        }
+
+        Assertions.assertThat(recordRepository.findById(recordEntity1.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        entity -> {
+                            Assertions.assertThat(entity.getSequence()).isEqualTo(recordSeq2);
+                        }
+                );
+
+        Assertions.assertThat(recordRepository.findById(recordEntity2.getId()))
+                .isPresent()
+                .hasValueSatisfying(
+                        entity -> {
+                            Assertions.assertThat(entity.getSequence()).isEqualTo(recordSeq1);
+                        }
+                );
+
+        //finally
         executorService.shutdown();
     }
 
@@ -111,6 +176,21 @@ class RecordServiceConcurrencyTest extends AbstractContainerBaseTest {
                 .name("name")
                 .startAt(LocalDateTime.of(2022, 9, 30, 0, 0))
                 .endAt(LocalDateTime.of(2022, 10, 2, 0, 0))
+                .build();
+    }
+
+    private RecordEntity createRecord(FeedEntity feedEntity, int sequence) {
+        return RecordEntity.builder()
+                .userEntity(feedEntity.getUserEntity())
+                .feedEntity(feedEntity)
+                .title("record")
+                .place("place")
+                .date(LocalDateTime.of(2022, 10, 1, 0, 0))
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
+                .sequence(sequence)
                 .build();
     }
 

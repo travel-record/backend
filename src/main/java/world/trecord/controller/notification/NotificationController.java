@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
@@ -37,14 +34,6 @@ public class NotificationController {
         return ApiResponse.ok(notificationService.getNotifications(userContext.getId()));
     }
 
-    // TODO
-//    @DeleteMapping("/remove/{notificationId}")
-//    public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
-//                                                                    @CurrentUser UserContext userContext) {
-//        notificationService.deleteNotification(userContext.getId());
-//        return ApiResponse.ok();
-//    }
-
     @GetMapping("/check")
     public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.checkUnreadNotifications(userContext.getId()));
@@ -60,5 +49,12 @@ public class NotificationController {
                                                                         @PathVariable NotificationType type,
                                                                         @CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.getNotificationsByType(userContext.getId(), type));
+    }
+
+    @DeleteMapping("/{notificationId}")
+    public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
+                                                @CurrentUser UserContext userContext) {
+        notificationService.deleteNotification(userContext.getId(), notificationId);
+        return ApiResponse.ok();
     }
 }

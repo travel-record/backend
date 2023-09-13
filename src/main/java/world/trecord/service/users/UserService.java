@@ -76,8 +76,9 @@ public class UserService {
                         }));
     }
 
-    public UserInfoResponse searchUser(String keyword) {
+    public UserInfoResponse searchUser(Long userId, String keyword) {
         return userRepository.findByKeyword(keyword)
+                .filter(userEntity -> !Objects.equals(userId, userEntity.getId()))
                 .map(userEntity -> UserInfoResponse.builder()
                         .userEntity(userEntity)
                         .build())

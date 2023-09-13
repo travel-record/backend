@@ -1,6 +1,8 @@
 package world.trecord.domain.record;
 
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +29,17 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "WHERE re.id IN :recordIds")
     List<RecordEntity> findByIdsForUpdate(@Param("recordIds") List<Long> recordIds);
 
+    // TODO delete
     @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
             "FROM RecordEntity re " +
             "WHERE re.feedEntity.id = :feedId " +
             "ORDER BY re.date ASC, re.sequence ASC ,re.createdDateTime ASC")
     List<RecordWithFeedProjection> findRecordsByFeedEntityId(@Param("feedId") Long feedId);
+
+    @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
+            "FROM RecordEntity re " +
+            "WHERE re.feedEntity.id = :feedId")
+    Page<RecordWithFeedProjection> findRecordListByFeedEntityId(Long feedId, Pageable pageable);
 
     @Query("SELECT MAX(re.sequence) " +
             "FROM RecordEntity re " +

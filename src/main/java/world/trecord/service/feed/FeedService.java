@@ -1,6 +1,8 @@
 package world.trecord.service.feed;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
@@ -18,6 +20,7 @@ import world.trecord.service.feed.request.FeedUpdateRequest;
 import world.trecord.service.feed.response.FeedCreateResponse;
 import world.trecord.service.feed.response.FeedInfoResponse;
 import world.trecord.service.feed.response.FeedListResponse;
+import world.trecord.service.feed.response.FeedRecordsResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +61,15 @@ public class FeedService {
                 .build();
     }
 
+    public Page<FeedRecordsResponse> getFeedRecords(Long feedId, Pageable pageable) {
+        FeedEntity feedEntity = findFeedOrException(feedId);
+        return recordRepository.findRecordListByFeedEntityId(feedId, pageable)
+                .map(it -> FeedRecordsResponse.builder()
+                        .projection(it)
+                        .feedStartAt(feedEntity.getStartAt())
+                        .build());
+    }
+
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
         UserEntity userEntity = findUserOrException(userId);
@@ -90,7 +102,6 @@ public class FeedService {
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.delete(feedEntity);
     }
-
 
     private UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId)

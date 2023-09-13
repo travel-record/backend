@@ -55,6 +55,7 @@ public class FeedContributorService {
         UserEntity contributor = findUserOrException(contributorId);
         ensureNotSelfExpelling(requestUserId, contributor.getId());
         ensureUserIsFeedContributor(feedEntity, contributor.getId());
+        // TODO remove record written by contributor in feed when feed contributor expelled
         deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
     }
 
@@ -71,6 +72,7 @@ public class FeedContributorService {
         if (!feedEntity.isContributor(userId)) {
             throw new CustomException(USER_NOT_INVITED);
         }
+        // TODO remove record in feed by contributor when feed contributor leave
         deleteFeedContributor(feedEntity, userId, LEFT);
     }
 

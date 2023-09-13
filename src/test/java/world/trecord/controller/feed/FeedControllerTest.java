@@ -193,6 +193,85 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
+    
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId}/records - 성공 (인증된 사용자)")
+    void getFeedRecordsTest() throws Exception {
+        //given
+        UserEntity user = userRepository.save(createUser("test@email.com"));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(user, feedTime, feedTime));
+        LocalDateTime recordTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        RecordEntity recordEntity1 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity2 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity3 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity4 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity5 = createRecord(feedEntity, recordTime);
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4, recordEntity5));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}/records", feedEntity.getId())
+                                .header(AUTHORIZATION, createToken(user.getId()))
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId}/records - 성공 (미인증 사용자)")
+    void getFeedRecordsWithoutTokenTest() throws Exception {
+        //given
+        UserEntity user = userRepository.save(createUser("test@email.com"));
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity = feedRepository.save(createFeed(user, feedTime, feedTime));
+        LocalDateTime recordTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        RecordEntity recordEntity1 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity2 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity3 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity4 = createRecord(feedEntity, recordTime);
+        RecordEntity recordEntity5 = createRecord(feedEntity, recordTime);
+
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4, recordEntity5));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}/records", feedEntity.getId())
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId}/records - 실패 (존재하지 않는 피드 아이디로 요청)")
+    void getFeedRecordsWithNotExistingFeedIdTest() throws Exception {
+        //given
+        long notExistingFeedId = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}/records", notExistingFeedId)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(FEED_NOT_FOUND.code()));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId}/records - 실패 (유효하지 않은 토큰으로 요청)")
+    void getFeedRecordsWithInvalidTokenTest() throws Exception {
+        //given
+        String invalidToken = "invalid token";
+        long notExistingFeedId = 0L;
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}/records", notExistingFeedId)
+                                .header(AUTHORIZATION, invalidToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
 
     @Test
     @DisplayName("POST /api/v1/feeds/{feedId}/contributors/invite - 성공")

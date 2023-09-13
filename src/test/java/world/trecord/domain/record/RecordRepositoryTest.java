@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
@@ -143,6 +145,30 @@ class RecordRepositoryTest extends AbstractContainerBaseTest {
 
         //then
         Assertions.assertThat(maxSequence.orElse(0)).isEqualTo(sequence);
+    }
+
+    @Test
+    @DisplayName("피드에 등록된 기록 리스트를 pagination으로 조회한다")
+    void findRecordListByFeedEntityIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, 1));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, 2));
+        RecordEntity recordEntity3 = recordRepository.save(createRecord(feedEntity, 3));
+        RecordEntity recordEntity4 = recordRepository.save(createRecord(feedEntity, 4));
+        RecordEntity recordEntity5 = recordRepository.save(createRecord(feedEntity, 5));
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4, recordEntity5));
+
+        PageRequest page = PageRequest.of(0, 2);
+
+        //when
+        Page<RecordWithFeedProjection> result = recordRepository.findRecordListByFeedEntityId(feedEntity.getId(), page);
+
+        //then
+        Assertions.assertThat(result.getTotalElements()).isEqualTo(5);
+        Assertions.assertThat(result.getContent()).hasSize(2);
+        Assertions.assertThat(result.getTotalPages()).isEqualTo(3);
     }
 
     @Test
