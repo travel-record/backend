@@ -12,6 +12,7 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
@@ -434,6 +435,78 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
+    @Test
+    @DisplayName("GET /api/v1/users/invited - 성공")
+    void getUserParticipatingFeedsTest() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(createUser("owner@email.com", "owner"));
+        UserEntity invitedUser = userRepository.save(createUser("invitedUser@email.com", "nickname"));
+
+        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
+        FeedEntity feedEntity1 = createFeed(owner, feedTime, feedTime);
+        FeedEntity feedEntity2 = createFeed(owner, feedTime, feedTime);
+        FeedEntity feedEntity3 = createFeed(owner, feedTime, feedTime);
+        FeedEntity feedEntity4 = createFeed(owner, feedTime, feedTime);
+        feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
+
+        FeedContributorEntity feedContributor1 = createFeedContributor(invitedUser, feedEntity1);
+        FeedContributorEntity feedContributor2 = createFeedContributor(invitedUser, feedEntity2);
+        FeedContributorEntity feedContributor3 = createFeedContributor(invitedUser, feedEntity3);
+        FeedContributorEntity feedContributor4 = createFeedContributor(invitedUser, feedEntity4);
+        feedContributorRepository.saveAll(List.of(feedContributor1, feedContributor2, feedContributor3, feedContributor4));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/invited")
+                                .header(AUTHORIZATION, createToken(invitedUser.getId()))
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content.length()").value(4));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/invited - 성공 (초대된 피드가 없는 경우)")
+    void getUserParticipatingFeedsWhenFeedsEmptyTest() throws Exception {
+        //given
+        UserEntity invitedUser = userRepository.save(createUser("invitedUser@email.com", "owner"));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/invited")
+                                .header(AUTHORIZATION, createToken(invitedUser.getId()))
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content").isEmpty());
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/invited - 실패 (유효하지 않은 토큰으로 요청)")
+    void getUserParticipatingFeedsWithInvalidTokenTest() throws Exception {
+        //given
+        String invalidToken = "invalid token";
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/invited")
+                                .header(AUTHORIZATION, invalidToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/invited - 실패 (토큰없이 요청)")
+    void getUserParticipatingFeedsWithoutTokenTest() throws Exception {
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/users/invited")
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
+    }
+
     private String createToken(Long userId) {
         return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
@@ -482,6 +555,13 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 .builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
+                .build();
+    }
+
+    private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
+        return FeedContributorEntity.builder()
+                .userEntity(userEntity)
+                .feedEntity(feedEntity)
                 .build();
     }
 }

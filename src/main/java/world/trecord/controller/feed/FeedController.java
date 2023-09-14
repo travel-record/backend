@@ -19,7 +19,6 @@ import world.trecord.service.feed.response.FeedListResponse;
 import world.trecord.service.feed.response.FeedRecordsResponse;
 import world.trecord.service.feedcontributor.FeedContributorService;
 import world.trecord.service.feedcontributor.request.FeedInviteRequest;
-import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
@@ -73,12 +72,6 @@ public class FeedController {
                                         @CurrentUser UserContext userContext) {
         feedService.deleteFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
-    }
-
-    @GetMapping("/invited")
-    public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                                        @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
     }
 
     @PostMapping("/{feedId}/contributors/invite")
