@@ -18,6 +18,7 @@ import world.trecord.infra.IntegrationTestSupport;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 @IntegrationTestSupport
@@ -50,8 +51,8 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 동일한 기록에 좋아요 요청을 동시에 해도 동시성을 제어한다")
     void toggleLikeConcurrencyTest() throws Exception {
         //given
-        UserEntity owner = createUser("test@email.com");
-        UserEntity other = createUser("test1@email.com");
+        UserEntity owner = createUser();
+        UserEntity other = createUser();
         userRepository.saveAll(List.of(owner, other));
         FeedEntity feedEntity = feedRepository.save(createFeed(owner));
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
@@ -87,9 +88,9 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractContainerBaseTest {
     }
 
 
-    private UserEntity createUser(String email) {
+    private UserEntity createUser() {
         return UserEntity.builder()
-                .email(email)
+                .email(UUID.randomUUID().toString() + System.currentTimeMillis() + Thread.currentThread().getId())
                 .build();
     }
 
