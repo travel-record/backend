@@ -77,7 +77,7 @@ class JwtTokenFilterMockTest {
     }
 
     @Test
-    @DisplayName("올바르지 않은 토큰으로 요청하면 601 에러 응답 코드를 반환한다")
+    @DisplayName("올바르지 않은 토큰으로 요청하면 인증 토큰 에러 응답 코드를 반환한다")
     void doFilterInternalWithInvalidTokenTest() throws Exception {
         //given
         jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)), new ArrayList<>());
@@ -125,7 +125,7 @@ class JwtTokenFilterMockTest {
     }
 
     @Test
-    @DisplayName("토큰 없이 보안 URL 리소스에 대해서 요청을 하면 601 에러 응답 코드를 반환한다")
+    @DisplayName("토큰 없이 보안 URL 리소스에 대해서 요청을 하면 인증 토큰 에러 응답 코드를 반환한다")
     void doFilterInternalWithoutTokenToSecuritylistUrlTest() throws Exception {
         //given
         jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of("/whitelist", List.of(HttpMethod.GET)), new ArrayList<>());
@@ -176,7 +176,7 @@ class JwtTokenFilterMockTest {
     }
 
     @Test
-    @DisplayName("요청 URL 쿼리 파라미터에에 올바르지 않은 토큰이 있으면 601 에러 응답 코드를 반환한다")
+    @DisplayName("요청 URL 쿼리 파라미터에에 올바르지 않은 토큰이 있으면 인증 토큰 에러 응답 코드를 반환한다")
     void isTokenInRequestQueryParamWhenInvalidTokenTest() throws Exception {
         //given
         String invalidToken = "invalidToken";
