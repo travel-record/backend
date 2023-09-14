@@ -35,9 +35,8 @@ public class UserRecordLikeService {
 
     @Transactional
     public UserRecordLikeResponse toggleLike(Long userId, Long recordId) {
-        // TODO concurrency control
         UserEntity userEntity = findUserOrException(userId);
-        RecordEntity recordEntity = findRecordOrException(recordId);
+        RecordEntity recordEntity = findRecordWithLockOrException(recordId);
 
         return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
                 .map(this::unlike)
@@ -81,8 +80,8 @@ public class UserRecordLikeService {
                 .build();
     }
 
-    private RecordEntity findRecordOrException(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    private RecordEntity findRecordWithLockOrException(Long recordId) {
+        return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private UserEntity findUserOrException(Long userId) {
