@@ -14,6 +14,8 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
+import world.trecord.domain.record.RecordEntity;
+import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEventListener;
@@ -46,6 +48,9 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
 
     @Autowired
     FeedContributorService feedContributorService;
+
+    @Autowired
+    RecordRepository recordRepository;
 
     @MockBean
     NotificationEventListener mockEventListener;
@@ -370,6 +375,46 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
         Assertions.assertThat(page.getContent()).hasSize(4);
     }
 
+    @Test
+    @DisplayName("피드 컨트리뷰터를 내보낼때 피드 컨트리뷰터가 작성한 기록이 삭제된다")
+    void expelUserFromFeedAndDeleteRecordWhenFeedContributorExpelledTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity invitedUser = createUser("invited@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedContributorEntity feedContributor = feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+
+        recordRepository.save(createRecord(invitedUser, feedEntity));
+
+        //when
+        feedContributorService.expelUserFromFeed(owner.getId(), invitedUser.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터가 피드를 나갈 때 자신이 작성한 기록이 삭제된다")
+    void leaveFeedAndDeleteRecordWhenFeedContributorExpelledTest() throws Exception {
+        //given
+        UserEntity owner = createUser("owner@email.com");
+        UserEntity invitedUser = createUser("invited@email.com");
+        userRepository.saveAll(List.of(owner, invitedUser));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedContributorEntity feedContributor = feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+
+        recordRepository.save(createRecord(invitedUser, feedEntity));
+
+        //when
+        feedContributorService.leaveFeed(invitedUser.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
+    }
+
     private UserEntity createUser(String email) {
         return UserEntity.builder()
                 .email(email)
@@ -382,6 +427,21 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .name("name")
                 .startAt(LocalDateTime.now())
                 .endAt(LocalDateTime.now())
+                .build();
+    }
+
+    private RecordEntity createRecord(UserEntity userEntity, FeedEntity feedEntity) {
+        return RecordEntity.builder()
+                .userEntity(userEntity)
+                .feedEntity(feedEntity)
+                .title("record")
+                .place("place")
+                .date(LocalDateTime.of(2022, 10, 1, 0, 0))
+                .content("content")
+                .weather("weather")
+                .transportation("satisfaction")
+                .feeling("feeling")
+                .sequence(1)
                 .build();
     }
 

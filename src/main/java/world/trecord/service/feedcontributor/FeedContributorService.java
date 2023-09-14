@@ -12,6 +12,7 @@ import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.feedcontributor.FeedContributorStatus;
 import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.notification.NotificationEvent;
@@ -33,6 +34,7 @@ public class FeedContributorService {
 
     private final UserRepository userRepository;
     private final FeedRepository feedRepository;
+    private final RecordRepository recordRepository;
     private final FeedContributorRepository feedContributorRepository;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -55,7 +57,6 @@ public class FeedContributorService {
         UserEntity contributor = findUserOrException(contributorId);
         ensureNotSelfExpelling(requestUserId, contributor.getId());
         ensureUserIsFeedContributor(feedEntity, contributor.getId());
-        // TODO remove record written by contributor in feed when feed contributor expelled
         deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
     }
 
@@ -72,7 +73,6 @@ public class FeedContributorService {
         if (!feedEntity.isContributor(userId)) {
             throw new CustomException(USER_NOT_INVITED);
         }
-        // TODO remove record in feed by contributor when feed contributor leave
         deleteFeedContributor(feedEntity, userId, LEFT);
     }
 
@@ -86,6 +86,7 @@ public class FeedContributorService {
     private void deleteFeedContributor(FeedEntity feedEntity, Long userId, FeedContributorStatus status) {
         feedEntity.removeFeedContributor(userId);
         feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(userId, feedEntity.getId(), status);
+        recordRepository.deleteByFeedEntityIdAndUserEntityId(feedEntity.getId(), userId);
     }
 
     private void ensureNotSelfExpelling(Long requestUserId, Long expelledId) {

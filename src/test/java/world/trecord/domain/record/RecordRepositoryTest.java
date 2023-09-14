@@ -226,6 +226,21 @@ class RecordRepositoryTest extends AbstractContainerBaseTest {
     }
 
     @Test
+    @DisplayName("피드 아이디와 작성자 아이디로 soft delete한다")
+    void deleteByFeedEntityIdAndUserEntityIdTest() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(createUser());
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, 0));
+
+        //when
+        recordRepository.deleteByFeedEntityIdAndUserEntityId(feedEntity.getId(), userEntity.getId());
+
+        //then
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
+    }
+
+    @Test
     @DisplayName("기록을 soft delete한다")
     void deleteTest() throws Exception {
         //given
