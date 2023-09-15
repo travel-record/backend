@@ -82,7 +82,7 @@ public class FeedService {
 
     @Transactional
     public void updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
-        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
+        FeedEntity feedEntity = findFeedOrException(feedId);
 
         ensureUserIsFeedOwner(feedEntity, userId);
 
@@ -110,10 +110,6 @@ public class FeedService {
 
     private FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
-    }
-
-    private FeedEntity findFeedForUpdateOrException(Long feedId) {
-        return feedRepository.findByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {

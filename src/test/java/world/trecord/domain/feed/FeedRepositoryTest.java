@@ -102,20 +102,6 @@ class FeedRepositoryTest extends AbstractContainerBaseTest {
     }
 
     @Test
-    @DisplayName("Select for update 쿼리를 날린다")
-    void findByIdForUpdateTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
-        //when
-        Optional<FeedEntity> byIdForUpdate = feedRepository.findByIdForUpdate(feedEntity.getId());
-
-        //then
-        Assertions.assertThat(byIdForUpdate).isNotEmpty();
-    }
-
-    @Test
     @DisplayName("피드를 soft delete 한다")
     void deleteFeedTest() throws Exception {
         //given
