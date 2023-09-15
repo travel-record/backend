@@ -144,10 +144,10 @@ class FeedContributorServiceConcurrencyTest extends AbstractContainerBaseTest {
         //finally
         executorService.shutdown();
     }
-    
+
     @Test
     @DisplayName("피드에서 나가는 것을 동시에 요청해도 한 번만 처리된다")
-    void test() throws Exception {
+    void leaveFeedConcurrencyTest() throws Exception {
         //given
         UserEntity owner = createUser();
         UserEntity invitedUser = createUser();
