@@ -20,9 +20,9 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.users.request.UserUpdateRequest;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.service.users.request.UserUpdateRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;

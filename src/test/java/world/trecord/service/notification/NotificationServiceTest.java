@@ -19,14 +19,14 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.notification.response.CheckNewNotificationResponse;
+import world.trecord.dto.notification.response.NotificationListResponse;
 import world.trecord.event.sse.SseEmitterRepository;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
 import world.trecord.service.comment.CommentService;
-import world.trecord.service.notification.response.CheckNewNotificationResponse;
-import world.trecord.service.notification.response.NotificationListResponse;
 import world.trecord.service.record.RecordService;
 import world.trecord.service.userrecordlike.UserRecordLikeService;
 

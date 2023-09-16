@@ -10,9 +10,9 @@ import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.notification.response.CheckNewNotificationResponse;
+import world.trecord.dto.notification.response.NotificationListResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.service.notification.response.CheckNewNotificationResponse;
-import world.trecord.service.notification.response.NotificationListResponse;
 
 import java.util.List;
 

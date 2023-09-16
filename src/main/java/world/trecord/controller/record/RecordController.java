@@ -9,16 +9,16 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
+import world.trecord.dto.record.request.RecordCreateRequest;
+import world.trecord.dto.record.request.RecordSequenceSwapRequest;
+import world.trecord.dto.record.request.RecordUpdateRequest;
+import world.trecord.dto.record.response.RecordCommentsResponse;
+import world.trecord.dto.record.response.RecordCreateResponse;
+import world.trecord.dto.record.response.RecordInfoResponse;
+import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
+import world.trecord.dto.users.UserContext;
 import world.trecord.service.record.RecordService;
-import world.trecord.service.record.request.RecordCreateRequest;
-import world.trecord.service.record.request.RecordSequenceSwapRequest;
-import world.trecord.service.record.request.RecordUpdateRequest;
-import world.trecord.service.record.response.RecordCommentsResponse;
-import world.trecord.service.record.response.RecordCreateResponse;
-import world.trecord.service.record.response.RecordInfoResponse;
 import world.trecord.service.userrecordlike.UserRecordLikeService;
-import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
-import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
 

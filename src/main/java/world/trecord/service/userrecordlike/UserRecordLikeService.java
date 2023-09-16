@@ -12,10 +12,10 @@ import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.userrecordlike.response.UserRecordLikeListResponse;
+import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
-import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
-import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.util.List;
 

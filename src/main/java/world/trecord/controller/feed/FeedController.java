@@ -10,16 +10,16 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
+import world.trecord.dto.feed.request.FeedCreateRequest;
+import world.trecord.dto.feed.request.FeedUpdateRequest;
+import world.trecord.dto.feed.response.FeedCreateResponse;
+import world.trecord.dto.feed.response.FeedInfoResponse;
+import world.trecord.dto.feed.response.FeedListResponse;
+import world.trecord.dto.feed.response.FeedRecordsResponse;
+import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
+import world.trecord.dto.users.UserContext;
 import world.trecord.service.feed.FeedService;
-import world.trecord.service.feed.request.FeedCreateRequest;
-import world.trecord.service.feed.request.FeedUpdateRequest;
-import world.trecord.service.feed.response.FeedCreateResponse;
-import world.trecord.service.feed.response.FeedInfoResponse;
-import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedRecordsResponse;
 import world.trecord.service.feedcontributor.FeedContributorService;
-import world.trecord.service.feedcontributor.request.FeedInviteRequest;
-import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
 

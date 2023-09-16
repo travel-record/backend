@@ -9,12 +9,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.users.UserContext;
+import world.trecord.dto.users.request.UserUpdateRequest;
+import world.trecord.dto.users.response.UserInfoResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.users.request.UserUpdateRequest;
-import world.trecord.service.users.response.UserInfoResponse;
 
 import java.util.List;
 

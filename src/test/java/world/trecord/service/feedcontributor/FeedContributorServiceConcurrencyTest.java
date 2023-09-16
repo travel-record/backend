@@ -12,12 +12,12 @@ import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.event.notification.NotificationEventListener;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.feedcontributor.request.FeedInviteRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

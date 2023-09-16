@@ -15,10 +15,10 @@ import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
+import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
-import world.trecord.service.feedcontributor.request.FeedInviteRequest;
-import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 
 import java.util.Objects;
 

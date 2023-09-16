@@ -9,11 +9,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
+import world.trecord.dto.comment.request.CommentCreateRequest;
+import world.trecord.dto.comment.request.CommentUpdateRequest;
+import world.trecord.dto.comment.response.CommentResponse;
+import world.trecord.dto.users.UserContext;
 import world.trecord.service.comment.CommentService;
-import world.trecord.service.comment.request.CommentCreateRequest;
-import world.trecord.service.comment.request.CommentUpdateRequest;
-import world.trecord.service.comment.response.CommentResponse;
-import world.trecord.service.users.UserContext;
 
 import java.util.Optional;
 
