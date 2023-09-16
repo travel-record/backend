@@ -74,7 +74,7 @@ public class RecordService {
 
     @Transactional
     public void updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
-        RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
+        RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
@@ -107,7 +107,7 @@ public class RecordService {
 
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
-        RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
+        RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
@@ -174,10 +174,6 @@ public class RecordService {
 
     private RecordEntity findRecordOrException(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
-    }
-
-    private RecordEntity findRecordForUpdateOrException(Long recordId) {
-        return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private void ensureUserHasPermissionOverRecord(FeedEntity feedEntity, RecordEntity recordEntity, Long userId) {
