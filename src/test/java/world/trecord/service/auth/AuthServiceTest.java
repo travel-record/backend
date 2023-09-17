@@ -11,15 +11,14 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.config.properties.JwtProperties;
+import world.trecord.config.redis.UserCacheRepository;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.auth.response.LoginResponse;
+import world.trecord.dto.auth.response.RefreshResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
-import world.trecord.service.auth.google.GoogleAuthService;
-import world.trecord.service.auth.response.LoginResponse;
-import world.trecord.service.auth.response.RefreshResponse;
-import world.trecord.service.users.UserCacheRepository;
 import world.trecord.service.users.UserService;
 
 import java.util.Optional;
@@ -227,7 +226,7 @@ class AuthServiceTest {
 
         given(jwtTokenHandler.getUserIdFromToken(secretKey, token))
                 .willReturn(userId);
-        
+
         when(userRepository.findById(any())).thenReturn(Optional.empty());
 
         //when //then

@@ -14,6 +14,8 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feedcontributor.args.FeedContributorPermissionArgs;
 import world.trecord.domain.users.UserEntity;
 
+import java.util.Objects;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(
@@ -27,7 +29,7 @@ public class FeedContributorEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_contributor", nullable = false)
+    @Column(name = "id_contributor", nullable = false, updatable = false)
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -50,7 +52,7 @@ public class FeedContributorEntity extends BaseEntity {
     private FeedContributorEntity(UserEntity userEntity, FeedEntity feedEntity) {
         this.userEntity = userEntity;
         this.feedEntity = feedEntity;
-        if (feedEntity != null) {
+        if (Objects.nonNull(feedEntity)) {
             feedEntity.addFeedContributor(this);
         }
         this.status = FeedContributorStatus.PARTICIPATING;

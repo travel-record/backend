@@ -17,7 +17,7 @@ import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import world.trecord.controller.ApiResponse;
-import world.trecord.service.users.UserContext;
+import world.trecord.dto.users.UserContext;
 import world.trecord.service.users.UserService;
 
 import java.io.IOException;

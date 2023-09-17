@@ -9,9 +9,9 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.dto.record.request.RecordCreateRequest;
+import world.trecord.dto.record.request.RecordUpdateRequest;
 import world.trecord.exception.CustomException;
-import world.trecord.service.record.request.RecordCreateRequest;
-import world.trecord.service.record.request.RecordUpdateRequest;
 
 import java.util.Objects;
 

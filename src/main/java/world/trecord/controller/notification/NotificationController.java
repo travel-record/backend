@@ -10,11 +10,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
 import world.trecord.domain.notification.enumeration.NotificationType;
+import world.trecord.dto.notification.response.CheckNewNotificationResponse;
+import world.trecord.dto.notification.response.NotificationListResponse;
+import world.trecord.dto.users.UserContext;
 import world.trecord.event.sse.SseEmitterService;
 import world.trecord.service.notification.NotificationService;
-import world.trecord.service.notification.response.CheckNewNotificationResponse;
-import world.trecord.service.notification.response.NotificationListResponse;
-import world.trecord.service.users.UserContext;
 
 import java.time.Duration;
 

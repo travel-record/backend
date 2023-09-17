@@ -14,12 +14,12 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.comment.request.CommentCreateRequest;
+import world.trecord.dto.comment.request.CommentUpdateRequest;
+import world.trecord.dto.comment.response.CommentResponse;
+import world.trecord.dto.comment.response.UserCommentsResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
-import world.trecord.service.comment.request.CommentCreateRequest;
-import world.trecord.service.comment.request.CommentUpdateRequest;
-import world.trecord.service.comment.response.CommentResponse;
-import world.trecord.service.comment.response.UserCommentsResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -77,8 +77,9 @@ public class CommentService {
     public Page<CommentResponse> getReplies(Optional<Long> viewerId, Long commentId, Pageable pageable) {
         CommentEntity parentComment = findCommentOrException(commentId);
 
-        return commentRepository.findByParentCommentEntityId(parentComment.getId(), pageable)
+        return commentRepository.findWithUserEntityByParentCommentEntityId(parentComment.getId(), pageable)
                 .map(it -> CommentResponse.builder()
+                        .userEntity(it.getUserEntity())
                         .commentEntity(it)
                         .viewerId(viewerId.orElse(null))
                         .build());

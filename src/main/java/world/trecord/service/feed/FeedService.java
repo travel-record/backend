@@ -14,13 +14,13 @@ import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.feed.request.FeedCreateRequest;
+import world.trecord.dto.feed.request.FeedUpdateRequest;
+import world.trecord.dto.feed.response.FeedCreateResponse;
+import world.trecord.dto.feed.response.FeedInfoResponse;
+import world.trecord.dto.feed.response.FeedListResponse;
+import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.service.feed.request.FeedCreateRequest;
-import world.trecord.service.feed.request.FeedUpdateRequest;
-import world.trecord.service.feed.response.FeedCreateResponse;
-import world.trecord.service.feed.response.FeedInfoResponse;
-import world.trecord.service.feed.response.FeedListResponse;
-import world.trecord.service.feed.response.FeedRecordsResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +82,7 @@ public class FeedService {
 
     @Transactional
     public void updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
-        FeedEntity feedEntity = findFeedForUpdateOrException(feedId);
+        FeedEntity feedEntity = findFeedOrException(feedId);
 
         ensureUserIsFeedOwner(feedEntity, userId);
 
@@ -110,10 +110,6 @@ public class FeedService {
 
     private FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
-    }
-
-    private FeedEntity findFeedForUpdateOrException(Long feedId) {
-        return feedRepository.findByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {

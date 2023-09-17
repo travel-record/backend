@@ -17,11 +17,11 @@ import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.userrecordlike.response.UserRecordLikeListResponse;
+import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.event.notification.NotificationEventListener;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.userrecordlike.response.UserRecordLikeListResponse;
-import world.trecord.service.userrecordlike.response.UserRecordLikeResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;

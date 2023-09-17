@@ -10,9 +10,9 @@ import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.notification.response.CheckNewNotificationResponse;
+import world.trecord.dto.notification.response.NotificationListResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.service.notification.response.CheckNewNotificationResponse;
-import world.trecord.service.notification.response.NotificationListResponse;
 
 import java.util.List;
 
@@ -33,12 +33,6 @@ public class NotificationService {
     public CheckNewNotificationResponse checkUnreadNotifications(Long userId) {
         boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userId, UNREAD);
         return buildNewNotificationResponse(hasNewNotification);
-    }
-
-    @Transactional
-    public NotificationEntity createNotification(Long userToId, NotificationType type, NotificationArgs args) {
-        UserEntity userToEntity = userRepository.findById(userToId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-        return notificationRepository.save(buildNotificationEntity(type, args, userToEntity));
     }
 
     @Transactional
@@ -67,6 +61,19 @@ public class NotificationService {
         return response;
     }
 
+    @Transactional
+    public NotificationEntity createNotification(Long userToId, NotificationType type, NotificationArgs args) {
+        UserEntity userToEntity = userRepository.findById(userToId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+        return notificationRepository.save(buildNotificationEntity(type, args, userToEntity));
+    }
+
+    @Transactional
+    public void deleteNotification(Long userId, Long notificationId) {
+        NotificationEntity notificationEntity = notificationRepository.findByIdAndUsersToEntityId(notificationId, userId)
+                .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
+        notificationRepository.delete(notificationEntity);
+    }
+
     private void markNotificationsAsRead(Long userId) {
         notificationRepository.updateNotificationStatusByUserId(userId, UNREAD, READ);
     }
@@ -84,12 +91,5 @@ public class NotificationService {
                 .status(UNREAD)
                 .type(type)
                 .build();
-    }
-
-    @Transactional
-    public void deleteNotification(Long userId, Long notificationId) {
-        NotificationEntity notificationEntity = notificationRepository.findByIdAndUsersToEntityId(notificationId, userId)
-                .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
-        notificationRepository.delete(notificationEntity);
     }
 }

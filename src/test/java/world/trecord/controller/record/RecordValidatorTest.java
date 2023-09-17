@@ -12,10 +12,10 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.record.request.RecordCreateRequest;
+import world.trecord.dto.record.request.RecordUpdateRequest;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.record.request.RecordCreateRequest;
-import world.trecord.service.record.request.RecordUpdateRequest;
 
 import java.time.LocalDateTime;
 

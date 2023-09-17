@@ -16,13 +16,13 @@ import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.record.request.RecordCreateRequest;
+import world.trecord.dto.record.request.RecordSequenceSwapRequest;
+import world.trecord.dto.record.request.RecordUpdateRequest;
+import world.trecord.dto.record.response.RecordCommentsResponse;
+import world.trecord.dto.record.response.RecordCreateResponse;
+import world.trecord.dto.record.response.RecordInfoResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.service.record.request.RecordCreateRequest;
-import world.trecord.service.record.request.RecordSequenceSwapRequest;
-import world.trecord.service.record.request.RecordUpdateRequest;
-import world.trecord.service.record.response.RecordCommentsResponse;
-import world.trecord.service.record.response.RecordCreateResponse;
-import world.trecord.service.record.response.RecordInfoResponse;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -74,7 +74,7 @@ public class RecordService {
 
     @Transactional
     public void updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
-        RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
+        RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
@@ -107,7 +107,7 @@ public class RecordService {
 
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
-        RecordEntity recordEntity = findRecordForUpdateOrException(recordId);
+        RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
 
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
@@ -174,10 +174,6 @@ public class RecordService {
 
     private RecordEntity findRecordOrException(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
-    }
-
-    private RecordEntity findRecordForUpdateOrException(Long recordId) {
-        return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private void ensureUserHasPermissionOverRecord(FeedEntity feedEntity, RecordEntity recordEntity, Long userId) {

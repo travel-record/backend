@@ -27,7 +27,7 @@ public class FeedEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_feed", nullable = false)
+    @Column(name = "id_feed", nullable = false, updatable = false)
     private Long id;
 
     @Column(name = "name", nullable = false)
@@ -62,7 +62,15 @@ public class FeedEntity extends BaseEntity {
     private Set<FeedContributorEntity> feedContributors = new HashSet<>();
 
     @Builder
-    private FeedEntity(UserEntity userEntity, String name, String description, String imageUrl, LocalDateTime startAt, LocalDateTime endAt, String companion, String place, String satisfaction) {
+    private FeedEntity(UserEntity userEntity,
+                       String name,
+                       String description,
+                       String imageUrl,
+                       LocalDateTime startAt,
+                       LocalDateTime endAt,
+                       String companion,
+                       String place,
+                       String satisfaction) {
         this.name = name;
         this.imageUrl = imageUrl;
         this.description = description;
@@ -90,11 +98,17 @@ public class FeedEntity extends BaseEntity {
     }
 
     public LocalDate convertStartAtToLocalDate() {
-        return this.startAt != null ? this.startAt.toLocalDate() : null;
+        if (Objects.isNull(this.startAt)) {
+            return null;
+        }
+        return this.startAt.toLocalDate();
     }
 
     public LocalDate convertEndAtToLocalDate() {
-        return this.endAt != null ? this.endAt.toLocalDate() : null;
+        if (Objects.isNull(this.endAt)) {
+            return null;
+        }
+        return this.endAt.toLocalDate();
     }
 
     public boolean isOwnedBy(Long userId) {
@@ -106,8 +120,7 @@ public class FeedEntity extends BaseEntity {
     }
 
     public boolean isContributor(Long userId) {
-        return feedContributors.stream()
-                .anyMatch(contributor -> Objects.equals(contributor.getUserEntity().getId(), userId));
+        return feedContributors.stream().anyMatch(contributor -> Objects.equals(contributor.getUserEntity().getId(), userId));
     }
 
     public void removeFeedContributor(Long userId) {

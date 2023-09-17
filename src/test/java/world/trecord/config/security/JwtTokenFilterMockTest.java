@@ -17,7 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.config.properties.JwtProperties;
-import world.trecord.service.users.UserContext;
+import world.trecord.dto.users.UserContext;
 import world.trecord.service.users.UserService;
 
 import java.io.PrintWriter;

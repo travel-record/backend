@@ -5,11 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.redis.UserCacheRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.users.UserContext;
+import world.trecord.dto.users.request.UserUpdateRequest;
+import world.trecord.dto.users.response.UserInfoResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.service.users.request.UserUpdateRequest;
-import world.trecord.service.users.response.UserInfoResponse;
 
 import java.util.Objects;
 import java.util.Optional;

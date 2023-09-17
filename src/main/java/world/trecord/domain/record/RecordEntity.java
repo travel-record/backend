@@ -25,7 +25,7 @@ public class RecordEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_record", nullable = false)
+    @Column(name = "id_record", nullable = false, updatable = false)
     private Long id;
 
     @Column(name = "title", nullable = false)
@@ -109,7 +109,10 @@ public class RecordEntity extends BaseEntity {
     }
 
     public LocalDate convertDateToLocalDate() {
-        return this.date != null ? getDate().toLocalDate() : null;
+        if (Objects.isNull(this.date)) {
+            return null;
+        }
+        return this.date.toLocalDate();
     }
 
     public boolean hasSameFeed(RecordEntity otherRecord) {

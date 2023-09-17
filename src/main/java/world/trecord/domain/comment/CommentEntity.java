@@ -25,7 +25,7 @@ public class CommentEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_comment", nullable = false)
+    @Column(name = "id_comment", nullable = false, updatable = false)
     private Long id;
 
     @Column(name = "content", nullable = false)
@@ -70,6 +70,10 @@ public class CommentEntity extends BaseEntity {
     }
 
     public Long getParentCommentId() {
-        return this.parentCommentEntity != null ? this.parentCommentEntity.getId() : null;
+        if (Objects.isNull(this.parentCommentEntity)) {
+            return null;
+        }
+
+        return this.parentCommentEntity.getId();
     }
 }

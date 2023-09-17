@@ -18,14 +18,14 @@ import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
+import world.trecord.dto.feedcontributor.request.FeedExpelRequest;
+import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
+import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.event.notification.NotificationEventListener;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.IntegrationTestSupport;
-import world.trecord.service.feedcontributor.request.FeedExpelRequest;
-import world.trecord.service.feedcontributor.request.FeedInviteRequest;
-import world.trecord.service.feedcontributor.response.UserFeedContributorListResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;

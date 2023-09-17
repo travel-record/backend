@@ -13,14 +13,7 @@ import java.util.Optional;
 @Repository
 public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     List<FeedEntity> findByUserEntityIdOrderByStartAtDesc(Long userId);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT fe " +
-            "FROM FeedEntity fe " +
-            "WHERE fe.id = :feedId")
-    Optional<FeedEntity> findByIdForUpdate(@Param("feedId") Long feedId);
-
-
+    
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT fe " +
             "FROM FeedEntity fe " +
