@@ -77,8 +77,9 @@ public class CommentService {
     public Page<CommentResponse> getReplies(Optional<Long> viewerId, Long commentId, Pageable pageable) {
         CommentEntity parentComment = findCommentOrException(commentId);
 
-        return commentRepository.findByParentCommentEntityId(parentComment.getId(), pageable)
+        return commentRepository.findWithUserEntityByParentCommentEntityId(parentComment.getId(), pageable)
                 .map(it -> CommentResponse.builder()
+                        .userEntity(it.getUserEntity())
                         .commentEntity(it)
                         .viewerId(viewerId.orElse(null))
                         .build());

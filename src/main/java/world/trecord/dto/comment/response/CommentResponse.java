@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.comment.CommentEntity;
+import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,8 @@ import java.time.LocalDateTime;
 @Setter
 public class CommentResponse {
 
+    private Long commenterId;
+    private String commenterImageUrl;
     private Long recordId;
     private Long parentId;
     private Long commentId;
@@ -24,9 +27,11 @@ public class CommentResponse {
     private LocalDateTime createdDateTime;
 
     @Builder
-    private CommentResponse(CommentEntity commentEntity, Long viewerId) {
+    private CommentResponse(UserEntity userEntity, CommentEntity commentEntity, Long viewerId) {
+        this.commenterId = userEntity.getId();
+        this.commenterImageUrl = userEntity.getImageUrl();
         this.recordId = commentEntity.getRecordEntity().getId();
-        this.parentId = commentEntity.getParentCommentEntity() != null ? commentEntity.getParentCommentEntity().getId() : null;
+        this.parentId = commentEntity.getParentCommentId();
         this.commentId = commentEntity.getId();
         this.content = commentEntity.getContent();
         this.isUpdatable = commentEntity.isCommenter(viewerId);

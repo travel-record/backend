@@ -2,6 +2,7 @@ package world.trecord.domain.comment;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -30,7 +31,8 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
             "ORDER BY ce.createdDateTime ASC")
     List<CommentEntity> findParentCommentWithUserEntityAndChildCommentEntitiesByRecordEntityId(Long recordId);
 
-    Page<CommentEntity> findByParentCommentEntityId(Long parentCommentEntityId, Pageable pageable);
+    @EntityGraph(attributePaths = "userEntity")
+    Page<CommentEntity> findWithUserEntityByParentCommentEntityId(Long parentCommentEntityId, Pageable pageable);
 
     @Transactional
     @Modifying
