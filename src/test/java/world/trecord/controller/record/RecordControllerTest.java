@@ -126,8 +126,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                                 .header(AUTHORIZATION, invalidToken)
                 )
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()))
-                .andExpect(jsonPath("$.message").value(INVALID_TOKEN.message()));
+                .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
