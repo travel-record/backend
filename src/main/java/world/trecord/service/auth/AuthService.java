@@ -1,5 +1,6 @@
 package world.trecord.service.auth;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.redis.UserCacheRepository;
@@ -73,7 +74,14 @@ public class AuthService {
 
     private UserEntity findOrCreateUser(String email) {
         return userRepository.findByEmail(email)
-                .orElseGet(() -> userService.createNewUser(email));
+                .orElseGet(() -> {
+                    try {
+                        return userService.createUser(email);
+                    } catch (DataIntegrityViolationException ex) {
+                        return userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalStateException("Unexpected error while retrieving the user with email: " + email, ex));
+                    }
+                });
     }
 
     private String createToken(Long userId) {

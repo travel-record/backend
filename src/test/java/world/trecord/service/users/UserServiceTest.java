@@ -40,7 +40,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
         String email = "test@test.com";
 
         //when
-        UserEntity newUser = userService.createNewUser(email);
+        UserEntity newUser = userService.createUser(email);
 
         //then
         assertThat(newUser.getEmail()).isEqualTo(email);

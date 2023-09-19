@@ -110,7 +110,7 @@ class AuthServiceTest {
         given(userRepository.findByEmail(anyString()))
                 .willReturn(Optional.empty());
 
-        given(userService.createNewUser(anyString()))
+        given(userService.createUser(anyString()))
                 .willReturn(UserEntity.builder().email("nonexisting@email.com").nickname("newUser").build());
 
         //when
@@ -136,7 +136,7 @@ class AuthServiceTest {
         given(userRepository.findByEmail(anyString()))
                 .willReturn(Optional.empty());
 
-        given(userService.createNewUser(anyString()))
+        given(userService.createUser(anyString()))
                 .willReturn(UserEntity.builder().email("nonexisting@email.com").nickname("newUser").build());
 
         given(jwtTokenHandler.generateToken(any(), eq(invalidSecretKey), anyLong()))
