@@ -22,6 +22,7 @@ import world.trecord.dto.feed.request.FeedUpdateRequest;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
+import world.trecord.infra.WithTestUser;
 import world.trecord.service.feedcontributor.FeedContributorService;
 
 import java.time.LocalDateTime;
@@ -137,7 +138,6 @@ class FeedControllerTest extends AbstractContainerBaseTest {
     void getFeedByNotAuthenticatedUserTest() throws Exception {
         //given
         UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now()));
 
         //when //then
@@ -149,10 +149,9 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/feeds - 성공")
+    @WithTestUser
     void createFeedTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
-
         String feedName = "feed name";
         String imageUrl = "image";
         String companion = "companion1 companion2";
@@ -176,7 +175,6 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/feeds")
-                                .header(AUTHORIZATION, createToken(savedUserEntity.getId()))
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -196,6 +194,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/feeds/{feedId}/records - 성공 (인증된 사용자)")
+    @WithTestUser("test1@gmail.com")
     void getFeedRecordsTest() throws Exception {
         //given
         UserEntity user = userRepository.save(createUser("test@email.com"));
@@ -213,7 +212,6 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds/{feedId}/records", feedEntity.getId())
-                                .header(AUTHORIZATION, createToken(user.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isOk());

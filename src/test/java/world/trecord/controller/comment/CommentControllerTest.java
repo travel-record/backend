@@ -67,9 +67,7 @@ class CommentControllerTest extends AbstractContainerBaseTest {
     void createCommentTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
 
         String content = "content";
