@@ -2,7 +2,6 @@ package world.trecord.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -73,14 +72,6 @@ public class SecurityConfig {
                 objectMapper,
                 whitelistMap,
                 tokenInParamUrls);
-    }
-
-    @Bean
-    public FilterRegistrationBean<JwtTokenFilter> filter() {
-        FilterRegistrationBean<JwtTokenFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(jwtAuthFilter());
-        registrationBean.addUrlPatterns("/api/*");
-        return registrationBean;
     }
 
     public CorsConfigurationSource corsConfigurationSource() {
