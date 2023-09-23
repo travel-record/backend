@@ -9,10 +9,8 @@ create table users
     created_date_time  datetime     null comment '기록 생성 시간',
     modified_date_time datetime     null comment '기록 수정 시간',
     deleted_date_time  datetime     null comment '사용자 삭제 시간',
-    constraint uk_users_email
-        unique (email),
-    constraint uk_users_nickname
-        unique (nickname)
+    constraint uk_users_email unique (email),
+    constraint uk_users_nickname unique (nickname)
 )
     comment '사용자';
 
@@ -167,4 +165,15 @@ create table user_record_like
 create index idx_user_id
     on user_record_like (id_users)
     comment '유저 PK 인덱스';
+
+
+create table question_view (
+        id_view bigint not null auto_increment,
+        view_count int COMMENT '질문 조회 수' not null,
+        created_at datetime default CURRENT_TIMESTAMP NOT NULL COMMENT '생성 시간',
+        deleted_at datetime COMMENT '삭제 시간',
+        id_question bigint COMMENT '질문 PK' not null,
+        modified_at datetime default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '수정 시간',
+        primary key (id_view)
+)
 
