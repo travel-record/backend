@@ -1,12 +1,10 @@
 package world.trecord.client.feign.client.response;
 
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+@Data
 @NoArgsConstructor
-@Setter
-@Getter
 public class GoogleUserInfoResponse {
     private String email;
 }

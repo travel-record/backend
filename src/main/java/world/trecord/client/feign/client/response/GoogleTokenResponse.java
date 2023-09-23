@@ -1,16 +1,12 @@
 package world.trecord.client.feign.client.response;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+@Data
 @NoArgsConstructor
-@Setter
-@Getter
 public class GoogleTokenResponse {
-    private String access_token;
-
-    public String getAccessToken() {
-        return this.access_token;
-    }
+    @JsonProperty("access_token")
+    private String accessToken;
 }
