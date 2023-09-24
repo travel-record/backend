@@ -1,12 +1,11 @@
 package world.trecord.dto.record.request;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 
 import java.time.LocalDateTime;
@@ -16,25 +15,31 @@ import java.time.LocalDateTime;
 @Setter
 public class RecordUpdateRequest {
 
-    @NotEmpty
+    @NotBlank
     private String title;
 
     @NotNull
     private LocalDateTime date;
 
-    @NotNull
-    private Place place;
+    @NotBlank
+    private String place;
 
-    @NotEmpty
+    @NotBlank
+    private String latitude;
+
+    @NotBlank
+    private String longitude;
+
+    @NotBlank
     private String feeling;
 
-    @NotEmpty
+    @NotBlank
     private String weather;
 
-    @NotEmpty
+    @NotBlank
     private String transportation;
 
-    @NotEmpty
+    @NotBlank
     private String content;
 
     private String imageUrl;
@@ -44,7 +49,9 @@ public class RecordUpdateRequest {
     @Builder
     private RecordUpdateRequest(String title,
                                 LocalDateTime date,
-                                Place place,
+                                String place,
+                                String longitude,
+                                String latitude,
                                 String feeling,
                                 String weather,
                                 String transportation,
@@ -54,6 +61,8 @@ public class RecordUpdateRequest {
         this.title = title;
         this.date = date;
         this.place = place;
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.feeling = feeling;
         this.weather = weather;
         this.transportation = transportation;
@@ -67,6 +76,8 @@ public class RecordUpdateRequest {
                 .title(this.title)
                 .date(this.date)
                 .place(this.place)
+                .latitude(this.latitude)
+                .longitude(this.longitude)
                 .feeling(this.feeling)
                 .weather(this.weather)
                 .transportation(this.transportation)

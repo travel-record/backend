@@ -9,7 +9,6 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -75,7 +74,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .feedId(feedEntity.getId())
                 .title("title")
                 .date(LocalDateTime.of(2021, 10, 1, 0, 0))
-                .place(Place.of("place", "0", "0"))
+                .place("place")
                 .feeling("feeling")
                 .weather("weather")
                 .transportation("satisfaction")
@@ -106,7 +105,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .feedId(feedEntity.getId())
                 .title("title")
                 .date(LocalDateTime.of(2021, 10, 1, 0, 0))
-                .place(Place.of("place", "0", "0"))
+                .place("place")
+                .latitude("latitude")
+                .longitude("longitude")
                 .feeling("feeling")
                 .weather("weather")
                 .transportation("satisfaction")
@@ -137,7 +138,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
 
         String changedTitle = "change title";
         LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
-        Place changedPlace = Place.of("changed place", "0", "0");
+        String changedPlace = "changed place";
         String changedContent = "changed content";
         String changedFeeling = "changed feeling";
         String changedWeather = "changed weather";
@@ -150,6 +151,8 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .place(changedPlace)
                 .content(changedContent)
                 .feeling(changedFeeling)
+                .latitude("latitude")
+                .longitude("longitude")
                 .weather(changedWeather)
                 .companion(changedCompanion)
                 .transportation(changedTransportation)
@@ -276,6 +279,7 @@ class RecordServiceTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(writer));
 
         String title = "title";
+        String place = "jeju";
         String feeling = "feeling";
         String weather = "weather";
         String satisfaction = "best";
@@ -286,7 +290,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .feedId(feedEntity.getId())
                 .title(title)
                 .date(LocalDateTime.of(2021, 10, 1, 0, 0))
-                .place(Place.of("place", "0", "0"))
+                .place(place)
+                .latitude("latitude")
+                .longitude("longitude")
                 .feeling(feeling)
                 .weather(weather)
                 .transportation(satisfaction)
@@ -315,7 +321,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .feedId(feedEntity.getId())
                 .title("title")
                 .date(recordEntity.getDate())
-                .place(Place.of("place", "0", "0"))
+                .place("jeju")
+                .latitude("latitude")
+                .longitude("longitude")
                 .feeling("feeling")
                 .weather("weather")
                 .transportation("best")
@@ -379,17 +387,21 @@ class RecordServiceTest extends AbstractContainerBaseTest {
 
         String changedTitle = "change title";
         LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
-        Place changedPlace = Place.of("changed place", "0", "0");
+        String changedPlace = "changed place";
         String changedContent = "changed content";
         String changedFeeling = "changed feeling";
         String changedWeather = "changed weather";
         String changedCompanion = "changed changedCompanion";
         String changedTransportation = "changed transportation";
+        String longitude = "longitude";
+        String latitude = "latitude";
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .title(changedTitle)
                 .date(changedDate)
                 .place(changedPlace)
+                .latitude(latitude)
+                .longitude(longitude)
                 .content(changedContent)
                 .feeling(changedFeeling)
                 .weather(changedWeather)
@@ -758,7 +770,9 @@ class RecordServiceTest extends AbstractContainerBaseTest {
                 .userEntity(userEntity)
                 .feedEntity(feedEntity)
                 .title("record")
-                .place(Place.of("place", "0", "0"))
+                .longitude("longitude")
+                .latitude("latitude")
+                .place("place")
                 .date(LocalDateTime.of(2022, 10, 1, 0, 0))
                 .content("content")
                 .weather("weather")

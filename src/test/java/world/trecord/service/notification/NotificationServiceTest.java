@@ -9,7 +9,6 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.args.NotificationArgs;
@@ -339,7 +338,9 @@ class NotificationServiceTest extends AbstractContainerBaseTest {
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("record")
-                .place(Place.of("place", "0", "0"))
+                .place("place")
+                .longitude("longitude")
+                .latitude("latitude")
                 .date(LocalDateTime.of(2022, 3, 2, 0, 0))
                 .content("content")
                 .weather("weather")

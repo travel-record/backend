@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -214,7 +213,9 @@ class CommentRepositoryTest extends AbstractContainerBaseTest {
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
-                .place(Place.of("place", "0", "0"))
+                .place("place")
+                .longitude("longitude")
+                .latitude("latitude")
                 .date(LocalDateTime.of(2023, 3, 1, 0, 0))
                 .content("content")
                 .weather("weather")

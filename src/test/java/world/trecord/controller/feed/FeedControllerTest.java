@@ -11,7 +11,6 @@ import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -158,9 +157,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         String companion = "companion1 companion2";
         LocalDateTime startAt = LocalDateTime.of(2022, 12, 25, 0, 0);
         LocalDateTime endAt = LocalDateTime.of(2022, 12, 30, 0, 0);
-
-        String placeName = "jeju";
-        Place place = Place.of(placeName, "0", "0");
+        String place = "jeju";
         String satisfaction = "good";
         String description = "description";
 
@@ -209,6 +206,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         RecordEntity recordEntity3 = createRecord(feedEntity, recordTime);
         RecordEntity recordEntity4 = createRecord(feedEntity, recordTime);
         RecordEntity recordEntity5 = createRecord(feedEntity, recordTime);
+
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4, recordEntity5));
 
         //when //then
@@ -923,7 +921,9 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
-                .place(Place.of("place", "0", "0"))
+                .place("place")
+                .longitude("longitude")
+                .latitude("latitude")
                 .date(date)
                 .content("content")
                 .weather("weather")
