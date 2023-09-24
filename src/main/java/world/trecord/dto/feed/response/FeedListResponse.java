@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.Place;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,7 +27,9 @@ public class FeedListResponse {
     public static class Feed {
         private Long id;
         private String name;
-        private Place place;
+        private String place;
+        private String longitude;
+        private String latitude;
         private String imageUrl;
         private LocalDate startAt;
         private LocalDate endAt;
@@ -37,6 +38,8 @@ public class FeedListResponse {
             this.id = feedEntity.getId();
             this.name = feedEntity.getName();
             this.place = feedEntity.getPlace();
+            this.longitude = feedEntity.getLongitude();
+            this.latitude = feedEntity.getLatitude();
             this.imageUrl = feedEntity.getImageUrl();
             this.startAt = feedEntity.convertStartAtToLocalDate();
             this.endAt = feedEntity.convertEndAtToLocalDate();

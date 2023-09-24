@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
 
 import java.time.Duration;
@@ -24,7 +23,9 @@ public class FeedInfoResponse {
     private String imageUrl;
     private String description;
     private String companion;
-    private Place place;
+    private String place;
+    private String longitude;
+    private String latitude;
     private String satisfaction;
     private LocalDate startAt;
     private LocalDate endAt;
@@ -40,6 +41,8 @@ public class FeedInfoResponse {
         this.description = feedEntity.getDescription();
         this.satisfaction = feedEntity.getSatisfaction();
         this.place = feedEntity.getPlace();
+        this.longitude = feedEntity.getLongitude();
+        this.latitude = feedEntity.getLatitude();
         this.companion = feedEntity.getCompanion();
         this.startAt = feedEntity.convertStartAtToLocalDate();
         this.endAt = feedEntity.convertEndAtToLocalDate();
