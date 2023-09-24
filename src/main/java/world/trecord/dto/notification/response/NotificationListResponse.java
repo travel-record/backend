@@ -24,12 +24,16 @@ public class NotificationListResponse {
 
     public List<Notification> notifications;
 
+    public static NotificationListResponse of(List<NotificationEntity> notificationEntities) {
+        return NotificationListResponse.builder()
+                .notificationEntities(notificationEntities)
+                .build();
+    }
+
     @Builder
     private NotificationListResponse(List<NotificationEntity> notificationEntities) {
         this.notifications = notificationEntities.stream()
-                .map(notificationEntity -> Notification.builder()
-                        .notificationEntity(notificationEntity)
-                        .build())
+                .map(Notification::of)
                 .toList();
     }
 
@@ -48,6 +52,12 @@ public class NotificationListResponse {
         private FeedArgs feed;
         private RecordArgs record;
         private CommentArgs comment;
+
+        public static Notification of(NotificationEntity notificationEntity) {
+            return Notification.builder()
+                    .notificationEntity(notificationEntity)
+                    .build();
+        }
 
         @Builder
         private Notification(NotificationEntity notificationEntity) {

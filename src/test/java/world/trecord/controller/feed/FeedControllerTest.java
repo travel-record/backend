@@ -22,7 +22,7 @@ import world.trecord.dto.feed.request.FeedUpdateRequest;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.infra.AbstractContainerBaseTest;
 import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.infra.WithTestUser;
+import world.trecord.infra.support.WithTestUser;
 import world.trecord.service.feedcontributor.FeedContributorService;
 
 import java.time.LocalDateTime;

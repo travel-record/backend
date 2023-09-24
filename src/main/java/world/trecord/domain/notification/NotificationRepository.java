@@ -1,5 +1,7 @@
 package world.trecord.domain.notification;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +20,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
 
     Optional<NotificationEntity> findByIdAndUsersToEntityId(Long notificationId, Long userToEntityId);
 
-    List<NotificationEntity> findByUsersToEntityIdOrderByCreatedDateTimeDesc(Long userToEntityId);
+    Page<NotificationEntity> findByUsersToEntityId(Long userToEntityId, Pageable pageable);
 
     List<NotificationEntity> findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(Long userToEntityId, NotificationType type);
 

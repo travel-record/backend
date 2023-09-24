@@ -1,4 +1,4 @@
-package world.trecord.infra;
+package world.trecord.infra.support;
 
 import org.springframework.security.test.context.support.WithSecurityContext;
 

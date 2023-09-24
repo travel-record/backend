@@ -2,6 +2,8 @@ package world.trecord.service.notification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.NotificationEntity;
@@ -12,6 +14,7 @@ import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.notification.response.CheckNewNotificationResponse;
 import world.trecord.dto.notification.response.NotificationListResponse;
+import world.trecord.dto.notification.response.NotificationResponse;
 import world.trecord.exception.CustomException;
 
 import java.util.List;
@@ -36,15 +39,10 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationListResponse getNotifications(Long userId) {
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdOrderByCreatedDateTimeDesc(userId);
-
-        NotificationListResponse response = NotificationListResponse.builder()
-                .notificationEntities(notificationList)
-                .build();
-
+    public Page<NotificationResponse> getNotifications(Long userId, Pageable pageable) {
+        Page<NotificationResponse> response = notificationRepository.findByUsersToEntityId(userId, pageable)
+                .map(NotificationResponse::of);
         markNotificationsAsRead(userId);
-
         return response;
     }
 

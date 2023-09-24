@@ -2,6 +2,7 @@ package world.trecord.controller.notification;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -12,6 +13,7 @@ import world.trecord.controller.ApiResponse;
 import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.dto.notification.response.CheckNewNotificationResponse;
 import world.trecord.dto.notification.response.NotificationListResponse;
+import world.trecord.dto.notification.response.NotificationResponse;
 import world.trecord.dto.users.UserContext;
 import world.trecord.event.sse.SseEmitterService;
 import world.trecord.service.notification.NotificationService;
@@ -29,9 +31,9 @@ public class NotificationController {
     private final SseEmitterService sseEmitterService;
 
     @GetMapping
-    public ApiResponse<NotificationListResponse> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                                  @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(notificationService.getNotifications(userContext.getId()));
+    public ApiResponse<Page<NotificationResponse>> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
+                                                                    @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(notificationService.getNotifications(userContext.getId(), pageable));
     }
 
     @GetMapping("/check")

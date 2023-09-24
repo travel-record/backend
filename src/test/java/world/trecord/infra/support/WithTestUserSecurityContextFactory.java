@@ -1,4 +1,4 @@
-package world.trecord.infra;
+package world.trecord.infra.support;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
