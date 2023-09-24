@@ -16,17 +16,11 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-import world.trecord.controller.ApiResponse;
 import world.trecord.dto.users.UserContext;
 import world.trecord.service.users.UserService;
 
 import java.io.IOException;
 import java.util.*;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
@@ -65,6 +59,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
 
             if (token == null && isWhitelistRequest(req)) {
+                Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, null);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
                 chain.doFilter(req, res);
                 return;
             }
@@ -73,20 +69,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             Long userId = jwtTokenHandler.getUserIdFromToken(secretKey, token);
             UserContext userContext = userService.getUserContextOrException(userId);
             setAuthentication(userContext);
-            chain.doFilter(req, res);
-
         } catch (Exception e) {
-            log.error("Error in JwtTokenFilter while processing the request [{}] [{}] Cause: [{}]", req.getRequestURI(), req.getRemoteAddr(), e.getMessage());
-            returnInvalidTokenError(res);
+            chain.doFilter(req, res);
+            return;
         }
-    }
-
-    private void returnInvalidTokenError(HttpServletResponse res) throws IOException {
-        ApiResponse<Object> body = ApiResponse.of(INVALID_TOKEN.code(), INVALID_TOKEN.message(), null);
-        res.setStatus(UNAUTHORIZED.value());
-        res.setCharacterEncoding(UTF_8.name());
-        res.setContentType(APPLICATION_JSON_VALUE);
-        res.getWriter().write(objectMapper.writeValueAsString(body));
+        chain.doFilter(req, res);
     }
 
     private boolean isWhitelistRequest(HttpServletRequest req) {

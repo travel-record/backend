@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 
 import java.time.LocalDateTime;
@@ -21,8 +22,8 @@ public class RecordUpdateRequest {
     @NotNull
     private LocalDateTime date;
 
-    @NotEmpty
-    private String place;
+    @NotNull
+    private Place place;
 
     @NotEmpty
     private String feeling;
@@ -41,7 +42,15 @@ public class RecordUpdateRequest {
     private String companion;
 
     @Builder
-    private RecordUpdateRequest(String title, LocalDateTime date, String place, String feeling, String weather, String transportation, String content, String companion, String imageUrl) {
+    private RecordUpdateRequest(String title,
+                                LocalDateTime date,
+                                Place place,
+                                String feeling,
+                                String weather,
+                                String transportation,
+                                String content,
+                                String companion,
+                                String imageUrl) {
         this.title = title;
         this.date = date;
         this.place = place;

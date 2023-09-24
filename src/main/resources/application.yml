@@ -1,3 +1,4 @@
+# Springboot configurations
 spring.profiles.default: local
 
 spring.datasource:
@@ -19,6 +20,7 @@ feign:
     readTimeout: 3000
     loggerLevel: HEADERS
 
+# Custom configurations
 jwt:
   secret-key: "adZw12pxc55CmnIKsNP42KIa+M+bTlezcJKs3sW2RctO"
   token-expired-time-ms: 86400000
@@ -29,6 +31,7 @@ google:
   oauth2.endpoint: "https://oauth2.googleapis.com"
   api.baseUrl: "https://www.googleapis.com"
 ---
+# Springboot configurations
 spring.config.activate.on-profile: local
 
 spring.jpa:

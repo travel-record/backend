@@ -32,13 +32,13 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
     List<RecordEntity> findByIdsForUpdate(@Param("recordIds") List<Long> recordIds);
 
     // TODO delete
-    @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
+    @Query("SELECT re.id as id, re.title as title, re.place.place as place, re.imageUrl as imageUrl , re.date as date " +
             "FROM RecordEntity re " +
             "WHERE re.feedEntity.id = :feedId " +
             "ORDER BY re.date ASC, re.sequence ASC ,re.createdDateTime ASC")
     List<RecordWithFeedProjection> findRecordsByFeedEntityId(@Param("feedId") Long feedId);
 
-    @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
+    @Query("SELECT re.id as id, re.title as title, re.place.place as place, re.imageUrl as imageUrl , re.date as date " +
             "FROM RecordEntity re " +
             "WHERE re.feedEntity.id = :feedId")
     Page<RecordWithFeedProjection> findRecordListByFeedEntityId(Long feedId, Pageable pageable);

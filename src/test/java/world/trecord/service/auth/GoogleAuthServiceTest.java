@@ -45,7 +45,7 @@ class GoogleAuthServiceTest {
         String expectedEmail = "test@test.com";
 
         GoogleTokenResponse mockTokenResponse = new GoogleTokenResponse();
-        mockTokenResponse.setAccess_token(mockAccessToken);
+        mockTokenResponse.setAccessToken(mockAccessToken);
 
         GoogleUserInfoResponse mockUserInfoResponse = new GoogleUserInfoResponse();
         mockUserInfoResponse.setEmail(expectedEmail);
@@ -102,7 +102,7 @@ class GoogleAuthServiceTest {
         String mockAccessToken = "mockToken";
 
         GoogleTokenResponse mockTokenResponse = new GoogleTokenResponse();
-        mockTokenResponse.setAccess_token(mockAccessToken);
+        mockTokenResponse.setAccessToken(mockAccessToken);
 
         when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(mockTokenResponse);
         when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(null);

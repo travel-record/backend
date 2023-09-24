@@ -51,11 +51,11 @@ public class GoogleAuthService {
 
     private GoogleTokenRequest doBuildTokenRequest(String authorizationCode, String redirectionUri) {
         return GoogleTokenRequest.builder()
-                .client_id(googleProperties.getClientId())
-                .client_secret(googleProperties.getClientSecret())
+                .clientId(googleProperties.getClientId())
+                .clientSecret(googleProperties.getClientSecret())
                 .code(authorizationCode)
-                .redirect_uri(redirectionUri)
-                .grant_type(GRANT_TYPE)
+                .redirectUri(redirectionUri)
+                .grantType(GRANT_TYPE)
                 .build();
     }
 }

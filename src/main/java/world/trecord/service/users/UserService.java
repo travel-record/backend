@@ -29,7 +29,7 @@ public class UserService {
     private final UserCacheRepository userCacheRepository;
 
     @Transactional
-    public UserEntity createNewUser(String email) {
+    public UserEntity createUser(String email) {
         return userRepository.save(UserEntity.builder()
                 .email(email)
                 .build());

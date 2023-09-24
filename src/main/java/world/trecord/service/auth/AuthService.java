@@ -1,5 +1,7 @@
 package world.trecord.service.auth;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.redis.UserCacheRepository;
@@ -14,6 +16,7 @@ import world.trecord.service.users.UserService;
 
 import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
 
+@RequiredArgsConstructor
 @Service
 public class AuthService {
 
@@ -23,23 +26,7 @@ public class AuthService {
     private final JwtTokenHandler jwtTokenHandler;
     private final GoogleAuthService googleAuthService;
     private final UserCacheRepository userCacheRepository;
-    private final String secretKey;
-    private final Long tokenExpiredTimeMs;
-
-    public AuthService(UserRepository userRepository,
-                       UserService userService,
-                       JwtTokenHandler jwtTokenHandler,
-                       UserCacheRepository userCacheRepository,
-                       GoogleAuthService googleAuthService,
-                       JwtProperties jwtProperties) {
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.jwtTokenHandler = jwtTokenHandler;
-        this.userCacheRepository = userCacheRepository;
-        this.googleAuthService = googleAuthService;
-        this.secretKey = jwtProperties.getSecretKey();
-        this.tokenExpiredTimeMs = jwtProperties.getTokenExpiredTimeMs();
-    }
+    private final JwtProperties jwtProperties;
 
     public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
         String email = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
@@ -58,6 +45,7 @@ public class AuthService {
     }
 
     public RefreshResponse reissueToken(String refreshToken) {
+        String secretKey = jwtProperties.getSecretKey();
         jwtTokenHandler.verifyToken(secretKey, refreshToken);
         Long userId = jwtTokenHandler.getUserIdFromToken(secretKey, refreshToken);
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
@@ -73,14 +61,21 @@ public class AuthService {
 
     private UserEntity findOrCreateUser(String email) {
         return userRepository.findByEmail(email)
-                .orElseGet(() -> userService.createNewUser(email));
+                .orElseGet(() -> {
+                    try {
+                        return userService.createUser(email);
+                    } catch (DataIntegrityViolationException ex) {
+                        return userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalStateException("Unexpected error while retrieving the user with email: " + email, ex));
+                    }
+                });
     }
 
     private String createToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, secretKey, tokenExpiredTimeMs);
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
 
     private String createRefreshToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, secretKey, tokenExpiredTimeMs * REFRESH_TOKEN_MULTIPLIER);
+        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs() * REFRESH_TOKEN_MULTIPLIER);
     }
 }

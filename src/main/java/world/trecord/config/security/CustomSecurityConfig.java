@@ -2,7 +2,6 @@ package world.trecord.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,12 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
 @Configuration
-public class SecurityConfig {
+public class CustomSecurityConfig {
 
     private final JwtProperties jwtProperties;
     private final JwtTokenHandler jwtTokenHandler;
@@ -45,18 +43,17 @@ public class SecurityConfig {
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         registry -> registry
-                                .requestMatchers("/", "/api/**").permitAll()
-                                .anyRequest().authenticated()
+                                .requestMatchers("/", "/api/*/auth/google-login", "/api/*/auth/token").permitAll()
+                                .requestMatchers("/api/**").authenticated()
+                                .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)))
                 .build();
     }
 
     public JwtTokenFilter jwtAuthFilter() {
         Map<String, List<HttpMethod>> whitelistMap = Map.of(
-                "/", List.of(GET),
-                "/api/.+/auth/google-login", List.of(POST),
-                "/api/.+/auth/token", List.of(POST),
                 "/api/.+/users/\\d+", List.of(GET),
                 "/api/.+/feeds/\\d+", List.of(GET),
                 "/api/.+/feeds/\\d+/records", List.of(GET),
@@ -73,14 +70,6 @@ public class SecurityConfig {
                 objectMapper,
                 whitelistMap,
                 tokenInParamUrls);
-    }
-
-    @Bean
-    public FilterRegistrationBean<JwtTokenFilter> filter() {
-        FilterRegistrationBean<JwtTokenFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(jwtAuthFilter());
-        registrationBean.addUrlPatterns("/api/*");
-        return registrationBean;
     }
 
     public CorsConfigurationSource corsConfigurationSource() {
