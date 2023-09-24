@@ -1,6 +1,8 @@
 package world.trecord.service.record;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
@@ -19,7 +21,7 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.record.request.RecordCreateRequest;
 import world.trecord.dto.record.request.RecordSequenceSwapRequest;
 import world.trecord.dto.record.request.RecordUpdateRequest;
-import world.trecord.dto.record.response.RecordCommentsResponse;
+import world.trecord.dto.record.response.RecordCommentResponse;
 import world.trecord.dto.record.response.RecordCreateResponse;
 import world.trecord.dto.record.response.RecordInfoResponse;
 import world.trecord.exception.CustomException;
@@ -48,28 +50,17 @@ public class RecordService {
     public RecordInfoResponse getRecord(Optional<Long> viewerId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
         boolean liked = userLiked(recordEntity, viewerId);
-
-        return RecordInfoResponse.builder()
-                .recordEntity(recordEntity)
-                .viewerId(viewerId.orElse(null))
-                .liked(liked)
-                .build();
+        return RecordInfoResponse.of(recordEntity, viewerId.orElse(null), liked);
     }
 
     @Transactional
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest request) {
         UserEntity userEntity = findUserOrException(userId);
         FeedEntity feedEntity = findFeedOrException(request.getFeedId());
-
         ensureUserHasWritePermissionOverRecord(userId, feedEntity);
-
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
         RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, nextSequence));
-
-        return RecordCreateResponse.builder()
-                .writerEntity(userEntity)
-                .recordEntity(recordEntity)
-                .build();
+        return RecordCreateResponse.of(userEntity, recordEntity);
     }
 
     @Transactional
@@ -118,14 +109,10 @@ public class RecordService {
         recordRepository.delete(recordEntity);
     }
 
-    public RecordCommentsResponse getRecordComments(Optional<Long> viewerId, Long recordId) {
+    public Page<RecordCommentResponse> getRecordComments(Optional<Long> viewerId, Long recordId, Pageable pageable) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        List<CommentEntity> commentEntities = commentRepository.findParentCommentWithUserEntityAndChildCommentEntitiesByRecordEntityId(recordEntity.getId());
-
-        return RecordCommentsResponse.builder()
-                .commentEntities(commentEntities)
-                .viewerId(viewerId.orElse(null))
-                .build();
+        Page<CommentEntity> commentEntities = commentRepository.findCommentWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageable);
+        return commentEntities.map(it -> RecordCommentResponse.of(it, viewerId.orElse(null)));
     }
 
     private void ensureUserHasWritePermissionOverRecord(Long userId, FeedEntity feedEntity) {

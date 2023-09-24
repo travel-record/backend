@@ -140,4 +140,15 @@ public class RecordEntity extends BaseEntity {
         otherRecord.sequence = this.sequence;
         this.sequence = tmpSequence;
     }
+
+    public Long getFeedId() {
+        if (Objects.nonNull(this.feedEntity)) {
+            return this.feedEntity.getId();
+        }
+        return null;
+    }
+
+    public boolean isUpdatable(Long userId) {
+        return isCreatedBy(userId) || this.feedEntity.isOwnedBy(userId);
+    }
 }

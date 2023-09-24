@@ -1,4 +1,4 @@
-package world.trecord.dto.users;
+package world.trecord.config.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserContext implements UserDetails {
+public class UserContext implements UserDetails, AccountContext {
 
     private Long id;
     private String nickname;

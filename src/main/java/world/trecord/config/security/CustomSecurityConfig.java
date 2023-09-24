@@ -67,7 +67,6 @@ public class CustomSecurityConfig {
         return new JwtTokenFilter(jwtProperties.getSecretKey(),
                 jwtTokenHandler,
                 userService,
-                objectMapper,
                 whitelistMap,
                 tokenInParamUrls);
     }

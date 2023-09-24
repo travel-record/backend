@@ -1,15 +1,13 @@
 package world.trecord.infra.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import world.trecord.config.properties.JwtProperties;
-import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
+import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.event.sse.SseEmitterRepository;
@@ -60,19 +58,8 @@ public abstract class AbstractIntegrationTest extends AbstractContainerBaseTest 
     protected EntityManager entityManager;
 
     @Autowired
-    protected ObjectMapper objectMapper;
+    protected RecordSequenceRepository recordSequenceRepository;
 
     @Autowired
-    protected JwtProperties jwtProperties;
-
-    @Autowired
-    protected JwtTokenHandler jwtTokenHandler;
-
-    protected String body(Object object) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(object);
-    }
-
-    protected String token(Long userId) {
-        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
-    }
+    protected FeedContributorRepository feedContributorRepository;
 }

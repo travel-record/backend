@@ -6,15 +6,16 @@ import world.trecord.domain.users.UserEntity;
 
 public abstract class CommentEntityFixture {
 
-    public static CommentEntity of(UserEntity userEntity, RecordEntity recordEntity, String content) {
+    public static CommentEntity of(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
         return CommentEntity.builder()
                 .userEntity(userEntity)
                 .recordEntity(recordEntity)
-                .content(content)
+                .parentCommentEntity(parentCommentEntity)
+                .content("content")
                 .build();
     }
 
     public static CommentEntity of(UserEntity userEntity, RecordEntity recordEntity) {
-        return of(userEntity, recordEntity, "content");
+        return of(userEntity, recordEntity, null);
     }
 }

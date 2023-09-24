@@ -29,7 +29,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
             "JOIN FETCH ce.userEntity ue " +
             "WHERE ce.parentCommentEntity IS NULL " +
             "ORDER BY ce.createdDateTime ASC")
-    List<CommentEntity> findParentCommentWithUserEntityAndChildCommentEntitiesByRecordEntityId(Long recordId);
+    Page<CommentEntity> findCommentWithCommenterAndRepliesByRecordId(Long recordId, Pageable pageable);
 
     @EntityGraph(attributePaths = "userEntity")
     Page<CommentEntity> findWithUserEntityByParentCommentEntityId(Long parentCommentEntityId, Pageable pageable);

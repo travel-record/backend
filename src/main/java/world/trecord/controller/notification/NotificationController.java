@@ -8,12 +8,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import world.trecord.config.security.CurrentUser;
+import world.trecord.config.security.CurrentContext;
+import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
 import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.dto.notification.response.CheckNewNotificationResponse;
 import world.trecord.dto.notification.response.NotificationResponse;
-import world.trecord.dto.users.UserContext;
 import world.trecord.event.sse.SseEmitterService;
 import world.trecord.service.notification.NotificationService;
 
@@ -31,30 +31,30 @@ public class NotificationController {
 
     @GetMapping
     public ApiResponse<Page<NotificationResponse>> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                    @CurrentUser UserContext userContext) {
+                                                                    @CurrentContext UserContext userContext) {
         return ApiResponse.ok(notificationService.getNotifications(userContext.getId(), pageable));
     }
 
     @GetMapping("/check")
-    public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentUser UserContext userContext) {
+    public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentContext UserContext userContext) {
         return ApiResponse.ok(notificationService.checkUnreadNotifications(userContext.getId()));
     }
 
     @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter connectNotification(@CurrentUser UserContext userContext) {
+    public SseEmitter connectNotification(@CurrentContext UserContext userContext) {
         return sseEmitterService.connect(userContext.getId(), new SseEmitter(Duration.ofHours(3).toMillis()));
     }
 
     @GetMapping("/type/{type}")
     public ApiResponse<Page<NotificationResponse>> getNotificationsByType(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
                                                                           @PathVariable NotificationType type,
-                                                                          @CurrentUser UserContext userContext) {
+                                                                          @CurrentContext UserContext userContext) {
         return ApiResponse.ok(notificationService.getNotificationsByType(userContext.getId(), type, pageable));
     }
 
     @DeleteMapping("/{notificationId}")
     public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
-                                                @CurrentUser UserContext userContext) {
+                                                @CurrentContext UserContext userContext) {
         notificationService.deleteNotification(userContext.getId(), notificationId);
         return ApiResponse.ok();
     }

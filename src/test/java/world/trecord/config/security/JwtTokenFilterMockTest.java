@@ -1,6 +1,5 @@
 package world.trecord.config.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,8 +11,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.core.context.SecurityContextHolder;
 import world.trecord.config.properties.JwtProperties;
-import world.trecord.dto.users.UserContext;
 import world.trecord.service.users.UserService;
 
 import java.util.ArrayList;
@@ -33,6 +32,9 @@ class JwtTokenFilterMockTest {
     UserService userService;
 
     @Mock
+    SecurityContextHolder securityContextHolder;
+
+    @Mock
     HttpServletRequest req;
 
     @Mock
@@ -40,9 +42,6 @@ class JwtTokenFilterMockTest {
 
     @Mock
     FilterChain filterChain;
-
-    @Spy
-    ObjectMapper objectMapper;
 
     @Spy
     JwtProperties jwtProperties;
@@ -56,7 +55,7 @@ class JwtTokenFilterMockTest {
         String validToken = "validToken";
         String whitelistPath = "/whitelist";
 
-        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of(whitelistPath, List.of(HttpMethod.GET)), new ArrayList<>());
+        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, Map.of(whitelistPath, List.of(HttpMethod.GET)), new ArrayList<>());
 
         when(req.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
         when(jwtTokenHandler.getUserIdFromToken(any(), any())).thenReturn(1L);
@@ -74,7 +73,7 @@ class JwtTokenFilterMockTest {
     void doFilterInternalWithoutTokenToWhitelistUrlTest() throws Exception {
         //given
         String whiteListPath = "/whitelist";
-        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, objectMapper, Map.of(whiteListPath, List.of(HttpMethod.GET)), new ArrayList<>());
+        jwtTokenFilter = new JwtTokenFilter(jwtProperties.getSecretKey(), jwtTokenHandler, userService, Map.of(whiteListPath, List.of(HttpMethod.GET)), new ArrayList<>());
 
         when(req.getHeader("Authorization")).thenReturn(null);
         when(req.getServletPath()).thenReturn(whiteListPath);

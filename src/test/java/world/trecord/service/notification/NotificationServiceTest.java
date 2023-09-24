@@ -40,9 +40,9 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(author));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
-        CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity, "content2");
-        CommentEntity commentEntity3 = CommentEntityFixture.of(commenter3, recordEntity, "content3");
+        CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity);
+        CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity);
+        CommentEntity commentEntity3 = CommentEntityFixture.of(commenter3, recordEntity);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
         NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, commenter1, recordEntity, commentEntity1, READ, COMMENT);
@@ -75,9 +75,9 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(author));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
-        CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity, "content2");
-        CommentEntity commentEntity3 = CommentEntityFixture.of(commenter3, recordEntity, "content3");
+        CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity);
+        CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity);
+        CommentEntity commentEntity3 = CommentEntityFixture.of(commenter3, recordEntity);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
         NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, commenter1, recordEntity, commentEntity1, UNREAD, COMMENT);
@@ -138,7 +138,7 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
-        CommentEntity commentEntity = CommentEntityFixture.of(userEntity, recordEntity, "content1");
+        CommentEntity commentEntity = CommentEntityFixture.of(userEntity, recordEntity);
 
         notificationRepository.save(NotificationEntityFixture.of(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT));
 
@@ -156,7 +156,7 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
-        CommentEntity commentEntity = CommentEntityFixture.of(userEntity, recordEntity, "content1");
+        CommentEntity commentEntity = CommentEntityFixture.of(userEntity, recordEntity);
 
         notificationRepository.save(NotificationEntityFixture.of(userEntity, null, recordEntity, commentEntity, READ, COMMENT));
 
@@ -180,8 +180,8 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(author));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
-        CommentEntity commentEntity1 = CommentEntityFixture.of(viewer1, recordEntity, "content1");
-        CommentEntity commentEntity2 = CommentEntityFixture.of(viewer2, recordEntity, "content2");
+        CommentEntity commentEntity1 = CommentEntityFixture.of(viewer1, recordEntity);
+        CommentEntity commentEntity2 = CommentEntityFixture.of(viewer2, recordEntity);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
@@ -214,8 +214,8 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(author));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
-        CommentEntity commentEntity1 = CommentEntityFixture.of(viewer1, recordEntity, "content1");
-        CommentEntity commentEntity2 = CommentEntityFixture.of(viewer2, recordEntity, "content2");
+        CommentEntity commentEntity1 = CommentEntityFixture.of(viewer1, recordEntity);
+        CommentEntity commentEntity2 = CommentEntityFixture.of(viewer2, recordEntity);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);

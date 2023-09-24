@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.redis.UserCacheRepository;
 import world.trecord.config.security.JwtTokenHandler;
+import world.trecord.config.security.UserContext;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.auth.response.LoginResponse;
 import world.trecord.dto.auth.response.RefreshResponse;
-import world.trecord.dto.users.UserContext;
 import world.trecord.exception.CustomException;
 import world.trecord.service.users.UserService;
 
