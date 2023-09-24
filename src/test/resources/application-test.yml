@@ -1,3 +1,4 @@
+# Springboot configurations
 spring.jpa:
   hibernate:
     ddl-auto: create
@@ -6,6 +7,7 @@ spring.jpa:
     hibernate:
       format_sql: true
 
+# Custom configurations
 google:
   oauth2.endpoint: "http://localhost:8089"
   api.baseUrl: "http://localhost:8089"
