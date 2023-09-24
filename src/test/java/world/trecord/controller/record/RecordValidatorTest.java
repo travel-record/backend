@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -95,7 +94,7 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
 
         LocalDateTime date = feedStartAt.minusDays(1);
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", Place.of("place", "0", "0"), date, "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place", date, "content1", "weather1", "satisfaction1", "feeling1"));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .date(date)
@@ -119,7 +118,7 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
 
         LocalDateTime date = feedEndAt.plusDays(1);
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", Place.of("place", "0", "0"), date, "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place", date, "content1", "weather1", "satisfaction1", "feeling1"));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .date(date)
@@ -139,7 +138,7 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, Place place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
         return RecordEntity.builder()
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
