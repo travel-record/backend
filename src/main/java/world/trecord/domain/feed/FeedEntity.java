@@ -48,8 +48,14 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "companion")
     private String companion;
 
-    @Embedded
-    private Place place;
+    @Column(name = "place")
+    private String place;
+
+    @Column(name = "latitude")
+    private String latitude;
+
+    @Column(name = "longitude")
+    private String longitude;
 
     @Column(name = "satisfaction")
     private String satisfaction;
@@ -69,7 +75,9 @@ public class FeedEntity extends BaseEntity {
                        LocalDateTime startAt,
                        LocalDateTime endAt,
                        String companion,
-                       Place place,
+                       String place,
+                       String longitude,
+                       String latitude,
                        String satisfaction) {
         this.name = name;
         this.imageUrl = imageUrl;
@@ -78,6 +86,8 @@ public class FeedEntity extends BaseEntity {
         this.endAt = endAt;
         this.companion = companion;
         this.place = place;
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.satisfaction = satisfaction;
         this.userEntity = userEntity;
     }
@@ -89,11 +99,9 @@ public class FeedEntity extends BaseEntity {
         this.startAt = updateEntity.getStartAt();
         this.endAt = updateEntity.getEndAt();
         this.companion = updateEntity.getCompanion();
-        if (Objects.nonNull(updateEntity.getPlace())) {
-            this.place.setPlace(updateEntity.getPlace().getPlace());
-            this.place.setLatitude(updateEntity.getPlace().getLatitude());
-            this.place.setLongitude(updateEntity.getPlace().getLongitude());
-        }
+        this.longitude = updateEntity.getLongitude();
+        this.latitude = updateEntity.getLatitude();
+        this.place = updateEntity.getPlace();
         this.satisfaction = updateEntity.getSatisfaction();
     }
 
