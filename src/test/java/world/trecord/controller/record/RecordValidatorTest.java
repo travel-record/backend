@@ -145,6 +145,8 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
                 .feedEntity(feedEntity)
                 .title(title)
                 .place(place)
+                .latitude("latitude")
+                .longitude("longitude")
                 .date(date)
                 .content(content)
                 .weather(weather)

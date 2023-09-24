@@ -534,6 +534,8 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 .feedEntity(feedEntity)
                 .title(title)
                 .place(place)
+                .longitude("longitude")
+                .latitude("latitude")
                 .date(date)
                 .content("content")
                 .weather("weather")

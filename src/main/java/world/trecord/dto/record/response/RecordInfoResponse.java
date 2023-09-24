@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 
 import java.time.LocalDate;
@@ -21,7 +20,9 @@ public class RecordInfoResponse {
     private Boolean liked;
     private String title;
     private LocalDate date;
-    private Place place;
+    private String place;
+    private String latitude;
+    private String longitude;
     private String feeling;
     private String weather;
     private String transportation;
@@ -38,6 +39,8 @@ public class RecordInfoResponse {
         this.liked = liked;
         this.title = recordEntity.getTitle();
         this.date = recordEntity.convertDateToLocalDate();
+        this.latitude = recordEntity.getLatitude();
+        this.longitude = recordEntity.getLongitude();
         this.place = recordEntity.getPlace();
         this.feeling = recordEntity.getFeeling();
         this.weather = recordEntity.getWeather();

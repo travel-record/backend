@@ -13,7 +13,6 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
@@ -173,14 +172,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String title = "title";
-        String placeName = "jeju";
-        Place place = Place.of(placeName, "0", "0");
+        String place = "jeju";
         String feeling = "feeling";
         String weather = "weather";
         String satisfaction = "best";
         String content = "content";
         String companion = "companion";
         String imageUrl = "https://www.image.com";
+        String longitude = "longitude";
+        String latitude = "latitude";
         LocalDateTime localDateTime = LocalDateTime.of(2021, 10, 1, 0, 0);
 
         RecordCreateRequest request = RecordCreateRequest.builder()
@@ -190,6 +190,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .place(place)
                 .feeling(feeling)
                 .weather(weather)
+                .latitude(latitude)
+                .longitude(longitude)
                 .transportation(satisfaction)
                 .content(content)
                 .companion(companion)
@@ -218,14 +220,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String title = "title";
-        String placeName = "jeju";
-        Place place = Place.of(placeName, "0", "0");
+        String place = "jeju";
         String feeling = "feeling";
         String weather = "weather";
         String satisfaction = "best";
         String content = "content";
         String companion = "companion";
         String imageUrl = "https://www.image.com";
+        String longitude = "longitude";
+        String latitude = "latitude";
         LocalDateTime localDateTime = LocalDateTime.of(2021, 10, 1, 0, 0);
 
         RecordCreateRequest request = RecordCreateRequest.builder()
@@ -233,6 +236,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .title(title)
                 .date(localDateTime)
                 .place(place)
+                .longitude(longitude)
+                .latitude(latitude)
                 .feeling(feeling)
                 .weather(weather)
                 .transportation(satisfaction)
@@ -264,8 +269,9 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
         String changedTitle = "change title";
         LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
-        String changedPlaceName = "changed place";
-        Place changedPlace = Place.of(changedPlaceName, "0", "0");
+        String changedPlace = "changed place";
+        String changedLongitude = "changed longitude";
+        String changedLatitude = "changed latitude";
         String changedContent = "changed content";
         String changedFeeling = "changed feeling";
         String changedWeather = "changed weather";
@@ -277,6 +283,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .title(changedTitle)
                 .date(changedDate)
                 .place(changedPlace)
+                .latitude(changedLatitude)
+                .longitude(changedLongitude)
                 .content(changedContent)
                 .feeling(changedFeeling)
                 .weather(changedWeather)
@@ -323,13 +331,13 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
 
-        Place changedPlace = Place.of("changed place", "0", "0");
-
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .title("change title")
                 .date(LocalDateTime.of(2021, 10, 2, 0, 0))
-                .place(changedPlace)
+                .place("changed place")
                 .content("changed content")
+                .longitude("changed longitude")
+                .latitude("changed latitude")
                 .feeling("changed feeling")
                 .weather("changed weather")
                 .companion("changed changedCompanion")
@@ -623,12 +631,13 @@ class RecordControllerTest extends AbstractContainerBaseTest {
     }
 
     private RecordEntity createRecord(FeedEntity feedEntity, LocalDateTime date, int sequence) {
-
         return RecordEntity.builder()
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("record")
-                .place(Place.of("place", "0", "0"))
+                .place("place")
+                .longitude("longitude")
+                .latitude("latitude")
                 .date(date)
                 .content("content")
                 .weather("weather")

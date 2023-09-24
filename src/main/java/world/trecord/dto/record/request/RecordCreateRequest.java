@@ -1,5 +1,6 @@
 package world.trecord.dto.record.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -7,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 
@@ -27,8 +27,14 @@ public class RecordCreateRequest {
     @NotNull
     private LocalDateTime date;
 
-    @NotNull
-    private Place place;
+    @NotBlank
+    private String place;
+
+    @NotBlank
+    private String latitude;
+
+    @NotBlank
+    private String longitude;
 
     @NotEmpty
     private String feeling;
@@ -50,7 +56,9 @@ public class RecordCreateRequest {
     private RecordCreateRequest(Long feedId,
                                 String title,
                                 LocalDateTime date,
-                                Place place,
+                                String place,
+                                String longitude,
+                                String latitude,
                                 String feeling,
                                 String weather,
                                 String transportation,
@@ -61,6 +69,8 @@ public class RecordCreateRequest {
         this.title = title;
         this.date = date;
         this.place = place;
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.feeling = feeling;
         this.weather = weather;
         this.transportation = transportation;
@@ -76,6 +86,8 @@ public class RecordCreateRequest {
                 .title(this.title)
                 .date(this.date)
                 .place(this.place)
+                .latitude(this.latitude)
+                .longitude(this.longitude)
                 .feeling(this.feeling)
                 .weather(this.weather)
                 .transportation(this.transportation)

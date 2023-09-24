@@ -9,7 +9,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
@@ -35,8 +34,14 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "date", nullable = false)
     private LocalDateTime date;
 
-    @Embedded
-    private Place place;
+    @Column(name = "place", nullable = false)
+    private String place;
+
+    @Column(name = "latitude", nullable = false)
+    private String latitude;
+
+    @Column(name = "longitude", nullable = false)
+    private String longitude;
 
     @Column(name = "feeling", nullable = false)
     private String feeling;
@@ -75,8 +80,10 @@ public class RecordEntity extends BaseEntity {
                          FeedEntity feedEntity,
                          String title,
                          LocalDateTime date,
-                         Place place,
+                         String place,
                          String feeling,
+                         String longitude,
+                         String latitude,
                          String weather,
                          String transportation,
                          String content,
@@ -88,6 +95,8 @@ public class RecordEntity extends BaseEntity {
         this.title = title;
         this.date = date;
         this.place = place;
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.feeling = feeling;
         this.weather = weather;
         this.transportation = transportation;
@@ -100,11 +109,9 @@ public class RecordEntity extends BaseEntity {
     public void update(RecordEntity updateEntity) {
         this.title = updateEntity.getTitle();
         this.date = updateEntity.getDate();
-        if (Objects.nonNull(updateEntity.getPlace())) {
-            this.place.setPlace(updateEntity.getPlace().getPlace());
-            this.place.setLatitude(updateEntity.getPlace().getLatitude());
-            this.place.setLongitude(updateEntity.getPlace().getLongitude());
-        }
+        this.place = updateEntity.getPlace();
+        this.longitude = updateEntity.getLongitude();
+        this.latitude = updateEntity.getLatitude();
         this.feeling = updateEntity.getFeeling();
         this.weather = updateEntity.getWeather();
         this.transportation = updateEntity.getTransportation();

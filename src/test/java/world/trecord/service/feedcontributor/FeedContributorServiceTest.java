@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
-import world.trecord.domain.feed.Place;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -436,7 +435,11 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
                 .userEntity(userEntity)
                 .feedEntity(feedEntity)
                 .title("record")
-                .place(Place.of("place", "0", "0"))
+                .place("place")
+                .longitude("longitude")
+                .latitude("latitude")
+                .longitude("longitude")
+                .latitude("latitude")
                 .date(LocalDateTime.of(2022, 10, 1, 0, 0))
                 .content("content")
                 .weather("weather")
