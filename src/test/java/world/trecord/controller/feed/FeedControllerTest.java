@@ -209,7 +209,6 @@ class FeedControllerTest extends AbstractContainerBaseTest {
         RecordEntity recordEntity3 = createRecord(feedEntity, recordTime);
         RecordEntity recordEntity4 = createRecord(feedEntity, recordTime);
         RecordEntity recordEntity5 = createRecord(feedEntity, recordTime);
-
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4, recordEntity5));
 
         //when //then
@@ -924,7 +923,7 @@ class FeedControllerTest extends AbstractContainerBaseTest {
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
-                .place("place")
+                .place(Place.of("place", "0", "0"))
                 .date(date)
                 .content("content")
                 .weather("weather")

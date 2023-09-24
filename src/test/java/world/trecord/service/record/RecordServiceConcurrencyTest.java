@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
@@ -184,7 +185,7 @@ class RecordServiceConcurrencyTest extends AbstractContainerBaseTest {
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("record")
-                .place("place")
+                .place(Place.of("place", "0", "0"))
                 .date(LocalDateTime.of(2022, 10, 1, 0, 0))
                 .content("content")
                 .weather("weather")
@@ -199,7 +200,7 @@ class RecordServiceConcurrencyTest extends AbstractContainerBaseTest {
                 .feedId(feedEntity.getId())
                 .title("title")
                 .date(LocalDateTime.of(2023, 1, 1, 0, 0))
-                .place("jeju")
+                .place(Place.of("place", "0", "0"))
                 .feeling("feeling")
                 .weather("weather")
                 .transportation("best")

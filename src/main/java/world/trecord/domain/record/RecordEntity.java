@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
 import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.feed.Place;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDate;
@@ -34,8 +35,8 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "date", nullable = false)
     private LocalDateTime date;
 
-    @Column(name = "place", nullable = false)
-    private String place;
+    @Embedded
+    private Place place;
 
     @Column(name = "feeling", nullable = false)
     private String feeling;
@@ -74,7 +75,7 @@ public class RecordEntity extends BaseEntity {
                          FeedEntity feedEntity,
                          String title,
                          LocalDateTime date,
-                         String place,
+                         Place place,
                          String feeling,
                          String weather,
                          String transportation,
@@ -99,7 +100,11 @@ public class RecordEntity extends BaseEntity {
     public void update(RecordEntity updateEntity) {
         this.title = updateEntity.getTitle();
         this.date = updateEntity.getDate();
-        this.place = updateEntity.getPlace();
+        if (Objects.nonNull(updateEntity.getPlace())) {
+            this.place.setPlace(updateEntity.getPlace().getPlace());
+            this.place.setLatitude(updateEntity.getPlace().getLatitude());
+            this.place.setLongitude(updateEntity.getPlace().getLongitude());
+        }
         this.feeling = updateEntity.getFeeling();
         this.weather = updateEntity.getWeather();
         this.transportation = updateEntity.getTransportation();

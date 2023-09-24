@@ -13,6 +13,7 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feed.Place;
 import world.trecord.domain.notification.NotificationEntity;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.notification.args.NotificationArgs;
@@ -282,7 +283,7 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
-    
+
     @Test
     @DisplayName("DELETE /api/v1/notifications/{notificationId} - 성공")
     void deleteNotificationTest() throws Exception {
@@ -371,7 +372,7 @@ class NotificationControllerTest extends AbstractContainerBaseTest {
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
-                .place("place")
+                .place(Place.of("place", "0", "0"))
                 .date(LocalDateTime.of(2022, 3, 2, 0, 0))
                 .content("content")
                 .weather("weather")

@@ -20,7 +20,7 @@ public class FeedUpdateRequest {
     private String name;
 
     private String satisfaction;
-
+    
     private Place place;
 
     @NotNull

@@ -12,6 +12,7 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feed.Place;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -229,8 +230,8 @@ class UserControllerTest extends AbstractContainerBaseTest {
         UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
-        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), 2);
+        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", Place.of("place", "0", "0"), LocalDateTime.of(2022, 3, 2, 0, 0), 1);
+        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", Place.of("place", "0", "0"), LocalDateTime.of(2022, 3, 2, 0, 0), 2);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
 
         CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, "content1");
@@ -282,10 +283,10 @@ class UserControllerTest extends AbstractContainerBaseTest {
         UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place1", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
-        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place2", LocalDateTime.of(2022, 3, 2, 0, 0), 2);
-        RecordEntity recordEntity3 = createRecord(feedEntity, "record3", "place3", LocalDateTime.of(2022, 3, 2, 0, 0), 3);
-        RecordEntity recordEntity4 = createRecord(feedEntity, "record4", "place4", LocalDateTime.of(2022, 3, 2, 0, 0), 4);
+        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", Place.of("place", "0", "0"), LocalDateTime.of(2022, 3, 2, 0, 0), 1);
+        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", Place.of("place", "0", "0"), LocalDateTime.of(2022, 3, 2, 0, 0), 2);
+        RecordEntity recordEntity3 = createRecord(feedEntity, "record3", Place.of("place", "0", "0"), LocalDateTime.of(2022, 3, 2, 0, 0), 3);
+        RecordEntity recordEntity4 = createRecord(feedEntity, "record4", Place.of("place", "0", "0"), LocalDateTime.of(2022, 3, 2, 0, 0), 4);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
 
         UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(userEntity, recordEntity1);
@@ -527,7 +528,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 .build();
     }
 
-    private RecordEntity createRecord(FeedEntity feedEntity, String title, String place, LocalDateTime date, int sequence) {
+    private RecordEntity createRecord(FeedEntity feedEntity, String title, Place place, LocalDateTime date, int sequence) {
         return RecordEntity.builder()
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)

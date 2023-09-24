@@ -397,7 +397,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
                 .title("title")
-                .place("place")
+                .place(Place.of("place", "0", "0"))
                 .date(LocalDateTime.now())
                 .content("content")
                 .weather("weather")

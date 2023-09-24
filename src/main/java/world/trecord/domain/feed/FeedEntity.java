@@ -89,7 +89,11 @@ public class FeedEntity extends BaseEntity {
         this.startAt = updateEntity.getStartAt();
         this.endAt = updateEntity.getEndAt();
         this.companion = updateEntity.getCompanion();
-        this.place = updateEntity.getPlace();
+        if (Objects.nonNull(updateEntity.getPlace())) {
+            this.place.setPlace(updateEntity.getPlace().getPlace());
+            this.place.setLatitude(updateEntity.getPlace().getLatitude());
+            this.place.setLongitude(updateEntity.getPlace().getLongitude());
+        }
         this.satisfaction = updateEntity.getSatisfaction();
     }
 
