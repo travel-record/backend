@@ -14,6 +14,12 @@ public class FeedCreateResponse {
     private Long writerId;
     private Long feedId;
 
+    public static FeedCreateResponse of(FeedEntity feedEntity) {
+        return FeedCreateResponse.builder()
+                .feedEntity(feedEntity)
+                .build();
+    }
+
     @Builder
     private FeedCreateResponse(FeedEntity feedEntity) {
         this.writerId = feedEntity.getUserEntity().getId();

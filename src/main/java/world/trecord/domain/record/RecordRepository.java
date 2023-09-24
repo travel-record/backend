@@ -38,7 +38,7 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "ORDER BY re.date ASC, re.sequence ASC ,re.createdDateTime ASC")
     List<RecordWithFeedProjection> findRecordsByFeedEntityId(@Param("feedId") Long feedId);
 
-    @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
+    @Query("SELECT re.id as id, re.title as title, re.place as place, re.latitude as latitude, re.longitude as longitude, re.imageUrl as imageUrl , re.date as date " +
             "FROM RecordEntity re " +
             "WHERE re.feedEntity.id = :feedId")
     Page<RecordWithFeedProjection> findRecordListByFeedEntityId(Long feedId, Pageable pageable);

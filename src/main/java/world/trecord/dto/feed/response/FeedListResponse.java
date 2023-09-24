@@ -16,6 +16,12 @@ public class FeedListResponse {
 
     private List<Feed> feeds;
 
+    public static FeedListResponse of(List<FeedEntity> feedEntities) {
+        return FeedListResponse.builder()
+                .feedEntities(feedEntities)
+                .build();
+    }
+
     @Builder
     private FeedListResponse(List<FeedEntity> feedEntities) {
         this.feeds = feedEntities.stream().map(Feed::new).toList();

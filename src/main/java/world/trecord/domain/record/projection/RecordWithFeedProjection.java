@@ -11,6 +11,10 @@ public interface RecordWithFeedProjection {
 
     String getPlace();
 
+    String getLatitude();
+
+    String getLongitude();
+
     String getImageUrl();
 
     LocalDateTime getDate();

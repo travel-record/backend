@@ -107,7 +107,6 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                 .extracting("writerId", "feedId", "startAt", "endAt")
                 .containsExactly(userEntity.getId(), feedEntity.getId(),
                         feedEntity.convertStartAtToLocalDate(), feedEntity.convertEndAtToLocalDate());
-        Assertions.assertThat(response.getRecords().stream().map(FeedInfoResponse.Record::getTitle)).containsExactly("title", "title", "title");
     }
 
     @Test
@@ -132,32 +131,6 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                 .hasSize(2)
                 .extracting("name")
                 .containsExactly(feedEntity1.getName(), feedEntity2.getName());
-    }
-
-    @Test
-    @DisplayName("사용자가 soft delete한 기록은 반환하지 않는다")
-    void getFeedByWhenRecordSoftDeletedTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 4, 0, 0)));
-
-        RecordEntity recordEntity1 = createRecord(feedEntity);
-        RecordEntity recordEntity2 = createRecord(feedEntity);
-        RecordEntity recordEntity3 = createRecord(feedEntity);
-
-        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
-
-        recordRepository.delete(recordEntity2);
-
-        //when
-        FeedInfoResponse response = feedService.getFeed(Optional.of(userEntity.getId()), feedEntity.getId());
-
-        //then
-        Assertions.assertThat(response.getRecords())
-                .hasSize(2)
-                .extracting("id")
-                .containsExactly(recordEntity1.getId(), recordEntity3.getId());
     }
 
     @Test

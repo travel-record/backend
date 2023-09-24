@@ -11,7 +11,6 @@ import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
-import world.trecord.domain.record.projection.RecordWithFeedProjection;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.feed.request.FeedCreateRequest;
@@ -22,7 +21,6 @@ import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.exception.CustomException;
 
-import java.util.List;
 import java.util.Optional;
 
 import static world.trecord.exception.CustomExceptionError.*;
@@ -39,53 +37,34 @@ public class FeedService {
     private final NotificationRepository notificationRepository;
     private final RecordSequenceRepository recordSequenceRepository;
 
+    // TODO pagination
     public FeedListResponse getFeedList(Long userId) {
-        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userId);
-
-        return FeedListResponse.builder()
-                .feedEntities(feedEntities)
-                .build();
+        return FeedListResponse.of(feedRepository.findByUserEntityIdOrderByStartAtDesc(userId));
     }
 
-    // TODO
-    // records와 분리
-    // feed contributors 같이 추가
+    // TODO feed contributors 같이 추가
     public FeedInfoResponse getFeed(Optional<Long> viewerId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedId);
-
-        return FeedInfoResponse.builder()
-                .feedEntity(feedEntity)
-                .viewerId(viewerId.orElse(null))
-                .projectionList(projectionList)
-                .build();
+        return FeedInfoResponse.of(feedEntity, viewerId.orElse(null));
     }
 
     public Page<FeedRecordsResponse> getFeedRecords(Long feedId, Pageable pageable) {
         FeedEntity feedEntity = findFeedOrException(feedId);
         return recordRepository.findRecordListByFeedEntityId(feedId, pageable)
-                .map(it -> FeedRecordsResponse.builder()
-                        .projection(it)
-                        .feedStartAt(feedEntity.getStartAt())
-                        .build());
+                .map(it -> FeedRecordsResponse.of(it, feedEntity.getStartAt()));
     }
 
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
         UserEntity userEntity = findUserOrException(userId);
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
-
-        return FeedCreateResponse.builder()
-                .feedEntity(feedEntity)
-                .build();
+        return FeedCreateResponse.of(feedEntity);
     }
 
     @Transactional
     public void updateFeed(Long userId, Long feedId, FeedUpdateRequest request) {
         FeedEntity feedEntity = findFeedOrException(feedId);
-
         ensureUserIsFeedOwner(feedEntity, userId);
-
         feedEntity.update(request.toUpdateEntity());
         feedRepository.saveAndFlush(feedEntity);
     }
@@ -93,7 +72,6 @@ public class FeedService {
     @Transactional
     public void deleteFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
-
         ensureUserIsFeedOwner(feedEntity, userId);
 
         notificationRepository.deleteAllByFeedEntityId(feedId);
