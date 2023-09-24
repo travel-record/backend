@@ -13,11 +13,8 @@ import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.notification.response.CheckNewNotificationResponse;
-import world.trecord.dto.notification.response.NotificationListResponse;
 import world.trecord.dto.notification.response.NotificationResponse;
 import world.trecord.exception.CustomException;
-
-import java.util.List;
 
 import static world.trecord.domain.notification.enumeration.NotificationStatus.READ;
 import static world.trecord.domain.notification.enumeration.NotificationStatus.UNREAD;
@@ -40,23 +37,16 @@ public class NotificationService {
 
     @Transactional
     public Page<NotificationResponse> getNotifications(Long userId, Pageable pageable) {
-        Page<NotificationResponse> response = notificationRepository.findByUsersToEntityId(userId, pageable)
-                .map(NotificationResponse::of);
+        Page<NotificationEntity> notifications = notificationRepository.findByUsersToEntityId(userId, pageable);
         markNotificationsAsRead(userId);
-        return response;
+        return notifications.map(NotificationResponse::of);
     }
 
     @Transactional
-    public NotificationListResponse getNotificationsByType(Long userId, NotificationType type) {
-        List<NotificationEntity> notificationList = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userId, type);
-
-        NotificationListResponse response = NotificationListResponse.builder()
-                .notificationEntities(notificationList)
-                .build();
-
+    public Page<NotificationResponse> getNotificationsByType(Long userId, NotificationType type, Pageable pageable) {
+        Page<NotificationEntity> notifications = notificationRepository.findByUsersToEntityIdAndType(userId, type, pageable);
         markNotificationsAsRead(userId);
-
-        return response;
+        return notifications.map(NotificationResponse::of);
     }
 
     @Transactional

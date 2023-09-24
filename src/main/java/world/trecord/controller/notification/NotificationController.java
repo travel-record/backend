@@ -12,7 +12,6 @@ import world.trecord.config.security.CurrentUser;
 import world.trecord.controller.ApiResponse;
 import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.dto.notification.response.CheckNewNotificationResponse;
-import world.trecord.dto.notification.response.NotificationListResponse;
 import world.trecord.dto.notification.response.NotificationResponse;
 import world.trecord.dto.users.UserContext;
 import world.trecord.event.sse.SseEmitterService;
@@ -31,7 +30,7 @@ public class NotificationController {
     private final SseEmitterService sseEmitterService;
 
     @GetMapping
-    public ApiResponse<Page<NotificationResponse>> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
+    public ApiResponse<Page<NotificationResponse>> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
                                                                     @CurrentUser UserContext userContext) {
         return ApiResponse.ok(notificationService.getNotifications(userContext.getId(), pageable));
     }
@@ -47,10 +46,10 @@ public class NotificationController {
     }
 
     @GetMapping("/type/{type}")
-    public ApiResponse<NotificationListResponse> getNotificationsByType(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                                        @PathVariable NotificationType type,
-                                                                        @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(notificationService.getNotificationsByType(userContext.getId(), type));
+    public ApiResponse<Page<NotificationResponse>> getNotificationsByType(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                          @PathVariable NotificationType type,
+                                                                          @CurrentUser UserContext userContext) {
+        return ApiResponse.ok(notificationService.getNotificationsByType(userContext.getId(), type, pageable));
     }
 
     @DeleteMapping("/{notificationId}")

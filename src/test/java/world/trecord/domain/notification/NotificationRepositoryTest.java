@@ -20,7 +20,6 @@ import world.trecord.infra.test.AbstractIntegrationTest;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.domain.notification.enumeration.NotificationStatus.READ;
 import static world.trecord.domain.notification.enumeration.NotificationStatus.UNREAD;
 import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
@@ -124,7 +123,7 @@ class NotificationRepositoryTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("알림 타입별로 알림 등록 시간 내림차순으로 조회하여 알림 리스트로 반환한다")
+    @DisplayName("알림 타입별로 알림 리스트를 조회하여 반환한다")
     void findByUsersToEntityAndTypeOrderByCreatedDateTimeDescTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
@@ -135,17 +134,18 @@ class NotificationRepositoryTest extends AbstractIntegrationTest {
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
+        final int pageNumber = 0;
+        final int pageSize = 2;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        List<NotificationEntity> notificationEntities = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userEntity.getId(), RECORD_LIKE);
+        Page<NotificationEntity> page = notificationRepository.findByUsersToEntityIdAndType(userEntity.getId(), RECORD_LIKE, pageRequest);
 
         //then
-        Assertions.assertThat(notificationEntities)
+        Assertions.assertThat(page.getContent())
                 .hasSize(2)
-                .extracting("id", "type")
-                .containsExactly(
-                        tuple(notificationEntity3.getId(), RECORD_LIKE),
-                        tuple(notificationEntity2.getId(), RECORD_LIKE)
-                );
+                .extracting("type")
+                .containsOnly(RECORD_LIKE);
     }
 
     @Test
@@ -159,11 +159,15 @@ class NotificationRepositoryTest extends AbstractIntegrationTest {
         NotificationEntity notificationEntity3 = createNotification(userEntity, null, null, RECORD_LIKE, UNREAD);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3));
 
+        final int pageNumber = 0;
+        final int pageSize = 2;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        List<NotificationEntity> notificationEntities = notificationRepository.findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(userEntity.getId(), COMMENT);
+        Page<NotificationEntity> page = notificationRepository.findByUsersToEntityIdAndType(userEntity.getId(), COMMENT, pageRequest);
 
         //then
-        Assertions.assertThat(notificationEntities).isEmpty();
+        Assertions.assertThat(page.getContent()).isEmpty();
     }
 
     @Test

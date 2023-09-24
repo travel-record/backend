@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.enumeration.NotificationStatus;
 import world.trecord.domain.notification.enumeration.NotificationType;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,7 +21,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
 
     Page<NotificationEntity> findByUsersToEntityId(Long userToEntityId, Pageable pageable);
 
-    List<NotificationEntity> findByUsersToEntityIdAndTypeOrderByCreatedDateTimeDesc(Long userToEntityId, NotificationType type);
+    Page<NotificationEntity> findByUsersToEntityIdAndType(Long userToEntityId, NotificationType type, Pageable pageable);
 
     @Transactional
     @Modifying(clearAutomatically = true)

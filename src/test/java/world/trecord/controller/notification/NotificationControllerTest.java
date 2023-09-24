@@ -160,7 +160,7 @@ class NotificationControllerTest extends AbstractMockMvcTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.notifications.size()").value(2));
+                .andExpect(jsonPath("$.data.content.size()").value(2));
     }
 
     @Test

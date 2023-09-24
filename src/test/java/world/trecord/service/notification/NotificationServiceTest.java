@@ -9,20 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.notification.NotificationEntity;
-import world.trecord.domain.notification.args.NotificationArgs;
-import world.trecord.domain.notification.enumeration.NotificationStatus;
-import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.notification.response.CheckNewNotificationResponse;
-import world.trecord.dto.notification.response.NotificationListResponse;
 import world.trecord.dto.notification.response.NotificationResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
-import world.trecord.infra.fixture.CommentEntityFixture;
-import world.trecord.infra.fixture.FeedEntityFixture;
-import world.trecord.infra.fixture.RecordEntityFixture;
-import world.trecord.infra.fixture.UserEntityFixture;
+import world.trecord.infra.fixture.*;
 import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.util.List;
@@ -52,10 +45,10 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         CommentEntity commentEntity3 = CommentEntityFixture.of(commenter3, recordEntity, "content3");
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
-        NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity, commentEntity1, READ, COMMENT);
-        NotificationEntity notificationEntity2 = createNotification(author, commenter2, recordEntity, commentEntity2, READ, RECORD_LIKE);
-        NotificationEntity notificationEntity3 = createNotification(author, commenter3, recordEntity, commentEntity3, READ, COMMENT);
-        NotificationEntity notificationEntity4 = createNotification(author, commenter1, recordEntity, commentEntity3, READ, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, commenter1, recordEntity, commentEntity1, READ, COMMENT);
+        NotificationEntity notificationEntity2 = NotificationEntityFixture.of(author, commenter2, recordEntity, commentEntity2, READ, RECORD_LIKE);
+        NotificationEntity notificationEntity3 = NotificationEntityFixture.of(author, commenter3, recordEntity, commentEntity3, READ, COMMENT);
+        NotificationEntity notificationEntity4 = NotificationEntityFixture.of(author, commenter1, recordEntity, commentEntity3, READ, RECORD_LIKE);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
         final int pageNumber = 0;
@@ -87,10 +80,10 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         CommentEntity commentEntity3 = CommentEntityFixture.of(commenter3, recordEntity, "content3");
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3));
 
-        NotificationEntity notificationEntity1 = createNotification(author, commenter1, recordEntity, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotification(author, commenter2, recordEntity, commentEntity2, UNREAD, RECORD_LIKE);
-        NotificationEntity notificationEntity3 = createNotification(author, commenter3, recordEntity, commentEntity3, UNREAD, COMMENT);
-        NotificationEntity notificationEntity4 = createNotification(author, commenter1, recordEntity, commentEntity3, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, commenter1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = NotificationEntityFixture.of(author, commenter2, recordEntity, commentEntity2, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity3 = NotificationEntityFixture.of(author, commenter3, recordEntity, commentEntity3, UNREAD, COMMENT);
+        NotificationEntity notificationEntity4 = NotificationEntityFixture.of(author, commenter1, recordEntity, commentEntity3, UNREAD, RECORD_LIKE);
 
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
@@ -109,15 +102,14 @@ class NotificationServiceTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("알림 엔티티를 저장한 후 반환한다")
-    void createNotificationTest() throws Exception {
+    void createNotification() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
-
-        NotificationArgs args = NotificationArgs.builder()
-                .build();
+        NotificationEntity notificationEntity = NotificationEntityFixture.of(userEntity, UNREAD);
 
         //when
-        notificationService.createNotification(userEntity.getId(), COMMENT, args);
+
+        notificationService.createNotification(userEntity.getId(), notificationEntity.getType(), notificationEntity.getArgs());
 
         //then
         Assertions.assertThat(notificationRepository.findAll()).hasSize(1);
@@ -148,7 +140,7 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
         CommentEntity commentEntity = CommentEntityFixture.of(userEntity, recordEntity, "content1");
 
-        notificationRepository.save(createNotification(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT));
+        notificationRepository.save(NotificationEntityFixture.of(userEntity, null, recordEntity, commentEntity, UNREAD, COMMENT));
 
         //when
         CheckNewNotificationResponse response = notificationService.checkUnreadNotifications(userEntity.getId());
@@ -166,7 +158,7 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
         CommentEntity commentEntity = CommentEntityFixture.of(userEntity, recordEntity, "content1");
 
-        notificationRepository.save(createNotification(userEntity, null, recordEntity, commentEntity, READ, COMMENT));
+        notificationRepository.save(NotificationEntityFixture.of(userEntity, null, recordEntity, commentEntity, READ, COMMENT));
 
         //when
         CheckNewNotificationResponse response = notificationService.checkUnreadNotifications(userEntity.getId());
@@ -180,9 +172,9 @@ class NotificationServiceTest extends AbstractIntegrationTest {
     @DisplayName("알림 타입 별로 알림 리스트를 등록 시간 내림차순으로 조회하여 반환한다")
     void getNotificationsByTypeTest() throws Exception {
         UserEntity author = UserEntityFixture.of("test@email.com");
-        UserEntity viewer1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
-        UserEntity viewer2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
-        UserEntity viewer3 = UserEntity.builder().nickname("nickname3").email("test3@email.com").build();
+        UserEntity viewer1 = UserEntityFixture.of();
+        UserEntity viewer2 = UserEntityFixture.of();
+        UserEntity viewer3 = UserEntityFixture.of();
         userRepository.saveAll(List.of(author, viewer1, viewer2, viewer3));
 
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(author));
@@ -192,26 +184,30 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         CommentEntity commentEntity2 = CommentEntityFixture.of(viewer2, recordEntity, "content2");
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
-        NotificationEntity notificationEntity3 = createNotification(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
-        NotificationEntity notificationEntity4 = createNotification(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = NotificationEntityFixture.of(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity3 = NotificationEntityFixture.of(author, viewer3, recordEntity, null, UNREAD, RECORD_LIKE);
+        NotificationEntity notificationEntity4 = NotificationEntityFixture.of(author, viewer1, recordEntity, null, UNREAD, RECORD_LIKE);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2, notificationEntity3, notificationEntity4));
 
+        final int pageNumber = 0;
+        final int pageSize = 2;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        NotificationListResponse response = notificationService.getNotificationsByType(author.getId(), RECORD_LIKE);
+        Page<NotificationResponse> response = notificationService.getNotificationsByType(author.getId(), RECORD_LIKE, pageRequest);
 
         //then
-        Assertions.assertThat(response.notifications).hasSize(2);
+        Assertions.assertThat(response.getContent()).hasSize(pageSize);
     }
 
     @Test
     @DisplayName("알림 리스트에서 알림 타입에 해당하는 알림이 없을때 Reponse에 빈 배열로 반환한다")
     void getNotificationsByTypeWhenTypeIsEmptyTest() throws Exception {
         //given
-        UserEntity author = UserEntityFixture.of("test@email.com");
-        UserEntity viewer1 = UserEntity.builder().nickname("nickname1").email("test1@email.com").build();
-        UserEntity viewer2 = UserEntity.builder().nickname("nickname2").email("test2@email.com").build();
+        UserEntity author = UserEntityFixture.of();
+        UserEntity viewer1 = UserEntityFixture.of();
+        UserEntity viewer2 = UserEntityFixture.of();
 
         userRepository.saveAll(List.of(author, viewer1, viewer2));
 
@@ -222,23 +218,27 @@ class NotificationServiceTest extends AbstractIntegrationTest {
         CommentEntity commentEntity2 = CommentEntityFixture.of(viewer2, recordEntity, "content2");
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
-        NotificationEntity notificationEntity1 = createNotification(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
-        NotificationEntity notificationEntity2 = createNotification(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
+        NotificationEntity notificationEntity1 = NotificationEntityFixture.of(author, viewer1, recordEntity, commentEntity1, UNREAD, COMMENT);
+        NotificationEntity notificationEntity2 = NotificationEntityFixture.of(author, viewer2, recordEntity, commentEntity2, UNREAD, COMMENT);
         notificationRepository.saveAll(List.of(notificationEntity1, notificationEntity2));
 
+        final int pageNumber = 0;
+        final int pageSize = 2;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        NotificationListResponse response = notificationService.getNotificationsByType(author.getId(), RECORD_LIKE);
+        Page<NotificationResponse> response = notificationService.getNotificationsByType(author.getId(), RECORD_LIKE, pageRequest);
 
         //then
-        Assertions.assertThat(response.getNotifications()).isEmpty();
+        Assertions.assertThat(response.getContent()).isEmpty();
     }
-    
+
     @Test
     @DisplayName("사용자 아이디와 알림 아이디로 알림을 조회한 뒤, 알림을 soft delete 한다")
     void deleteNotificationTest() throws Exception {
         //given
         UserEntity user = userRepository.save(UserEntityFixture.of());
-        NotificationEntity notificationEntity = notificationRepository.save(createNotification(user, null, null, null, UNREAD, COMMENT));
+        NotificationEntity notificationEntity = notificationRepository.save(NotificationEntityFixture.of(user, null, null, null, UNREAD, COMMENT));
 
         //when
         notificationService.deleteNotification(user.getId(), notificationEntity.getId());
@@ -261,19 +261,4 @@ class NotificationServiceTest extends AbstractIntegrationTest {
                 .isEqualTo(CustomExceptionError.NOTIFICATION_NOT_FOUND);
     }
 
-
-    private NotificationEntity createNotification(UserEntity userToEntity, UserEntity userFromEntity, RecordEntity recordEntity, CommentEntity commentEntity, NotificationStatus notificationStatus, NotificationType notificationType) {
-        NotificationArgs args = NotificationArgs.builder()
-                .commentEntity(commentEntity)
-                .recordEntity(recordEntity)
-                .userFromEntity(userFromEntity)
-                .build();
-
-        return NotificationEntity.builder()
-                .usersToEntity(userToEntity)
-                .type(notificationType)
-                .status(notificationStatus)
-                .args(args)
-                .build();
-    }
 }
