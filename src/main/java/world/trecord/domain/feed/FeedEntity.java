@@ -48,8 +48,8 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "companion")
     private String companion;
 
-    @Column(name = "place")
-    private String place;
+    @Embedded
+    private Place place;
 
     @Column(name = "satisfaction")
     private String satisfaction;
@@ -69,7 +69,7 @@ public class FeedEntity extends BaseEntity {
                        LocalDateTime startAt,
                        LocalDateTime endAt,
                        String companion,
-                       String place,
+                       Place place,
                        String satisfaction) {
         this.name = name;
         this.imageUrl = imageUrl;

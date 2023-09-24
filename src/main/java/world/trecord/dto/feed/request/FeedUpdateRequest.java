@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.feed.Place;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +21,7 @@ public class FeedUpdateRequest {
 
     private String satisfaction;
 
-    private String place;
+    private Place place;
 
     @NotNull
     private LocalDateTime startAt;
@@ -35,7 +36,14 @@ public class FeedUpdateRequest {
     private String imageUrl;
 
     @Builder
-    private FeedUpdateRequest(String name, String satisfaction, String place, LocalDateTime startAt, LocalDateTime endAt, String companion, String description, String imageUrl) {
+    private FeedUpdateRequest(String name,
+                              String satisfaction,
+                              Place place,
+                              LocalDateTime startAt,
+                              LocalDateTime endAt,
+                              String companion,
+                              String description,
+                              String imageUrl) {
         this.name = name;
         this.satisfaction = satisfaction;
         this.place = place;

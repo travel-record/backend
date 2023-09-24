@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feed.Place;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
@@ -185,7 +186,8 @@ class FeedServiceTest extends AbstractContainerBaseTest {
         String companion = "companion1 companion2";
         LocalDateTime startAt = LocalDateTime.of(2022, 12, 25, 0, 0);
         LocalDateTime endAt = LocalDateTime.of(2022, 12, 30, 0, 0);
-        String place = "jeju";
+        String placeName = "jeju";
+        Place place = Place.of(placeName, "0", "0");
         String satisfaction = "good";
         String description = "description";
 
