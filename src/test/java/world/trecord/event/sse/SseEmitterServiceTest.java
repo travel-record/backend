@@ -3,21 +3,12 @@ package world.trecord.event.sse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.time.Duration;
 
-@IntegrationTestSupport
-class SseEmitterServiceTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    SseEmitterRepository sseEmitterRepository;
-
-    @Autowired
-    SseEmitterService sseEmitterService;
+class SseEmitterServiceTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("userId로 SseEmitter를 repository에 저장한다")

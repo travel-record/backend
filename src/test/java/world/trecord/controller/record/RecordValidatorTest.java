@@ -3,37 +3,19 @@ package world.trecord.controller.record;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.record.request.RecordCreateRequest;
 import world.trecord.dto.record.request.RecordUpdateRequest;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.time.LocalDateTime;
 
 @Transactional
-@IntegrationTestSupport
-class RecordValidatorTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    RecordValidator recordValidator;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @Autowired
-    RecordRepository recordRepository;
+class RecordValidatorTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("기록을 생성할 때 date가 피드 시작 시간 전이면 BindException 예외가 발생한다")
@@ -44,7 +26,7 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
         LocalDateTime feedStartAt = LocalDateTime.of(2021, 9, 30, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2021, 10, 2, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", feedStartAt, feedEndAt));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt));
 
         LocalDateTime date = feedStartAt.minusDays(1);
 
@@ -67,7 +49,7 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
         LocalDateTime feedStartAt = LocalDateTime.of(2021, 9, 30, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2021, 10, 2, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", feedStartAt, feedEndAt));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt));
 
         LocalDateTime date = feedEndAt.plusDays(1);
 
@@ -90,11 +72,11 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
         LocalDateTime feedStartAt = LocalDateTime.of(2021, 9, 30, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2021, 10, 2, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", feedStartAt, feedEndAt));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt));
 
         LocalDateTime date = feedStartAt.minusDays(1);
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place", date, "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, date));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .date(date)
@@ -114,11 +96,11 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
         LocalDateTime feedStartAt = LocalDateTime.of(2021, 9, 30, 0, 0);
         LocalDateTime feedEndAt = LocalDateTime.of(2021, 10, 2, 0, 0);
 
-        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, "feed name", feedStartAt, feedEndAt));
+        FeedEntity feedEntity = feedRepository.save(createFeedEntity(userEntity, feedStartAt, feedEndAt));
 
         LocalDateTime date = feedEndAt.plusDays(1);
 
-        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, "record1", "place", date, "content1", "weather1", "satisfaction1", "feeling1"));
+        RecordEntity recordEntity = recordRepository.save(createRecordEntity(feedEntity, date));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .date(date)
@@ -129,28 +111,28 @@ class RecordValidatorTest extends AbstractContainerBaseTest {
                 .isInstanceOf(BindException.class);
     }
 
-    private FeedEntity createFeedEntity(UserEntity saveUserEntity, String name, LocalDateTime startAt, LocalDateTime endAt) {
+    private FeedEntity createFeedEntity(UserEntity saveUserEntity, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()
                 .userEntity(saveUserEntity)
-                .name(name)
+                .name("feed name")
                 .startAt(startAt)
                 .endAt(endAt)
                 .build();
     }
 
-    private RecordEntity createRecordEntity(FeedEntity feedEntity, String title, String place, LocalDateTime date, String content, String weather, String satisfaction, String feeling) {
+    private RecordEntity createRecordEntity(FeedEntity feedEntity, LocalDateTime date) {
         return RecordEntity.builder()
                 .userEntity(feedEntity.getUserEntity())
                 .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
+                .title("record1")
+                .place("place")
                 .latitude("latitude")
                 .longitude("longitude")
                 .date(date)
-                .content(content)
-                .weather(weather)
-                .transportation(satisfaction)
-                .feeling(feeling)
+                .content("content1")
+                .weather("weather1")
+                .transportation("satisfaction1")
+                .feeling("feeling1")
                 .build();
     }
 

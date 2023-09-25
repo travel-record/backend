@@ -4,45 +4,19 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
-import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
-import world.trecord.event.notification.NotificationEventListener;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.fixture.FeedEntityFixture;
+import world.trecord.infra.fixture.RecordEntityFixture;
+import world.trecord.infra.fixture.UserEntityFixture;
+import world.trecord.infra.test.AbstractConcurrencyTest;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.*;
 
-@IntegrationTestSupport
-class UserRecordLikeServiceConcurrencyTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    UserRecordLikeService userRecordLikeService;
-
-    @Autowired
-    UserRecordLikeRepository userRecordLikeRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RecordRepository recordRepository;
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @MockBean
-    NotificationEventListener mockEventListener;
+class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
 
     @AfterEach
     void tearDown() {
@@ -56,11 +30,11 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 동일한 기록에 좋아요 요청을 동시에 해도 동시성을 제어한다")
     void toggleLikeConcurrencyTest() throws Exception {
         //given
-        UserEntity owner = createUser();
-        UserEntity other = createUser();
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity other = UserEntityFixture.of();
         userRepository.saveAll(List.of(owner, other));
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
         final int NUMBER_OF_REQUESTS = 11;
         int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -90,37 +64,5 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractContainerBaseTest {
 
         //finally
         executorService.shutdown();
-    }
-
-
-    private UserEntity createUser() {
-        return UserEntity.builder()
-                .email(UUID.randomUUID().toString() + System.currentTimeMillis() + Thread.currentThread().getId())
-                .build();
-    }
-
-    private FeedEntity createFeed(UserEntity userEntity) {
-        return FeedEntity.builder()
-                .userEntity(userEntity)
-                .name("name")
-                .startAt(LocalDateTime.of(2022, 9, 30, 0, 0))
-                .endAt(LocalDateTime.of(2022, 10, 2, 0, 0))
-                .build();
-    }
-
-    private RecordEntity createRecord(FeedEntity feedEntity) {
-        return RecordEntity.builder()
-                .userEntity(feedEntity.getUserEntity())
-                .feedEntity(feedEntity)
-                .title("record")
-                .place("place")
-                .longitude("longitude")
-                .latitude("latitude")
-                .date(LocalDateTime.of(2022, 9, 30, 0, 0))
-                .content("content")
-                .weather("weather")
-                .transportation("satisfaction")
-                .feeling("feeling")
-                .build();
     }
 }

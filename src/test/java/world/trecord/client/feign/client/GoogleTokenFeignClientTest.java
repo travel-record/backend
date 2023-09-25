@@ -5,24 +5,18 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import world.trecord.client.feign.client.request.GoogleTokenRequest;
 import world.trecord.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @AutoConfigureWireMock(port = 8089)
-@IntegrationTestSupport
-class GoogleTokenFeignClientTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    private GoogleTokenFeignClient client;
+class GoogleTokenFeignClientTest extends AbstractIntegrationTest {
 
     @BeforeEach
     public void setup() {
@@ -42,7 +36,7 @@ class GoogleTokenFeignClientTest extends AbstractContainerBaseTest {
         GoogleTokenRequest request = new GoogleTokenRequest();
 
         //when
-        GoogleTokenResponse response = client.requestToken(request);
+        GoogleTokenResponse response = googleTokenFeignClient.requestToken(request);
 
         //then
         Assertions.assertThat(response.getAccessToken()).isEqualTo("sample_token");
@@ -62,7 +56,7 @@ class GoogleTokenFeignClientTest extends AbstractContainerBaseTest {
         GoogleTokenRequest request = new GoogleTokenRequest();
 
         //when //then
-        Assertions.assertThatThrownBy(() -> client.requestToken(request))
+        Assertions.assertThatThrownBy(() -> googleTokenFeignClient.requestToken(request))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);

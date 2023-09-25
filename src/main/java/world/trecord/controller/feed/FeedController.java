@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
+import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
 import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
@@ -40,9 +41,9 @@ public class FeedController {
 
     @GetMapping("/{feedId}")
     public ApiResponse<FeedInfoResponse> getFeed(@PathVariable Long feedId,
-                                                 @CurrentContext UserContext userContext) {
-        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
-        return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
+                                                 @CurrentContext AccountContext accountContext) {
+        Optional<Long> idOpt = Optional.ofNullable(accountContext.getId());
+        return ApiResponse.ok(feedService.getFeed(idOpt, feedId));
     }
 
     @GetMapping("/{feedId}/records")

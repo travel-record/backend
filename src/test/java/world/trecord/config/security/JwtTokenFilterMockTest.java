@@ -5,14 +5,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.context.SecurityContextHolder;
 import world.trecord.config.properties.JwtProperties;
+import world.trecord.infra.test.AbstractMockMvcTest;
 import world.trecord.service.users.UserService;
 
 import java.util.ArrayList;
@@ -22,8 +21,7 @@ import java.util.Map;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mock;
 
-@ExtendWith(MockitoExtension.class)
-class JwtTokenFilterMockTest {
+class JwtTokenFilterMockTest extends AbstractMockMvcTest {
 
     @Mock
     JwtTokenHandler jwtTokenHandler;

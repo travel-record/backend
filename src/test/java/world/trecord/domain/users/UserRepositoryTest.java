@@ -3,20 +3,14 @@ package world.trecord.domain.users;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.util.Optional;
 
 @Transactional
-@IntegrationTestSupport
-class UserRepositoryTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    UserRepository userRepository;
+class UserRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("이메일로 사용자를 조회할 수 있다")

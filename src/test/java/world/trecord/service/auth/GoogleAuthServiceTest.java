@@ -3,10 +3,8 @@ package world.trecord.service.auth;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import world.trecord.client.feign.client.GoogleTokenFeignClient;
 import world.trecord.client.feign.client.GoogleUserInfoFeignClient;
 import world.trecord.client.feign.client.request.GoogleTokenRequest;
@@ -14,13 +12,13 @@ import world.trecord.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.config.properties.GoogleProperties;
 import world.trecord.exception.CustomException;
+import world.trecord.infra.test.AbstractMockMvcTest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
-@ExtendWith(MockitoExtension.class)
-class GoogleAuthServiceTest {
+class GoogleAuthServiceTest extends AbstractMockMvcTest {
 
     @InjectMocks
     GoogleAuthService googleAuthService;

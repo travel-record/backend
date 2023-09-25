@@ -2,6 +2,7 @@ package world.trecord.domain.feedcontributor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,14 +14,10 @@ import java.util.Optional;
 
 @Repository
 public interface FeedContributorRepository extends JpaRepository<FeedContributorEntity, Long> {
-    
-    Optional<FeedContributorEntity> findByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
 
-    @Query("SELECT fce " +
-            "FROM FeedContributorEntity fce " +
-            "JOIN FETCH fce.feedEntity fe " +
-            "JOIN FETCH fe.userEntity ue " +
-            "WHERE fce.userEntity.id = :userId")
+    Optional<FeedContributorEntity> findByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
+    
+    @EntityGraph(attributePaths = {"feedEntity", "userEntity"})
     Page<FeedContributorEntity> findWithFeedEntityByUserEntityId(@Param("userId") Long userId, Pageable pageable);
 
     @Transactional

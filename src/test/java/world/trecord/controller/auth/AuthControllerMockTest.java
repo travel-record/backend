@@ -3,19 +3,17 @@ package world.trecord.controller.auth;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import world.trecord.controller.ApiResponse;
 import world.trecord.controller.auth.request.GoogleLoginRequest;
 import world.trecord.dto.auth.response.LoginResponse;
 import world.trecord.exception.CustomException;
+import world.trecord.infra.test.AbstractMockMvcTest;
 import world.trecord.service.auth.AuthService;
 
-@ExtendWith(MockitoExtension.class)
-class AuthControllerMockTest {
+class AuthControllerMockTest extends AbstractMockMvcTest {
 
     @Mock
     AuthService authService;

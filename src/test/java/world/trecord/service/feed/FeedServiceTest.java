@@ -3,16 +3,12 @@ package world.trecord.service.feed;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.feed.request.FeedCreateRequest;
 import world.trecord.dto.feed.request.FeedUpdateRequest;
 import world.trecord.dto.feed.response.FeedCreateResponse;
@@ -20,8 +16,9 @@ import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.fixture.RecordEntityFixture;
+import world.trecord.infra.fixture.UserEntityFixture;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,26 +30,13 @@ import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
 @Transactional
-@IntegrationTestSupport
-class FeedServiceTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @Autowired
-    FeedService feedService;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RecordRepository recordRepository;
+class FeedServiceTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("사용자가 등록한 여행 시작 시간 내림차순으로 정렬된 피드 리스트를 반환한다")
     void getFeedListByUserId() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
 
         FeedEntity feedEntity1 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity feedEntity2 = createFeed(savedUserEntity, LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
@@ -78,7 +62,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("사용자 등록한 피드가 없다면 빈 배열을 반환한다")
     void getEmptyFeedListByUserId() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
 
         //when
         FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
@@ -91,12 +75,12 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 등록한 특정 피드를 기록과 함께 반환한다")
     void getFeedByFeedIdTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecord(feedEntity);
-        RecordEntity recordEntity2 = createRecord(feedEntity);
-        RecordEntity recordEntity3 = createRecord(feedEntity);
+        RecordEntity recordEntity1 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity2 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity3 = RecordEntityFixture.of(feedEntity);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
@@ -113,7 +97,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("사용자가 soft delete한 피드는 반환하지 않는다")
     void getFeedByFeedIdWhenFeedSoftDeletedTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
 
         FeedEntity feedEntity1 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity feedEntity2 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
@@ -151,7 +135,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("시용자가 피드를 생성하면 FeedCreateResponse을 반환한다")
     void createFeedByExistingUserTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
 
         String feedName = "name";
         String imageUrl = "image";
@@ -210,8 +194,8 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 작성자가 아닌 사용자가 피드를 수정하려고 하면 예외가 발생한다")
     void updateFeedWithNotWriterUserIdTest() throws Exception {
         //given
-        UserEntity author = userRepository.save(createUser("test1@email.com"));
-        UserEntity other = userRepository.save(createUser("test2@email.com"));
+        UserEntity author = userRepository.save(UserEntityFixture.of("test1@email.com"));
+        UserEntity other = userRepository.save(UserEntityFixture.of("test2@email.com"));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(author, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -235,7 +219,7 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 관리자가 피드 수정 요청을 하면 피드를 수정한다")
     void updateFeedTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
         FeedEntity feed = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String updateFeedName = "updated name";
@@ -287,14 +271,14 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 아이디로 기록 리스트를 페이지네이션으로 조회한다")
     void getFeedRecordsTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
         LocalDateTime feedTime = LocalDateTime.of(2021, 9, 30, 0, 0);
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, feedTime, feedTime));
-        RecordEntity recordEntity1 = createRecord(feedEntity);
-        RecordEntity recordEntity2 = createRecord(feedEntity);
-        RecordEntity recordEntity3 = createRecord(feedEntity);
-        RecordEntity recordEntity4 = createRecord(feedEntity);
-        RecordEntity recordEntity5 = createRecord(feedEntity);
+        RecordEntity recordEntity1 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity2 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity3 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity4 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity5 = RecordEntityFixture.of(feedEntity);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4, recordEntity5));
 
         PageRequest page = PageRequest.of(0, 2);
@@ -313,13 +297,13 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드를 soft delete한다")
     void deleteFeedTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(createUser("test@email.com"));
+        UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
 
         FeedEntity savedFeedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = createRecord(savedFeedEntity);
-        RecordEntity recordEntity2 = createRecord(savedFeedEntity);
-        RecordEntity recordEntity3 = createRecord(savedFeedEntity);
+        RecordEntity recordEntity1 = RecordEntityFixture.of(savedFeedEntity);
+        RecordEntity recordEntity2 = RecordEntityFixture.of(savedFeedEntity);
+        RecordEntity recordEntity3 = RecordEntityFixture.of(savedFeedEntity);
 
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
@@ -335,8 +319,8 @@ class FeedServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 삭제 권한이 없으면 예외가 발생한다")
     void deleteFeedWhenPermissionNotExistsTest() throws Exception {
         //given
-        UserEntity owner = createUser("test@email.com");
-        UserEntity other = createUser("test1@email.com");
+        UserEntity owner = UserEntityFixture.of("test@email.com");
+        UserEntity other = UserEntityFixture.of("test1@email.com");
         userRepository.saveAll(List.of(owner, other));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
@@ -348,12 +332,6 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                 .isEqualTo(FORBIDDEN);
     }
 
-    private UserEntity createUser(String email) {
-        return UserEntity.builder()
-                .email(email)
-                .build();
-    }
-
     private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {
         return FeedEntity.builder()
                 .userEntity(userEntity)
@@ -362,21 +340,4 @@ class FeedServiceTest extends AbstractContainerBaseTest {
                 .endAt(endAt)
                 .build();
     }
-
-    private RecordEntity createRecord(FeedEntity feedEntity) {
-        return RecordEntity.builder()
-                .userEntity(feedEntity.getUserEntity())
-                .feedEntity(feedEntity)
-                .title("title")
-                .place("place")
-                .longitude("longitude")
-                .latitude("latitude")
-                .date(LocalDateTime.now())
-                .content("content")
-                .weather("weather")
-                .transportation("satisfaction")
-                .feeling("feeling")
-                .build();
-    }
-
 }
