@@ -95,7 +95,6 @@ public class RecordService {
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedId());
         ensureUserHasPermissionOverRecord(recordEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
