@@ -113,6 +113,14 @@ public class RecordService {
         return commentEntities.map(it -> RecordCommentResponse.of(it, viewerId.orElse(null)));
     }
 
+    public RecordEntity findRecordOrException(Long recordId) {
+        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    }
+
+    public RecordEntity findRecordWithLockOrException(Long recordId) {
+        return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    }
+
     private void ensureUserHasWritePermissionOverRecord(Long userId, FeedEntity feedEntity) {
         if (feedEntity.isOwnedBy(userId)) {
             return;
@@ -147,10 +155,6 @@ public class RecordService {
         if (!feedEntity.isOwnedBy(userId)) {
             throw new CustomException(FORBIDDEN);
         }
-    }
-
-    private RecordEntity findRecordOrException(Long recordId) {
-        return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private void ensureUserHasPermissionOverRecord(FeedEntity feedEntity, RecordEntity recordEntity, Long userId) {

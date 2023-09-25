@@ -8,33 +8,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.dto.userrecordlike.response.UserRecordLikedResponse;
 import world.trecord.event.notification.NotificationEvent;
-import world.trecord.exception.CustomException;
+import world.trecord.service.record.RecordService;
 import world.trecord.service.users.UserService;
 
 import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
-import static world.trecord.exception.CustomExceptionError.RECORD_NOT_FOUND;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class UserRecordLikeService {
 
-    private final UserRecordLikeRepository userRecordLikeRepository;
-    private final RecordRepository recordRepository;
     private final UserService userService;
+    private final RecordService recordService;
+    private final UserRecordLikeRepository userRecordLikeRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UserRecordLikedResponse toggleLike(Long userId, Long recordId) {
         UserEntity userEntity = userService.findUserOrException(userId);
-        RecordEntity recordEntity = findRecordWithLockOrException(recordId);
+        RecordEntity recordEntity = recordService.findRecordWithLockOrException(recordId);
 
         return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
                 .map(this::unlike)
@@ -71,10 +69,6 @@ public class UserRecordLikeService {
         return UserRecordLikedResponse.builder()
                 .liked(liked)
                 .build();
-    }
-
-    private RecordEntity findRecordWithLockOrException(Long recordId) {
-        return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private NotificationArgs buildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {

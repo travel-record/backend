@@ -26,8 +26,8 @@ import static world.trecord.exception.CustomExceptionError.NOTIFICATION_NOT_FOUN
 @Service
 public class NotificationService {
 
-    private final NotificationRepository notificationRepository;
     private final UserService userService;
+    private final NotificationRepository notificationRepository;
 
     public CheckNewNotificationResponse checkUnreadNotifications(Long userId) {
         boolean hasNewNotification = notificationRepository.existsByUsersToEntityIdAndStatus(userId, UNREAD);

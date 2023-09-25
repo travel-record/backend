@@ -10,7 +10,6 @@ import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.comment.request.CommentCreateRequest;
 import world.trecord.dto.comment.request.CommentUpdateRequest;
@@ -18,12 +17,14 @@ import world.trecord.dto.comment.response.CommentResponse;
 import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
+import world.trecord.service.record.RecordService;
 import world.trecord.service.users.UserService;
 
 import java.util.Optional;
 
 import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
-import static world.trecord.exception.CustomExceptionError.*;
+import static world.trecord.exception.CustomExceptionError.COMMENT_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -31,14 +32,14 @@ import static world.trecord.exception.CustomExceptionError.*;
 public class CommentService {
 
     private final UserService userService;
-    private final RecordRepository recordRepository;
+    private final RecordService recordService;
     private final CommentRepository commentRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createComment(Long userFromId, CommentCreateRequest request) {
         UserEntity userEntity = userService.findUserOrException(userFromId);
-        RecordEntity recordEntity = findRecordOrException(request.getRecordId());
+        RecordEntity recordEntity = recordService.findRecordOrException(request.getRecordId());
         Optional<CommentEntity> parentOptional = findCommentOrOptional(request.getParentId());
 
         if (request.getParentId() != null && parentOptional.isEmpty()) {
@@ -85,11 +86,6 @@ public class CommentService {
 
     public Page<UserCommentResponse> getUserComments(Long userId, Pageable pageable) {
         return commentRepository.findByUserId(userId, pageable).map(UserCommentResponse::of);
-    }
-
-    private RecordEntity findRecordOrException(Long recordId) {
-        return recordRepository.findById(recordId)
-                .orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private CommentEntity findCommentOrException(Long commentId) {
