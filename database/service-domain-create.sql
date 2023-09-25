@@ -73,7 +73,6 @@ create table record
     title              varchar(255)  not null comment '제목',
     weather            varchar(255)  not null comment '날씨',
     id_feed            int           not null comment '피드 FK',
-    companion          varchar(255)  null comment '동행자',
     image_url          text          null comment '썸네일 이미지 URL',
     sequence           int default 0 not null comment '순서',
     created_date_time  datetime      null comment '기록 생성 시간',
