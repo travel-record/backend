@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.config.security.UserContext;
+import world.trecord.config.security.account.UserContext;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.users.request.UserUpdateRequest;
 import world.trecord.dto.users.response.UserResponse;

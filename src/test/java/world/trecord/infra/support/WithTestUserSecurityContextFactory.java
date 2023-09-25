@@ -6,7 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
-import world.trecord.config.security.UserContext;
+import world.trecord.config.security.account.UserContext;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.service.users.UserService;
 

@@ -15,6 +15,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.config.properties.JwtProperties;
+import world.trecord.config.security.account.AnonymousContext;
+import world.trecord.config.security.account.UserContext;
 import world.trecord.infra.test.AbstractMockMvcTest;
 import world.trecord.service.users.UserService;
 

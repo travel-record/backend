@@ -16,6 +16,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import world.trecord.config.security.account.AnonymousContext;
+import world.trecord.config.security.account.UserContext;
 import world.trecord.service.users.UserService;
 
 import java.io.IOException;

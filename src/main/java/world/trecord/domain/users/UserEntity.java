@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import world.trecord.config.security.account.AccountRole;
 import world.trecord.domain.BaseEntity;
 
 import java.util.Objects;
@@ -55,6 +56,6 @@ public class UserEntity extends BaseEntity {
     }
 
     public String getRole() {
-        return Role.ROLE_USER.name();
+        return AccountRole.ROLE_USER.name();
     }
 }

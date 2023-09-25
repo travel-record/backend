@@ -1,4 +1,4 @@
-package world.trecord.config.security;
+package world.trecord.config.security.account;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
