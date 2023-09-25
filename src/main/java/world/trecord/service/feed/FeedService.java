@@ -21,8 +21,6 @@ import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.service.users.UserService;
 
-import java.util.Optional;
-
 import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
@@ -43,9 +41,9 @@ public class FeedService {
     }
 
     // TODO feed contributors 같이 추가
-    public FeedInfoResponse getFeed(Optional<Long> viewerId, Long feedId) {
+    public FeedInfoResponse getFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedOrException(feedId);
-        return FeedInfoResponse.of(feedEntity, viewerId.orElse(null));
+        return FeedInfoResponse.of(feedEntity, userId);
     }
 
     public Page<FeedRecordsResponse> getFeedRecords(Long feedId, Pageable pageable) {

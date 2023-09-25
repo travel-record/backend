@@ -22,7 +22,6 @@ import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
@@ -83,7 +82,7 @@ class FeedServiceTest extends AbstractIntegrationTest {
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
 
         //when
-        FeedInfoResponse response = feedService.getFeed(Optional.of(userEntity.getId()), feedEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(userEntity.getId(), feedEntity.getId());
 
         //then
         Assertions.assertThat(response)
@@ -91,6 +90,8 @@ class FeedServiceTest extends AbstractIntegrationTest {
                 .containsExactly(userEntity.getId(), feedEntity.getId(),
                         feedEntity.convertStartAtToLocalDate(), feedEntity.convertEndAtToLocalDate());
     }
+    
+    // TODO 미인증 사용자가 피드 조회
 
     @Test
     @DisplayName("사용자가 soft delete한 피드는 페이지네이션에서 제외한다")
@@ -123,7 +124,7 @@ class FeedServiceTest extends AbstractIntegrationTest {
         Long notExistingUserId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.getFeed(Optional.of(notExistingUserId), notExistingFeedId))
+        Assertions.assertThatThrownBy(() -> feedService.getFeed(notExistingUserId, notExistingFeedId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(FEED_NOT_FOUND);

@@ -73,9 +73,9 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
                 .hasValue(TOTAL_REQUEST_COUNT);
     }
 
-    @DisplayName("같은 날짜를 가진 기록들의 순서 변경을 동시에 해도 순서가 순서대로 변경된다")
     @CsvSource({"10,1,2", "11,2,1"})
     @ParameterizedTest
+    @DisplayName("같은 날짜를 가진 기록들의 순서 변경을 동시에 해도 순서가 순서대로 변경된다")
     void swapSequenceConcurrencyTest(int totalRequestCount, int expectedFirstRecordSequence, int expectedSecondRecordSequence) throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
