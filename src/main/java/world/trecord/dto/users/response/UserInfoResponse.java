@@ -15,6 +15,12 @@ public class UserInfoResponse {
     private String imageUrl;
     private String introduction;
 
+    public static UserInfoResponse of(UserEntity userEntity) {
+        return UserInfoResponse.builder()
+                .userEntity(userEntity)
+                .build();
+    }
+
     @Builder
     private UserInfoResponse(UserEntity userEntity) {
         this.userId = userEntity.getId();

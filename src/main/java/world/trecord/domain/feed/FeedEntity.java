@@ -136,4 +136,8 @@ public class FeedEntity extends BaseEntity {
     public Long getUserId() {
         return Objects.nonNull(this.userEntity) ? this.userEntity.getId() : null;
     }
+
+    public String getUserNickname() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getNickname() : null;
+    }
 }

@@ -37,10 +37,7 @@ public class UserService {
 
     public UserInfoResponse getUser(Long userId) {
         UserEntity userEntity = findUserOrException(userId);
-
-        return UserInfoResponse.builder()
-                .userEntity(userEntity)
-                .build();
+        return UserInfoResponse.of(userEntity);
     }
 
     @Transactional
@@ -61,9 +58,7 @@ public class UserService {
             throw ex;
         }
 
-        return UserInfoResponse.builder()
-                .userEntity(userEntity)
-                .build();
+        return UserInfoResponse.of(userEntity);
     }
 
     public UserContext getUserContextOrException(Long userId) {
@@ -80,9 +75,7 @@ public class UserService {
     public UserInfoResponse searchUser(Long userId, String keyword) {
         return userRepository.findByKeyword(keyword)
                 .filter(userEntity -> !Objects.equals(userId, userEntity.getId()))
-                .map(userEntity -> UserInfoResponse.builder()
-                        .userEntity(userEntity)
-                        .build())
+                .map(UserInfoResponse::of)
                 .orElse(null);
     }
 
