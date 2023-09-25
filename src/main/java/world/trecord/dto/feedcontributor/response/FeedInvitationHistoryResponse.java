@@ -3,7 +3,7 @@ package world.trecord.dto.feedcontributor.response;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 
 import java.util.List;
 
@@ -11,16 +11,16 @@ import java.util.List;
 @Data
 public class FeedInvitationHistoryResponse {
 
-    private List<UserInfoResponse> content;
+    private List<UserResponse> content;
 
     public static FeedInvitationHistoryResponse of(List<Object[]> objects) {
         return FeedInvitationHistoryResponse.builder()
-                .content(objects.stream().map(UserInfoResponse::of).toList())
+                .content(objects.stream().map(UserResponse::of).toList())
                 .build();
     }
 
     @Builder
-    private FeedInvitationHistoryResponse(List<UserInfoResponse> content) {
+    private FeedInvitationHistoryResponse(List<UserResponse> content) {
         this.content = content;
     }
 }

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 
 import java.time.LocalDate;
 
@@ -30,7 +30,7 @@ public class RecordInfoResponse {
     private String content;
     private String companion;
     private String imageUrl;
-    private UserInfoResponse author;
+    private UserResponse author;
 
     public static RecordInfoResponse of(RecordEntity recordEntity, Long viewerId, Boolean liked) {
         return RecordInfoResponse.builder()
@@ -58,6 +58,6 @@ public class RecordInfoResponse {
         this.content = recordEntity.getContent();
         this.companion = recordEntity.getCompanion();
         this.imageUrl = recordEntity.getImageUrl();
-        this.author = UserInfoResponse.of(recordEntity.getUserEntity());
+        this.author = UserResponse.of(recordEntity.getUserEntity());
     }
 }

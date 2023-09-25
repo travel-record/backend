@@ -10,7 +10,7 @@ import world.trecord.config.security.UserContext;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.users.request.UserUpdateRequest;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 import world.trecord.exception.CustomException;
 
 import java.util.Objects;
@@ -35,13 +35,13 @@ public class UserService {
                 .build());
     }
 
-    public UserInfoResponse getUser(Long userId) {
+    public UserResponse getUser(Long userId) {
         UserEntity userEntity = findUserOrException(userId);
-        return UserInfoResponse.of(userEntity);
+        return UserResponse.of(userEntity);
     }
 
     @Transactional
-    public UserInfoResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
+    public UserResponse updateUser(Long userId, UserUpdateRequest updateRequest) {
         UserEntity userEntity = findUserOrException(userId);
 
         if (isNicknameUpdated(userEntity.getNickname(), updateRequest.getNickname()) && isNicknameAlreadyInUse(updateRequest.getNickname())) {
@@ -58,7 +58,7 @@ public class UserService {
             throw ex;
         }
 
-        return UserInfoResponse.of(userEntity);
+        return UserResponse.of(userEntity);
     }
 
     public UserContext getUserContextOrException(Long userId) {
@@ -72,10 +72,10 @@ public class UserService {
                         }));
     }
 
-    public UserInfoResponse searchUser(Long userId, String keyword) {
+    public UserResponse searchUser(Long userId, String keyword) {
         return userRepository.findByKeyword(keyword)
                 .filter(userEntity -> !Objects.equals(userId, userEntity.getId()))
-                .map(UserInfoResponse::of)
+                .map(UserResponse::of)
                 .orElse(null);
     }
 

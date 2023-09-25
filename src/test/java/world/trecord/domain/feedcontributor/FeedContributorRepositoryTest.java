@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 import world.trecord.infra.fixture.FeedContributorFixture;
 import world.trecord.infra.fixture.FeedEntityFixture;
 import world.trecord.infra.fixture.UserEntityFixture;
@@ -221,8 +221,8 @@ class FeedContributorRepositoryTest extends AbstractIntegrationTest {
         List<Object[]> objects = feedContributorRepository.findRecentMaxThreeContributorsByUserId(owner.getId());
 
         //then
-        List<UserInfoResponse> responses = objects.stream()
-                .map(UserInfoResponse::of)
+        List<UserResponse> responses = objects.stream()
+                .map(UserResponse::of)
                 .toList();
 
         Assertions.assertThat(responses)

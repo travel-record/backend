@@ -14,7 +14,7 @@ import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.dto.users.request.UserUpdateRequest;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 import world.trecord.service.comment.CommentService;
 import world.trecord.service.feedcontributor.FeedContributorService;
 import world.trecord.service.userrecordlike.UserRecordLikeService;
@@ -31,24 +31,24 @@ public class UserController {
     private final FeedContributorService feedContributorService;
 
     @GetMapping
-    public ApiResponse<UserInfoResponse> getUser(@CurrentContext AccountContext accountContext) {
+    public ApiResponse<UserResponse> getUser(@CurrentContext AccountContext accountContext) {
         return ApiResponse.ok(userService.getUser(accountContext.getId()));
     }
 
     @PostMapping
-    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest request,
-                                                    @CurrentContext AccountContext accountContext) {
+    public ApiResponse<UserResponse> updateUser(@RequestBody @Valid UserUpdateRequest request,
+                                                @CurrentContext AccountContext accountContext) {
         return ApiResponse.ok(userService.updateUser(accountContext.getId(), request));
     }
 
     @GetMapping("/{userId}")
-    public ApiResponse<UserInfoResponse> getUserByUserId(@PathVariable Long userId) {
+    public ApiResponse<UserResponse> getUserByUserId(@PathVariable Long userId) {
         return ApiResponse.ok(userService.getUser(userId));
     }
 
     @GetMapping("/search")
-    public ApiResponse<UserInfoResponse> searchUser(@RequestParam(name = "q") String keyword,
-                                                    @CurrentContext AccountContext accountContext) {
+    public ApiResponse<UserResponse> searchUser(@RequestParam(name = "q") String keyword,
+                                                @CurrentContext AccountContext accountContext) {
         return ApiResponse.ok(userService.searchUser(accountContext.getId(), keyword));
     }
 

@@ -20,7 +20,7 @@ import world.trecord.dto.feed.response.FeedCreateResponse;
 import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.service.users.UserService;
 
@@ -50,7 +50,7 @@ public class FeedService {
     public FeedInfoResponse getFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedWithOwnerAndContributors(feedId);
         ensureUserHasNotExpelledRecently(userId, feedEntity.getId());
-        List<UserInfoResponse> contributors = findFeedContributors(feedEntity);
+        List<UserResponse> contributors = findFeedContributors(feedEntity);
         return FeedInfoResponse.of(feedEntity, contributors, userId);
     }
 
@@ -101,12 +101,12 @@ public class FeedService {
                 });
     }
 
-    private List<UserInfoResponse> findFeedContributors(FeedEntity feedEntity) {
-        List<UserInfoResponse> contributors = new ArrayList<>();
-        contributors.add(UserInfoResponse.of(feedEntity.getUserEntity()));
+    private List<UserResponse> findFeedContributors(FeedEntity feedEntity) {
+        List<UserResponse> contributors = new ArrayList<>();
+        contributors.add(UserResponse.of(feedEntity.getUserEntity()));
         feedEntity.getContributors().stream()
                 .map(FeedContributorEntity::getUserEntity)
-                .forEach(it -> contributors.add(UserInfoResponse.of(it)));
+                .forEach(it -> contributors.add(UserResponse.of(it)));
         return contributors;
     }
 
