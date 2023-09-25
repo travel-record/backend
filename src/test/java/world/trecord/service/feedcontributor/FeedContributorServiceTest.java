@@ -359,7 +359,7 @@ class FeedContributorServiceTest extends AbstractIntegrationTest {
         userRepository.saveAll(List.of(owner, invitedUser));
 
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
-        FeedContributorEntity feedContributor = feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
+        feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
 
         recordRepository.save(RecordEntityFixture.of(invitedUser, feedEntity, 1));
 

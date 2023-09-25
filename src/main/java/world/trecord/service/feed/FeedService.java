@@ -49,7 +49,7 @@ public class FeedService {
 
     public FeedInfoResponse getFeed(Long userId, Long feedId) {
         FeedEntity feedEntity = findFeedWithOwnerAndContributors(feedId);
-        ensureUserHasNotLeavedOrExpelledRecently(userId, feedEntity.getId());
+        ensureUserHasNotExpelledRecently(userId, feedEntity.getId());
         List<UserInfoResponse> contributors = findFeedContributors(feedEntity);
         return FeedInfoResponse.of(feedEntity, contributors, userId);
     }
@@ -91,11 +91,11 @@ public class FeedService {
         return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
-    private void ensureUserHasNotLeavedOrExpelledRecently(Long userId, Long feedId) {
+    private void ensureUserHasNotExpelledRecently(Long userId, Long feedId) {
         Optional<Long> userIdOpt = Optional.ofNullable(userId);
         userIdOpt.flatMap(id -> feedContributorRepository.findTopByUserIdAndFeedIdOrderByModifiedAtDesc(id, feedId))
                 .ifPresent(it -> {
-                    if (it.getStatus() != FeedContributorStatus.PARTICIPATING) {
+                    if (it.getStatus() == FeedContributorStatus.EXPELLED) {
                         throw new CustomException(FORBIDDEN);
                     }
                 });
