@@ -2,19 +2,17 @@ package world.trecord.event.sse;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import world.trecord.infra.test.AbstractMockTest;
 import world.trecord.service.notification.NotificationService;
 
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class SseEmitterServiceMockTest {
+class SseEmitterServiceMockTest extends AbstractMockTest {
 
     @Mock
     SseEmitterRepository sseEmitterRepository;

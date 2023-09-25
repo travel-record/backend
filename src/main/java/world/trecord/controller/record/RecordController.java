@@ -1,12 +1,12 @@
 package world.trecord.controller.record;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
@@ -48,20 +48,20 @@ public class RecordController {
     }
 
     @PostMapping
-    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Validated RecordCreateRequest request, @CurrentContext UserContext userContext) throws BindException {
+    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Valid RecordCreateRequest request, @CurrentContext UserContext userContext) throws BindException {
         recordValidator.verify(request);
         return ApiResponse.ok(recordService.createRecord(userContext.getId(), request));
     }
 
     @PostMapping("/sequence/swap")
-    public ApiResponse<Void> swapRecordSequence(@RequestBody @Validated RecordSequenceSwapRequest request, @CurrentContext UserContext userContext) {
+    public ApiResponse<Void> swapRecordSequence(@RequestBody @Valid RecordSequenceSwapRequest request, @CurrentContext UserContext userContext) {
         recordService.swapRecordSequence(userContext.getId(), request);
         return ApiResponse.ok();
     }
 
     @PutMapping("/{recordId}")
     public ApiResponse<Void> updateRecord(@PathVariable Long recordId,
-                                          @RequestBody @Validated RecordUpdateRequest request,
+                                          @RequestBody @Valid RecordUpdateRequest request,
                                           @CurrentContext UserContext userContext) throws BindException {
         recordValidator.verify(recordId, request);
         recordService.updateRecord(userContext.getId(), recordId, request);

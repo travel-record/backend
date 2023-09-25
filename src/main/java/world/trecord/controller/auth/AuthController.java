@@ -1,7 +1,7 @@
 package world.trecord.controller.auth;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,12 +21,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/google-login")
-    public ApiResponse<LoginResponse> googleLogin(@RequestBody @Validated GoogleLoginRequest request) {
+    public ApiResponse<LoginResponse> googleLogin(@RequestBody @Valid GoogleLoginRequest request) {
         return ApiResponse.ok(authService.googleLogin(request.getAuthorizationCode(), request.getRedirectionUri()));
     }
 
     @PostMapping("/token")
-    public ApiResponse<RefreshResponse> refreshToken(@RequestBody @Validated RefreshTokenRequest request) {
+    public ApiResponse<RefreshResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
         return ApiResponse.ok(authService.reissueToken(request.getRefreshToken()));
     }
 }

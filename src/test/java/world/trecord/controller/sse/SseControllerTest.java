@@ -3,7 +3,7 @@ package world.trecord.controller.sse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class SseControllerTest {
+class SseControllerTest {
 
     @Test
     @DisplayName("댓글을 작성하면 SSE 이벤트를 송신한다")

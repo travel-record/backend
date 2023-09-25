@@ -18,7 +18,7 @@ import world.trecord.dto.auth.response.LoginResponse;
 import world.trecord.dto.auth.response.RefreshResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
-import world.trecord.infra.test.AbstractMockMvcTest;
+import world.trecord.infra.test.AbstractMockTest;
 import world.trecord.service.users.UserService;
 
 import java.util.Optional;
@@ -28,7 +28,7 @@ import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-class AuthServiceTest extends AbstractMockMvcTest {
+class AuthServiceTest extends AbstractMockTest {
 
     @Mock
     GoogleAuthService googleAuthService;

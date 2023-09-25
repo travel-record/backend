@@ -12,13 +12,13 @@ import world.trecord.client.feign.client.response.GoogleTokenResponse;
 import world.trecord.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.config.properties.GoogleProperties;
 import world.trecord.exception.CustomException;
-import world.trecord.infra.test.AbstractMockMvcTest;
+import world.trecord.infra.test.AbstractMockTest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
-class GoogleAuthServiceTest extends AbstractMockMvcTest {
+class GoogleAuthServiceTest extends AbstractMockTest {
 
     @InjectMocks
     GoogleAuthService googleAuthService;
@@ -31,7 +31,6 @@ class GoogleAuthServiceTest extends AbstractMockMvcTest {
 
     @Mock
     GoogleProperties googleProperties;
-
 
     @Test
     @DisplayName("올바른 인가 코드와 리디렉션 URI로 구글 서버로 요청하여 사용자의 정보를 얻어와서 반환한다")

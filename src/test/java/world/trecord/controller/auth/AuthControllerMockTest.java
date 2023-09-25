@@ -10,10 +10,10 @@ import world.trecord.controller.ApiResponse;
 import world.trecord.controller.auth.request.GoogleLoginRequest;
 import world.trecord.dto.auth.response.LoginResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.infra.test.AbstractMockMvcTest;
+import world.trecord.infra.test.AbstractMockTest;
 import world.trecord.service.auth.AuthService;
 
-class AuthControllerMockTest extends AbstractMockMvcTest {
+class AuthControllerMockTest extends AbstractMockTest {
 
     @Mock
     AuthService authService;
