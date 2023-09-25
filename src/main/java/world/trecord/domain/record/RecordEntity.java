@@ -17,7 +17,14 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "record")
+@Table(name = "record",
+        indexes = {
+                @Index(name = "idx_record_feed", columnList = "id_feed"),
+                @Index(name = "idx_record_user", columnList = "id_author"),
+                @Index(name = "idx_record_feed_date", columnList = "id_feed, date"),
+                @Index(name = "idx_record_feed_user", columnList = "id_feed, id_author")
+        }
+)
 @SQLDelete(sql = "UPDATE record SET deleted_date_time = NOW() WHERE id_record = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity

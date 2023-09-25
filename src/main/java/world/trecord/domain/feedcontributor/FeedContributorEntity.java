@@ -18,8 +18,7 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(
-        name = "feed_contributor",
+@Table(name = "feed_contributor",
         indexes = @Index(name = "idx_contributor_users_feed", columnList = "id_users, id_feed")
 )
 @SQLDelete(sql = "UPDATE feed_contributor SET deleted_date_time = NOW() WHERE id_contributor = ?")

@@ -19,7 +19,13 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "notification")
+@Table(name = "notification",
+        indexes = {
+                @Index(name = "idx_notification_users", columnList = "id_users_to"),
+                @Index(name = "idx_notification_status", columnList = "status"),
+                @Index(name = "idx_notification_users_type", columnList = "id_users_to, type")
+        }
+)
 @SQLDelete(sql = "UPDATE notification SET deleted_date_time = NOW() WHERE id_notification = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity

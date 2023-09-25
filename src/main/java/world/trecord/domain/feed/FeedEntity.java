@@ -20,7 +20,11 @@ import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "feed")
+@Table(name = "feed",
+        indexes = {
+                @Index(name = "idx_feed_users", columnList = "id_owner")
+        }
+)
 @SQLDelete(sql = "UPDATE feed SET deleted_date_time = NOW() WHERE id_feed = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity
