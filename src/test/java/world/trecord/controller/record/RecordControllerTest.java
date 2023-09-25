@@ -75,8 +75,67 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .andExpect(jsonPath("$.data.author.userId").value(contributor.getId()));
     }
 
-    // TODO 피드 컨트리뷰터는 자신이 작성한 기록을 수정할 수 있다
-    // TODO 피드 컨트리뷰터는 자신이 작성한 기록을 삭제할 수 있다
+    @Test
+    @DisplayName("PUT /api/v1/records/{recordId} - 성공(피드 컨트리뷰터는 자신이 작성한 기록을 수정할 수 있다)")
+    @WithTestUser("user@email.com")
+    void updateRecord_byFeedContributor() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(contributor, feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+
+        String changedTitle = "change title";
+        LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
+        String changedPlace = "changed place";
+        String changedLongitude = "changed longitude";
+        String changedLatitude = "changed latitude";
+        String changedContent = "changed content";
+        String changedFeeling = "changed feeling";
+        String changedWeather = "changed weather";
+        String changedCompanion = "changed changedCompanion";
+        String changedTransportation = "changed transportation";
+        String changedImageUrl = "changed image url";
+
+        RecordUpdateRequest request = RecordUpdateRequest.builder()
+                .title(changedTitle)
+                .date(changedDate)
+                .place(changedPlace)
+                .latitude(changedLatitude)
+                .longitude(changedLongitude)
+                .content(changedContent)
+                .feeling(changedFeeling)
+                .weather(changedWeather)
+                .companion(changedCompanion)
+                .transportation(changedTransportation)
+                .imageUrl(changedImageUrl)
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        put("/api/v1/records/{recordId}", recordEntity.getId())
+                                .contentType(APPLICATION_JSON)
+                                .content(body(request))
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/records/{recordId} - 성공(피드 컨트리뷰터는 자신이 작성한 기록을 삭제할 수 있다)")
+    @WithTestUser("user@email.com")
+    void deleteRecord_byFeedContributor() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(contributor, feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/records/{recordId}", recordEntity.getId())
+                )
+                .andExpect(status().isOk());
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
+    }
 
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 성공 (인증되지 않은 사용자)")

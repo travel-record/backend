@@ -68,8 +68,7 @@ public class RecordService {
     @Transactional
     public void updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedEntity().getId());
-        ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
+        ensureUserHasPermissionOverRecord(recordEntity, userId);
         recordEntity.update(request.toUpdateEntity());
         recordRepository.saveAndFlush(recordEntity);
     }
@@ -97,7 +96,7 @@ public class RecordService {
     public void deleteRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedId());
-        ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
+        ensureUserHasPermissionOverRecord(recordEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
         userRecordLikeRepository.deleteAllByRecordEntityId(recordId);
@@ -160,8 +159,8 @@ public class RecordService {
         }
     }
 
-    private void ensureUserHasPermissionOverRecord(FeedEntity feedEntity, RecordEntity recordEntity, Long userId) {
-        if (!feedEntity.isOwnedBy(userId) && !recordEntity.isCreatedBy(userId)) {
+    private void ensureUserHasPermissionOverRecord(RecordEntity recordEntity, Long userId) {
+        if (!recordEntity.isUpdatable(userId)) {
             throw new CustomException(FORBIDDEN);
         }
     }
