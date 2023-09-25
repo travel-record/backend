@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.config.security.UserContext;
+import world.trecord.config.security.account.UserContext;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractIntegrationTest;

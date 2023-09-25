@@ -7,13 +7,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import world.trecord.config.security.account.AccountRole;
 import world.trecord.domain.BaseEntity;
 
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "users")
+@Table(name = "users",
+        indexes = @Index(name = "idx_users_nickname", columnList = "nickname")
+)
 @SQLDelete(sql = "UPDATE users SET deleted_date_time = NOW() WHERE id_users = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity
@@ -55,6 +58,6 @@ public class UserEntity extends BaseEntity {
     }
 
     public String getRole() {
-        return Role.ROLE_USER.name();
+        return AccountRole.ROLE_USER.name();
     }
 }

@@ -46,7 +46,6 @@ class RecordServiceTest extends AbstractIntegrationTest {
                 .weather("weather")
                 .transportation("satisfaction")
                 .content("content")
-                .companion("companion")
                 .build();
 
         //when //then
@@ -79,7 +78,6 @@ class RecordServiceTest extends AbstractIntegrationTest {
                 .weather("weather")
                 .transportation("satisfaction")
                 .content("content")
-                .companion("companion")
                 .build();
 
         //when
@@ -121,7 +119,6 @@ class RecordServiceTest extends AbstractIntegrationTest {
                 .latitude("latitude")
                 .longitude("longitude")
                 .weather(changedWeather)
-                .companion(changedCompanion)
                 .transportation(changedTransportation)
                 .build();
 
@@ -264,7 +261,6 @@ class RecordServiceTest extends AbstractIntegrationTest {
                 .weather(weather)
                 .transportation(satisfaction)
                 .content(content)
-                .companion(companion)
                 .build();
 
         //when
@@ -295,7 +291,6 @@ class RecordServiceTest extends AbstractIntegrationTest {
                 .weather("weather")
                 .transportation("best")
                 .content("content")
-                .companion("companion")
                 .build();
 
         //when
@@ -358,7 +353,6 @@ class RecordServiceTest extends AbstractIntegrationTest {
         String changedContent = "changed content";
         String changedFeeling = "changed feeling";
         String changedWeather = "changed weather";
-        String changedCompanion = "changed changedCompanion";
         String changedTransportation = "changed transportation";
         String longitude = "longitude";
         String latitude = "latitude";
@@ -372,7 +366,6 @@ class RecordServiceTest extends AbstractIntegrationTest {
                 .content(changedContent)
                 .feeling(changedFeeling)
                 .weather(changedWeather)
-                .companion(changedCompanion)
                 .transportation(changedTransportation)
                 .build();
 
@@ -384,8 +377,8 @@ class RecordServiceTest extends AbstractIntegrationTest {
                 .isPresent()
                 .hasValueSatisfying(record -> {
                     Assertions.assertThat(record)
-                            .extracting("title", "date", "place", "content", "feeling", "weather", "companion", "transportation")
-                            .containsExactly(changedTitle, changedDate, changedPlace, changedContent, changedFeeling, changedWeather, changedCompanion, changedTransportation);
+                            .extracting("title", "date", "place", "content", "feeling", "weather", "transportation")
+                            .containsExactly(changedTitle, changedDate, changedPlace, changedContent, changedFeeling, changedWeather, changedTransportation);
                 });
     }
 

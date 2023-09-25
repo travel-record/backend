@@ -131,7 +131,6 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
                 .weather("weather")
                 .transportation("best")
                 .content("content")
-                .companion("companion")
                 .build();
     }
 }

@@ -13,7 +13,13 @@ import world.trecord.domain.users.UserEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "user_record_like")
+@Table(name = "user_record_like",
+        indexes = {
+                @Index(name = "idx_user_record_like_user", columnList = "id_users"),
+                @Index(name = "idx_user_record_like_record", columnList = "id_record"),
+                @Index(name = "idx_user_record_like_user_record", columnList = "id_users, id_record")
+        }
+)
 @SQLDelete(sql = "UPDATE user_record_like SET deleted_date_time = NOW() WHERE id_like = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity

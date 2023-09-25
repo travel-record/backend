@@ -6,10 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.config.security.UserContext;
+import world.trecord.config.security.account.UserContext;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.users.request.UserUpdateRequest;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.fixture.UserEntityFixture;
@@ -56,7 +56,7 @@ class UserServiceTest extends AbstractIntegrationTest {
         UserEntity saveUser = userRepository.save(userEntity);
 
         //when
-        UserInfoResponse response = userService.getUser(saveUser.getId());
+        UserResponse response = userService.getUser(saveUser.getId());
 
         //then
         Assertions.assertThat(response)
@@ -191,7 +191,7 @@ class UserServiceTest extends AbstractIntegrationTest {
         String keyword = "김";
 
         //when
-        UserInfoResponse response = userService.searchUser(userEntity5.getId(), keyword);
+        UserResponse response = userService.searchUser(userEntity5.getId(), keyword);
 
         //then
         Assertions.assertThat(response)
@@ -207,7 +207,7 @@ class UserServiceTest extends AbstractIntegrationTest {
         String keyword = "김";
 
         //when
-        UserInfoResponse response = userService.searchUser(0L, keyword);
+        UserResponse response = userService.searchUser(0L, keyword);
 
         //then
         Assertions.assertThat(response).isNull();
@@ -221,7 +221,7 @@ class UserServiceTest extends AbstractIntegrationTest {
         String keyword = "김";
 
         //when
-        UserInfoResponse response = userService.searchUser(userEntity.getId(), keyword);
+        UserResponse response = userService.searchUser(userEntity.getId(), keyword);
 
         //then
         Assertions.assertThat(response).isNull();

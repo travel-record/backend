@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.dto.users.response.UserInfoResponse;
+import world.trecord.dto.users.response.UserResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,9 +29,9 @@ public class FeedInfoResponse {
     private String satisfaction;
     private LocalDate startAt;
     private LocalDate endAt;
-    private List<UserInfoResponse> contributors;
+    private List<UserResponse> contributors;
 
-    public static FeedInfoResponse of(FeedEntity feedEntity, List<UserInfoResponse> contributors, Long viewerId) {
+    public static FeedInfoResponse of(FeedEntity feedEntity, List<UserResponse> contributors, Long viewerId) {
         return FeedInfoResponse.builder()
                 .feedEntity(feedEntity)
                 .contributors(contributors)
@@ -40,7 +40,7 @@ public class FeedInfoResponse {
     }
 
     @Builder
-    private FeedInfoResponse(FeedEntity feedEntity, List<UserInfoResponse> contributors, Long viewerId) {
+    private FeedInfoResponse(FeedEntity feedEntity, List<UserResponse> contributors, Long viewerId) {
         this.writerId = feedEntity.getUserId();
         this.contributors = contributors;
         this.feedId = feedEntity.getId();

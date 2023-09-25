@@ -50,8 +50,6 @@ public class RecordCreateRequest {
 
     private String imageUrl;
 
-    private String companion;
-
     @Builder
     private RecordCreateRequest(Long feedId,
                                 String title,
@@ -63,7 +61,6 @@ public class RecordCreateRequest {
                                 String weather,
                                 String transportation,
                                 String content,
-                                String companion,
                                 String imageUrl) {
         this.feedId = feedId;
         this.title = title;
@@ -75,7 +72,6 @@ public class RecordCreateRequest {
         this.weather = weather;
         this.transportation = transportation;
         this.content = content;
-        this.companion = companion;
         this.imageUrl = imageUrl;
     }
 
@@ -93,7 +89,6 @@ public class RecordCreateRequest {
                 .transportation(this.transportation)
                 .content(this.content)
                 .sequence(sequence)
-                .companion(this.companion)
                 .imageUrl(this.imageUrl)
                 .build();
     }

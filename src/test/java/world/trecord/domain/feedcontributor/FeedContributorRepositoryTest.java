@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.users.UserEntity;
+import world.trecord.dto.users.response.UserResponse;
 import world.trecord.infra.fixture.FeedContributorFixture;
 import world.trecord.infra.fixture.FeedEntityFixture;
 import world.trecord.infra.fixture.UserEntityFixture;
@@ -194,4 +195,39 @@ class FeedContributorRepositoryTest extends AbstractIntegrationTest {
         Assertions.assertThat(feedOpt).isEmpty();
     }
 
+    @Test
+    @DisplayName("사용자가 최근에 피드에 초대한 유니크한 사용자들을 최대 3명 조회한다")
+    void findRecentContributorsByUserId_returnUniqueUserInfo() throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity invitee1 = UserEntityFixture.of();
+        UserEntity invitee2 = UserEntityFixture.of();
+        UserEntity invitee3 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(owner, invitee1, invitee2, invitee3));
+
+        FeedEntity feed1 = FeedEntityFixture.of(owner);
+        FeedEntity feed2 = FeedEntityFixture.of(owner);
+        FeedEntity feed3 = FeedEntityFixture.of(owner);
+        feedRepository.saveAll(List.of(feed1, feed2, feed3));
+
+        FeedContributorEntity feedContributor1 = FeedContributorFixture.of(invitee1, feed1); // feed1 -> invitee1 초대
+        FeedContributorEntity feedContributor2 = FeedContributorFixture.of(invitee1, feed2); // feed2 -> invitee1 + invitee2 초대
+        FeedContributorEntity feedContributor3 = FeedContributorFixture.of(invitee2, feed2);
+        FeedContributorEntity feedContributor4 = FeedContributorFixture.of(invitee1, feed3); // feed3 -> invitee1 + invitee3 초대
+        FeedContributorEntity feedContributor5 = FeedContributorFixture.of(invitee3, feed3);
+        feedContributorRepository.saveAll(List.of(feedContributor1, feedContributor2, feedContributor3, feedContributor4, feedContributor5));
+
+        //when
+        List<Object[]> objects = feedContributorRepository.findRecentMaxThreeContributorsByUserId(owner.getId());
+
+        //then
+        List<UserResponse> responses = objects.stream()
+                .map(UserResponse::of)
+                .toList();
+
+        Assertions.assertThat(responses)
+                .hasSize(3)
+                .extracting("userId")
+                .containsOnly(invitee1.getId(), invitee2.getId(), invitee3.getId());
+    }
 }

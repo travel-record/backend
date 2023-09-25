@@ -10,14 +10,22 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
-import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.notification.args.*;
 import world.trecord.domain.notification.enumeration.NotificationStatus;
 import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.users.UserEntity;
 
+import java.util.Objects;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "notification")
+@Table(name = "notification",
+        indexes = {
+                @Index(name = "idx_notification_users", columnList = "id_users_to"),
+                @Index(name = "idx_notification_status", columnList = "status"),
+                @Index(name = "idx_notification_users_type", columnList = "id_users_to, type")
+        }
+)
 @SQLDelete(sql = "UPDATE notification SET deleted_date_time = NOW() WHERE id_notification = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity
@@ -54,5 +62,21 @@ public class NotificationEntity extends BaseEntity {
 
     public String getNotificationContent() {
         return type.getContent(this);
+    }
+
+    public UserFromArgs getUserFromArgs() {
+        return Objects.nonNull(this.args) ? args.getUserFrom() : null;
+    }
+
+    public FeedArgs getFeedArgs() {
+        return Objects.nonNull(this.args) ? args.getFeed() : null;
+    }
+
+    public RecordArgs getRecordArgs() {
+        return Objects.nonNull(this.args) ? args.getRecord() : null;
+    }
+
+    public CommentArgs getCommentArgs() {
+        return Objects.nonNull(this.args) ? args.getComment() : null;
     }
 }

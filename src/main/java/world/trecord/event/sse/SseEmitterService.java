@@ -18,7 +18,7 @@ import static world.trecord.exception.CustomExceptionError.NOTIFICATION_CONNECT_
 public class SseEmitterService {
 
     public static final String EVENT_NAME = "notification";
-    private static final int MAX_CONNECTIONS = 1000;
+    public static final int MAX_CONNECTIONS = 1000;
     private final AtomicInteger currentConnections = new AtomicInteger(0);
     private final SseEmitterRepository sseEmitterRepository;
 

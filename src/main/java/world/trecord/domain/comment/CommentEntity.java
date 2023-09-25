@@ -17,7 +17,13 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "comment")
+@Table(name = "comment",
+        indexes = {
+                @Index(name = "idx_comment_users", columnList = "id_users"),
+                @Index(name = "idx_comment_record", columnList = "id_record"),
+                @Index(name = "idx_comment_parent", columnList = "id_parent")
+        }
+)
 @SQLDelete(sql = "UPDATE comment SET deleted_date_time = NOW() WHERE id_comment = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity

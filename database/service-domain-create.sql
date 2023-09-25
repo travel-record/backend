@@ -73,7 +73,6 @@ create table record
     title              varchar(255)  not null comment '제목',
     weather            varchar(255)  not null comment '날씨',
     id_feed            int           not null comment '피드 FK',
-    companion          varchar(255)  null comment '동행자',
     image_url          text          null comment '썸네일 이미지 URL',
     sequence           int default 0 not null comment '순서',
     created_date_time  datetime      null comment '기록 생성 시간',
@@ -126,3 +125,33 @@ create table user_record_like
 ) comment '사용자의 기록 좋아요';
 
 create index idx_user_id on user_record_like (id_users) comment '유저 PK 인덱스';
+
+-- users table
+CREATE INDEX idx_users_nickname ON users(nickname);
+
+-- user_record_like table
+CREATE INDEX idx_user_record_like_user ON user_record_like(id_users);
+CREATE INDEX idx_user_record_like_record ON user_record_like(id_record);
+CREATE INDEX idx_user_record_like_user_record ON user_record_like(id_users, id_record);
+
+-- record table
+CREATE INDEX idx_record_feed ON record(id_feed);
+CREATE INDEX idx_record_user ON record(id_author);
+CREATE INDEX idx_record_feed_date ON record(id_feed, date);
+CREATE INDEX idx_record_feed_user ON record(id_feed, id_author);
+
+-- notification table
+CREATE INDEX idx_notification_users ON notification(id_users_to);
+CREATE INDEX idx_notification_status ON notification(status);
+CREATE INDEX idx_notification_users_type ON notification(id_users_to, type);
+
+-- feed_contributor table
+CREATE INDEX idx_contributor_users_feed ON feed_contributor(id_users, id_feed);
+
+-- feed table
+CREATE INDEX idx_feed_users ON feed(id_owner);
+
+-- comment table
+CREATE INDEX idx_comment_users ON comment(id_users);
+CREATE INDEX idx_comment_record ON comment(id_record);
+CREATE INDEX idx_comment_parent ON comment(id_parent);

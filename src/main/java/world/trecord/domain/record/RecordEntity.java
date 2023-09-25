@@ -17,7 +17,14 @@ import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "record")
+@Table(name = "record",
+        indexes = {
+                @Index(name = "idx_record_feed", columnList = "id_feed"),
+                @Index(name = "idx_record_user", columnList = "id_author"),
+                @Index(name = "idx_record_feed_date", columnList = "id_feed, date"),
+                @Index(name = "idx_record_feed_user", columnList = "id_feed, id_author")
+        }
+)
 @SQLDelete(sql = "UPDATE record SET deleted_date_time = NOW() WHERE id_record = ?")
 @Where(clause = "deleted_date_time is NULL")
 @Entity
@@ -57,10 +64,6 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
-    // TODO delete
-    @Column(name = "companion")
-    private String companion;
-
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
@@ -87,7 +90,6 @@ public class RecordEntity extends BaseEntity {
                          String weather,
                          String transportation,
                          String content,
-                         String companion,
                          String imageUrl,
                          int sequence) {
         this.userEntity = userEntity;
@@ -101,7 +103,6 @@ public class RecordEntity extends BaseEntity {
         this.weather = weather;
         this.transportation = transportation;
         this.content = content;
-        this.companion = companion;
         this.imageUrl = imageUrl;
         this.sequence = sequence;
     }
@@ -116,7 +117,6 @@ public class RecordEntity extends BaseEntity {
         this.weather = updateEntity.getWeather();
         this.transportation = updateEntity.getTransportation();
         this.content = updateEntity.getContent();
-        this.companion = updateEntity.getCompanion();
         this.imageUrl = updateEntity.getImageUrl();
     }
 
