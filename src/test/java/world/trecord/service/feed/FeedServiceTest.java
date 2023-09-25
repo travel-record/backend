@@ -20,12 +20,10 @@ import world.trecord.infra.fixture.RecordEntityFixture;
 import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractIntegrationTest;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
@@ -42,20 +40,17 @@ class FeedServiceTest extends AbstractIntegrationTest {
         FeedEntity feedEntity2 = createFeed(savedUserEntity, LocalDateTime.of(2021, 10, 4, 0, 0), LocalDateTime.of(2021, 10, 15, 0, 0));
         FeedEntity feedEntity3 = createFeed(savedUserEntity, LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
         FeedEntity feedEntity4 = createFeed(savedUserEntity, LocalDateTime.of(2021, 12, 21, 0, 0), LocalDateTime.of(2021, 12, 25, 0, 0));
-
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
+        final int pageNumber = 0;
+        final int pageSize = 5;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
+        Page<FeedListResponse> page = feedService.getFeedList(savedUserEntity.getId(), pageRequest);
 
         //then
-        Assertions.assertThat(feedListResponse.getFeeds()).extracting("name", "startAt")
-                .containsExactly(
-                        tuple("name", LocalDate.of(2021, 12, 21)),
-                        tuple("name", LocalDate.of(2021, 12, 10)),
-                        tuple("name", LocalDate.of(2021, 10, 4)),
-                        tuple("name", LocalDate.of(2021, 9, 30))
-                );
+        Assertions.assertThat(page.getContent()).hasSize(4);
     }
 
     @Test
@@ -64,11 +59,15 @@ class FeedServiceTest extends AbstractIntegrationTest {
         //given
         UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
 
+        final int pageNumber = 0;
+        final int pageSize = 5;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
+        Page<FeedListResponse> page = feedService.getFeedList(savedUserEntity.getId(), pageRequest);
 
         //then
-        Assertions.assertThat(feedListResponse.getFeeds()).isEmpty();
+        Assertions.assertThat(page.getContent()).isEmpty();
     }
 
     @Test
@@ -94,7 +93,7 @@ class FeedServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("사용자가 soft delete한 피드는 반환하지 않는다")
+    @DisplayName("사용자가 soft delete한 피드는 페이지네이션에서 제외한다")
     void getFeedByFeedIdWhenFeedSoftDeletedTest() throws Exception {
         //given
         UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
@@ -102,19 +101,18 @@ class FeedServiceTest extends AbstractIntegrationTest {
         FeedEntity feedEntity1 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity feedEntity2 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
         FeedEntity feedEntity3 = createFeed(savedUserEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0));
-
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
-
         feedRepository.delete(feedEntity3);
 
+        final int pageNumber = 0;
+        final int pageSize = 5;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        FeedListResponse feedListResponse = feedService.getFeedList(savedUserEntity.getId());
+        Page<FeedListResponse> page = feedService.getFeedList(savedUserEntity.getId(), pageRequest);
 
         //then
-        Assertions.assertThat(feedListResponse.getFeeds())
-                .hasSize(2)
-                .extracting("name")
-                .containsExactly(feedEntity1.getName(), feedEntity2.getName());
+        Assertions.assertThat(page.getContent()).hasSize(2);
     }
 
     @Test

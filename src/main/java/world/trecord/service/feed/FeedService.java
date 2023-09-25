@@ -38,9 +38,8 @@ public class FeedService {
     private final NotificationRepository notificationRepository;
     private final RecordSequenceRepository recordSequenceRepository;
 
-    // TODO pagination
-    public FeedListResponse getFeedList(Long userId) {
-        return FeedListResponse.of(feedRepository.findByUserEntityIdOrderByStartAtDesc(userId));
+    public Page<FeedListResponse> getFeedList(Long userId, Pageable pageable) {
+        return feedRepository.findByUserEntityId(userId, pageable).map(FeedListResponse::of);
     }
 
     // TODO feed contributors 같이 추가

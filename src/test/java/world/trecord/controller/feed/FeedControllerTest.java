@@ -40,8 +40,7 @@ class FeedControllerTest extends AbstractMockMvcTest {
                         get("/api/v1/feeds")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.feeds").isArray())
-                .andExpect(jsonPath("$.data.feeds").isEmpty());
+                .andExpect(jsonPath("$.data.content").isEmpty());
     }
 
     @Test
@@ -62,9 +61,9 @@ class FeedControllerTest extends AbstractMockMvcTest {
         mockMvc.perform(
                         get("/api/v1/feeds")
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.feeds").isArray())
-                .andExpect(jsonPath("$.data.feeds.length()").value(4));
+                .andExpect(jsonPath("$.data.content.size()").value(4));
     }
 
     @Test

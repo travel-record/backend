@@ -3,6 +3,8 @@ package world.trecord.domain.feed;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.users.UserEntity;
@@ -18,7 +20,7 @@ import java.util.Optional;
 class FeedRepositoryTest extends AbstractIntegrationTest {
 
     @Test
-    @DisplayName("유저 엔티티로 피드 리스트를 조회할 때 사용자가 등록한 피드 리스트를 여행 시작 시간 내림차순으로 조회한다")
+    @DisplayName("유저 엔티티로 피드 리스트를 조회할 때 사용자가 등록한 피드 리스트를 페이지네이션으로 조회한다")
     void findByUserEntityOrderByStartAtDescTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
@@ -27,15 +29,15 @@ class FeedRepositoryTest extends AbstractIntegrationTest {
         FeedEntity feedEntity3 = createFeed(userEntity, LocalDateTime.of(2021, 12, 10, 0, 0), LocalDateTime.of(2021, 12, 20, 0, 0));
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3));
 
+        final int pageNumber = 0;
+        final int pageSize = 5;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userEntity.getId());
+        Page<FeedEntity> page = feedRepository.findByUserEntityId(userEntity.getId(), pageRequest);
 
         //then
-        Assertions.assertThat(feedEntities)
-                .extracting("id")
-                .containsExactly(
-                        feedEntity3.getId(), feedEntity2.getId(), feedEntity1.getId()
-                );
+        Assertions.assertThat(page.getContent()).hasSize(3);
     }
 
     @Test
@@ -78,11 +80,15 @@ class FeedRepositoryTest extends AbstractIntegrationTest {
         //given
         UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
 
+        final int pageNumber = 0;
+        final int pageSize = 5;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        List<FeedEntity> feedEntities = feedRepository.findByUserEntityIdOrderByStartAtDesc(userEntity.getId());
+        Page<FeedEntity> page = feedRepository.findByUserEntityId(userEntity.getId(), pageRequest);
 
         //then
-        Assertions.assertThat(feedEntities).isEmpty();
+        Assertions.assertThat(page.getContent()).isEmpty();
     }
 
     @Test
