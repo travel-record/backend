@@ -1,14 +1,16 @@
 package world.trecord.controller.feed;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import world.trecord.config.security.CurrentUser;
+import world.trecord.config.security.AccountContext;
+import world.trecord.config.security.CurrentContext;
+import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
 import world.trecord.dto.feed.request.FeedCreateRequest;
 import world.trecord.dto.feed.request.FeedUpdateRequest;
@@ -17,7 +19,6 @@ import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
-import world.trecord.dto.users.UserContext;
 import world.trecord.service.feed.FeedService;
 import world.trecord.service.feedcontributor.FeedContributorService;
 
@@ -33,16 +34,16 @@ public class FeedController {
     private final FeedValidator feedValidator;
 
     @GetMapping
-    public ApiResponse<FeedListResponse> getFeedList(@PageableDefault(sort = "startAt", direction = Sort.Direction.DESC) Pageable pageable,
-                                                     @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(feedService.getFeedList(userContext.getId()));
+    public ApiResponse<Page<FeedListResponse>> getFeedList(@PageableDefault(sort = "startAt", direction = Sort.Direction.DESC) Pageable pageable,
+                                                           @CurrentContext UserContext userContext) {
+        return ApiResponse.ok(feedService.getFeedList(userContext.getId(), pageable));
     }
 
     @GetMapping("/{feedId}")
     public ApiResponse<FeedInfoResponse> getFeed(@PathVariable Long feedId,
-                                                 @CurrentUser UserContext userContext) {
-        Optional<Long> viewerId = Optional.ofNullable(userContext).map(UserContext::getId);
-        return ApiResponse.ok(feedService.getFeed(viewerId, feedId));
+                                                 @CurrentContext AccountContext accountContext) {
+        Optional<Long> idOpt = Optional.ofNullable(accountContext.getId());
+        return ApiResponse.ok(feedService.getFeed(idOpt, feedId));
     }
 
     @GetMapping("/{feedId}/records")
@@ -52,16 +53,16 @@ public class FeedController {
     }
 
     @PostMapping
-    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request,
-                                                      @CurrentUser UserContext userContext) throws BindException {
+    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Validated FeedCreateRequest request,
+                                                      @CurrentContext UserContext userContext) throws BindException {
         feedValidator.verify(request);
         return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
     }
 
     @PutMapping("/{feedId}")
     public ApiResponse<Void> updateFeed(@PathVariable Long feedId,
-                                        @RequestBody @Valid FeedUpdateRequest request,
-                                        @CurrentUser UserContext userContext) throws BindException {
+                                        @RequestBody @Validated FeedUpdateRequest request,
+                                        @CurrentContext UserContext userContext) throws BindException {
         feedValidator.verify(request);
         feedService.updateFeed(userContext.getId(), feedId, request);
         return ApiResponse.ok();
@@ -69,15 +70,15 @@ public class FeedController {
 
     @DeleteMapping("/{feedId}")
     public ApiResponse<Void> deleteFeed(@PathVariable Long feedId,
-                                        @CurrentUser UserContext userContext) {
+                                        @CurrentContext UserContext userContext) {
         feedService.deleteFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
     }
 
     @PostMapping("/{feedId}/contributors/invite")
     public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
-                                        @RequestBody @Valid FeedInviteRequest request,
-                                        @CurrentUser UserContext userContext) {
+                                        @RequestBody @Validated FeedInviteRequest request,
+                                        @CurrentContext UserContext userContext) {
         feedContributorService.inviteUserToFeed(userContext.getId(), feedId, request);
         return ApiResponse.ok();
     }
@@ -85,14 +86,14 @@ public class FeedController {
     @DeleteMapping("/{feedId}/contributors/{contributorId}")
     public ApiResponse<Void> expelUser(@PathVariable Long feedId,
                                        @PathVariable Long contributorId,
-                                       @CurrentUser UserContext userContext) {
+                                       @CurrentContext UserContext userContext) {
         feedContributorService.expelUserFromFeed(userContext.getId(), contributorId, feedId);
         return ApiResponse.ok();
     }
 
     @DeleteMapping("/{feedId}/contributors/leave")
     public ApiResponse<Void> leaveFeed(@PathVariable Long feedId,
-                                       @CurrentUser UserContext userContext) {
+                                       @CurrentContext UserContext userContext) {
         feedContributorService.leaveFeed(userContext.getId(), feedId);
         return ApiResponse.ok();
     }

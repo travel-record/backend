@@ -1,5 +1,7 @@
 package world.trecord.domain.userrecordlike;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,7 +25,7 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
             "JOIN fe.userEntity ue " +
             "WHERE lrle.userEntity.id = :userId " +
             "ORDER BY lrle.createdDateTime DESC ")
-    List<UserRecordProjection> findLikeRecordsByUserEntityId(@Param("userId") Long userId);
+    Page<UserRecordProjection> findLikeRecordsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Transactional
     @Modifying
@@ -32,4 +33,9 @@ public interface UserRecordLikeRepository extends JpaRepository<UserRecordLikeEn
             "SET le.deletedDateTime = NOW() " +
             "where le.recordEntity.id = :recordId")
     void deleteAllByRecordEntityId(@Param("recordId") Long recordId);
+
+    @Transactional
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "DELETE FROM user_record_like", nativeQuery = true)
+    void physicallyDeleteAll();
 }

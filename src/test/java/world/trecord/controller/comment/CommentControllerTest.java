@@ -1,31 +1,24 @@
 package world.trecord.controller.comment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.config.properties.JwtProperties;
-import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
-import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.comment.request.CommentCreateRequest;
 import world.trecord.dto.comment.request.CommentUpdateRequest;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
+import world.trecord.infra.fixture.CommentEntityFixture;
+import world.trecord.infra.fixture.FeedEntityFixture;
+import world.trecord.infra.fixture.RecordEntityFixture;
+import world.trecord.infra.fixture.UserEntityFixture;
+import world.trecord.infra.support.WithTestUser;
+import world.trecord.infra.test.AbstractMockMvcTest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -35,40 +28,16 @@ import static world.trecord.exception.CustomExceptionError.COMMENT_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 
 @Transactional
-@MockMvcTestSupport
-class CommentControllerTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    JwtTokenHandler jwtTokenHandler;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @Autowired
-    CommentRepository commentRepository;
-
-    @Autowired
-    RecordRepository recordRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    JwtProperties jwtProperties;
+class CommentControllerTest extends AbstractMockMvcTest {
 
     @Test
     @DisplayName("POST /api/v1/comments - 성공")
+    @WithTestUser("commenter@email.com")
     void createCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        UserEntity userEntity = userRepository.findByEmail("commenter@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
         String content = "content";
 
@@ -80,21 +49,21 @@ class CommentControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("POST /api/v1/comments - 성공 (대댓글 생성)")
+    @WithTestUser("commenter@email.com")
     void createChildCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-        CommentEntity parentCommentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
+        CommentEntity parentCommentEntity = commentRepository.save(CommentEntityFixture.of(userEntity, recordEntity));
 
         String content = "content";
 
@@ -107,8 +76,7 @@ class CommentControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                                 .contentType(APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
@@ -116,11 +84,12 @@ class CommentControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/comments - 실패 (원댓글 존재하지 않음)")
+    @WithTestUser("commenter@email.com")
     void createChildCommentWhenOriginCommentNotExistingTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
         long notExistingCommentId = 0L;
         String content = "content";
@@ -133,21 +102,21 @@ class CommentControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(COMMENT_NOT_FOUND.code()));
     }
 
     @Test
-    @DisplayName("POST /api/v1/comments - 실패 (올바르지 못한 댓글)")
+    @DisplayName("POST /api/v1/comments - 실패 (유효하지 않은 파라미터)")
+    @WithTestUser("commenter@email.com")
     void createCommentWithInvalidDataTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
         String invalidContent = "";
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -158,9 +127,8 @@ class CommentControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/comments")
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andDo(print())
@@ -169,12 +137,13 @@ class CommentControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("PUT /api/v1/comments/{commentId} - 성공")
+    @WithTestUser("commenter@email.com")
     void updateCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
+        UserEntity userEntity = userRepository.findByEmail("commenter@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
+        CommentEntity commentEntity = commentRepository.save(CommentEntityFixture.of(userEntity, recordEntity));
 
         String changeContent = "change content";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -184,21 +153,21 @@ class CommentControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/comments/{commentId}", commentEntity.getId())
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("PUT /api/v1/comments/{commentId} - 실패 (올바르지 파라미터)")
+    @DisplayName("PUT /api/v1/comments/{commentId} - 실패 (올바르지 않은 파라미터)")
+    @WithTestUser("commenter@email.com")
     void updateCommentWithInvalidDataTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
+        UserEntity userEntity = userRepository.findByEmail("commenter@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
+        CommentEntity commentEntity = commentRepository.save(CommentEntityFixture.of(userEntity, recordEntity));
 
         String invalidContent = "";
         CommentUpdateRequest request = CommentUpdateRequest.builder()
@@ -208,9 +177,8 @@ class CommentControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/comments/{commentId}", commentEntity.getId())
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
@@ -218,17 +186,17 @@ class CommentControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("DELETE /api/v1/comments/{commentId} - 성공")
+    @WithTestUser("commenter@email.com")
     void deleteCommentTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-        CommentEntity commentEntity = commentRepository.save(createComment(userEntity, recordEntity, null));
+        UserEntity userEntity = userRepository.findByEmail("commenter@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
+        CommentEntity commentEntity = commentRepository.save(CommentEntityFixture.of(userEntity, recordEntity, null));
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/comments/{commentId}", commentEntity.getId())
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isOk());
 
@@ -237,16 +205,14 @@ class CommentControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("DELETE /api/v1/comments/{commentId} - 실패 (올바르지 않은 경로 변수)")
+    @WithTestUser
     void deleteCommentWithCommentIdNullTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
         String pathVariable = "Invalid path variable";
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/comments/{commentId}", pathVariable)
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
@@ -254,29 +220,29 @@ class CommentControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/comments/{commentId}/replies - 성공")
+    @WithTestUser("viewer@email.com")
     void getRepliesTest() throws Exception {
         //given
-        UserEntity author = createUser("test@email.com");
-        UserEntity commenter1 = createUser("test1@email.com");
-        UserEntity commenter2 = createUser("test2@email.com");
-        UserEntity commenter3 = createUser("test3@email.com");
+        UserEntity author = UserEntityFixture.of("test@email.com");
+        UserEntity commenter1 = UserEntityFixture.of("test1@email.com");
+        UserEntity commenter2 = UserEntityFixture.of("test2@email.com");
+        UserEntity commenter3 = UserEntityFixture.of("test3@email.com");
 
         userRepository.saveAll(List.of(author, commenter1, commenter2, commenter3));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(author));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity));
-        CommentEntity parentComment = commentRepository.save(createComment(commenter1, recordEntity, null));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(author));
+        RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
+        CommentEntity parentComment = commentRepository.save(CommentEntityFixture.of(commenter1, recordEntity, null));
 
-        CommentEntity comment1 = createComment(commenter2, recordEntity, parentComment);
-        CommentEntity comment2 = createComment(commenter3, recordEntity, parentComment);
-        CommentEntity comment3 = createComment(commenter2, recordEntity, parentComment);
-        CommentEntity comment4 = createComment(commenter3, recordEntity, parentComment);
+        CommentEntity comment1 = CommentEntityFixture.of(commenter2, recordEntity, parentComment);
+        CommentEntity comment2 = CommentEntityFixture.of(commenter3, recordEntity, parentComment);
+        CommentEntity comment3 = CommentEntityFixture.of(commenter2, recordEntity, parentComment);
+        CommentEntity comment4 = CommentEntityFixture.of(commenter3, recordEntity, parentComment);
         commentRepository.saveAll(List.of(comment1, comment2, comment3, comment4));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/comments/{commentId}/replies", parentComment.getId())
-                                .header(AUTHORIZATION, createToken(author.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -284,62 +250,16 @@ class CommentControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/comments/{commentId}/replies - 실패 (존재하지 않는 댓글)")
+    @WithTestUser
     void getRepliesWhenNotFoundCommentTest() throws Exception {
         //given
         long notExistingComment = 0L;
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/comments/{commentId}/replies", notExistingComment)
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(COMMENT_NOT_FOUND.code()));
     }
-
-    private String createToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
-    }
-
-    private UserEntity createUser(String email) {
-        return UserEntity.builder()
-                .email(email)
-                .build();
-    }
-
-    private FeedEntity createFeed(UserEntity userEntity) {
-        return FeedEntity.builder()
-                .userEntity(userEntity)
-                .name("name")
-                .startAt(LocalDateTime.of(2021, 9, 30, 0, 0))
-                .endAt(LocalDateTime.of(2021, 10, 2, 0, 0))
-                .build();
-    }
-
-    private RecordEntity createRecord(FeedEntity feedEntity) {
-        return RecordEntity.builder()
-                .userEntity(feedEntity.getUserEntity())
-                .feedEntity(feedEntity)
-                .title("record")
-                .place("place")
-                .longitude("longitude")
-                .latitude("latitude")
-                .date(LocalDateTime.of(2022, 3, 2, 0, 0))
-                .content("content")
-                .weather("weather")
-                .transportation("satisfaction")
-                .feeling("feeling")
-                .build();
-    }
-
-    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, CommentEntity parentCommentEntity) {
-        return CommentEntity.builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
-                .parentCommentEntity(parentCommentEntity)
-                .content("content")
-                .build();
-    }
-
 }

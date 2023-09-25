@@ -16,10 +16,17 @@ public class RecordCreateResponse {
     private Long feedId;
     private Long recordId;
 
+    public static RecordCreateResponse of(UserEntity writerEntity, RecordEntity recordEntity) {
+        return RecordCreateResponse.builder()
+                .writerEntity(writerEntity)
+                .recordEntity(recordEntity)
+                .build();
+    }
+
     @Builder
     private RecordCreateResponse(UserEntity writerEntity, RecordEntity recordEntity) {
         this.writerId = writerEntity.getId();
-        this.feedId = recordEntity.getFeedEntity().getId();
+        this.feedId = recordEntity.getFeedId();
         this.recordId = recordEntity.getId();
     }
 }

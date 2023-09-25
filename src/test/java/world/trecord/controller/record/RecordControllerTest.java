@@ -1,30 +1,22 @@
 package world.trecord.controller.record;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.config.properties.JwtProperties;
-import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
-import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
-import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
-import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.record.request.RecordCreateRequest;
 import world.trecord.dto.record.request.RecordSequenceSwapRequest;
 import world.trecord.dto.record.request.RecordUpdateRequest;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
-import world.trecord.service.record.RecordService;
+import world.trecord.infra.fixture.CommentEntityFixture;
+import world.trecord.infra.fixture.UserEntityFixture;
+import world.trecord.infra.fixture.UserRecordLikeFixture;
+import world.trecord.infra.support.WithTestUser;
+import world.trecord.infra.test.AbstractMockMvcTest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,53 +30,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
-@MockMvcTestSupport
-class RecordControllerTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    RecordService recordService;
-
-    @Autowired
-    RecordRepository recordRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @Autowired
-    CommentRepository commentRepository;
-
-    @Autowired
-    JwtTokenHandler jwtTokenHandler;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    UserRecordLikeRepository userRecordLikeRepository;
-
-    @Autowired
-    JwtProperties jwtProperties;
+class RecordControllerTest extends AbstractMockMvcTest {
 
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 성공")
+    @WithTestUser("user@email.com")
     void getRecordInfoByWriterTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
+        UserEntity writer = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header(AUTHORIZATION, createToken(writer.getId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
@@ -93,14 +52,15 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .andExpect(jsonPath("$.data.isUpdatable").value(true));
     }
 
+    // TODO 피드 컨트리뷰터는 자신이 작성한 기록을 수정할 수 있다
+
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 성공 (인증되지 않은 사용자)")
+    @WithAnonymousUser
     void getRecordInfoByWhoNotAuthenticatedTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
+        UserEntity writer = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
 
         //when //then
@@ -131,6 +91,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 실패 (존재하지 않는 기록 아이디로 조회)")
+    @WithTestUser
     void getRecordInfoByNotExistingRecordIdTest() throws Exception {
         //given
         long notExistingRecordId = 0L;
@@ -145,19 +106,17 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records - 실패 (올바르지 않은 요청 파라미터)")
+    @WithTestUser
     void createRecordWithInvalidParameterTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         RecordCreateRequest request = RecordCreateRequest.builder()
                 .build();
 
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
@@ -165,10 +124,10 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records - 성공")
+    @WithTestUser("user@email.com")
     void createRecordWithValidParameterTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
+        UserEntity writer = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         String title = "title";
@@ -201,9 +160,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isOk());
 
@@ -212,10 +170,11 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records - 실패 (피드 관리자가 아닌 사용자가 요청)")
+    @WithTestUser("user@email.com")
     void createRecordTestWhenUserIsNotManager() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test1@email.com"));
-        UserEntity viewer = userRepository.save(createUser("test2@email.com"));
+        UserEntity writer = userRepository.save(UserEntityFixture.of());
+        UserEntity viewer = userRepository.findByEmail("user@email.com").get();
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -249,9 +208,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records")
-                                .header(AUTHORIZATION, createToken(viewer.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
@@ -259,12 +217,11 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("PUT /api/v1/records/{recordId} - 성공")
+    @WithTestUser("user@email.com")
     void updateRecordTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
+        UserEntity writer = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity savedRecord = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
 
         String changedTitle = "change title";
@@ -296,9 +253,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", savedRecord.getId())
-                                .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isOk());
 
@@ -321,14 +277,12 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("PUT /api/v1/records/{recordId} - 실패 (피드 관리자가 아닌 사용자가 요청)")
+    @WithTestUser("other@email.com")
     void updateRecordByNotManagerTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
-        UserEntity other = userRepository.save(createUser("test1@email.com"));
-
+        UserEntity writer = userRepository.save(UserEntityFixture.of());
+        UserEntity other = userRepository.findByEmail("other@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
@@ -348,9 +302,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header(AUTHORIZATION, createToken(other.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
@@ -358,17 +311,17 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records/sequence/swap - 성공")
+    @WithTestUser("user@email.com")
     void swapRecordSequenceTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
+        UserEntity writer = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        int seq1 = 1;
-        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), seq1));
+        final int sequence1 = 1;
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), sequence1));
 
-        int seq2 = 2;
-        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), seq2));
+        final int sequence2 = 2;
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), sequence2));
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
                 .originalRecordId(recordEntity1.getId())
@@ -378,30 +331,30 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/sequence/swap")
-                                .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isOk());
 
         Assertions.assertThat(recordRepository.findById(recordEntity1.getId()))
                 .isPresent()
                 .hasValueSatisfying(recordEntity -> {
-                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(seq2);
+                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(sequence2);
                 });
 
         Assertions.assertThat(recordRepository.findById(recordEntity2.getId()))
                 .isPresent()
                 .hasValueSatisfying(recordEntity -> {
-                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(seq1);
+                    Assertions.assertThat(recordEntity.getSequence()).isEqualTo(sequence1);
                 });
     }
 
     @Test
     @DisplayName("POST /api/v1/records/sequence/swap - 실패 (같은 피드 아이디가 아닌 경우)")
+    @WithTestUser("user@email.com")
     void swapRecordSequenceWhenRecordNotSameFeedTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
+        UserEntity writer = userRepository.findByEmail("user@email.com").get();
 
         FeedEntity feedEntity1 = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         FeedEntity feedEntity2 = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
@@ -417,9 +370,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/sequence/swap")
-                                .header(AUTHORIZATION, createToken(writer.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
@@ -427,10 +379,11 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records/sequence/swap - 실패 (피드 관리자가 아닌 경우)")
+    @WithTestUser("other@email.com")
     void swapRecordSequenceByNotFeedManagerTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-        UserEntity other = userRepository.save(createUser("test1@email.com"));
+        UserEntity writer = userRepository.save(UserEntityFixture.of("test@email.com"));
+        UserEntity other = userRepository.findByEmail("other@email.com").get();
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
@@ -445,9 +398,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/sequence/swap")
-                                .header(AUTHORIZATION, createToken(other.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
@@ -455,13 +407,10 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records/sequence/swap - 실패 (존재하지 않는 기록 아이디로 요청)")
+    @WithTestUser
     void swapRecordSequenceWhenRecordNotExistingTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         long notExistingRecordId = 0L;
-
-        String token = createToken(writer.getId());
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
                 .originalRecordId(notExistingRecordId)
@@ -471,9 +420,8 @@ class RecordControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/sequence/swap")
-                                .header(AUTHORIZATION, token)
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(RECORD_NOT_FOUND.code()));
@@ -481,20 +429,16 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("PUT /api/v1/records - 실패 (올바르지 않은 요청 파라미터)")
+    @WithTestUser
     void updateRecordWithInvalidDataTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-
         RecordUpdateRequest request = RecordUpdateRequest.builder().build();
-
-        String token = createToken(writer.getId());
 
         //when //then
         mockMvc.perform(
                         put("/api/v1/records/{recordId}", 0L)
-                                .header(AUTHORIZATION, token)
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
@@ -502,13 +446,13 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("DELETE /api/v1/records/{recordId} - 실패 (인증되지 않는 사용자)")
+    @WithAnonymousUser
     void deleteRecordWithInvalidDataTest() throws Exception {
         //given
-        String invalidPathVariable = "invalid";
-
+        long notExistingRecordId = 0L;
         //when //then
         mockMvc.perform(
-                        delete("/api/v1/records/{recordId}", invalidPathVariable)
+                        delete("/api/v1/records/{recordId}", notExistingRecordId)
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
@@ -516,27 +460,23 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("DELETE /api/v1/records/{recordId} - 성공")
+    @WithTestUser("user@email.com")
     void deleteRecordTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-        UserEntity commenter1 = userRepository.save(createUser("test1@email.com"));
-        UserEntity commenter2 = userRepository.save(createUser("test2@email.com"));
+        UserEntity writer = userRepository.findByEmail("user@email.com").get();
+        UserEntity commenter1 = UserEntityFixture.of();
+        UserEntity commenter2 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(commenter1, commenter2));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
-
-        CommentEntity commentEntity1 = createComment(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createComment(commenter2, recordEntity, "content2");
-
+        CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity);
+        CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
-
-        String token = createToken(writer.getId());
 
         //when //then
         mockMvc.perform(
                         delete("/api/v1/records/{recordId}", recordEntity.getId())
-                                .header(AUTHORIZATION, token)
                 )
                 .andExpect(status().isOk());
 
@@ -545,22 +485,17 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records/{recordId}/like - 성공 (false 리턴)")
+    @WithTestUser("user@email.com")
     void toggleLikeTestWhenUserLikeRecord() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
+        UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
-
-        userRecordLikeRepository.save(createRecordLike(userEntity, recordEntity));
-
-        String token = createToken(userEntity.getId());
+        userRecordLikeRepository.save(UserRecordLikeFixture.of(userEntity, recordEntity));
 
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/{recordId}/like", recordEntity.getId())
-                                .header(AUTHORIZATION, token)
                 )
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -570,20 +505,16 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/records/{recordId}/like - 성공 (true 리턴)")
+    @WithTestUser("user@email.com")
     void toggleLikeTestWhenUserNotLikeRecord() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com"));
-
+        UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
-
-        String token = createToken(userEntity.getId());
 
         //when //then
         mockMvc.perform(
                         post("/api/v1/records/{recordId}/like", recordEntity.getId())
-                                .header(AUTHORIZATION, token)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.liked").value(true));
@@ -591,19 +522,18 @@ class RecordControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/records/{recordId}/comments - 성공")
+    @WithTestUser("user@email.com")
     void getRecordCommentsTest() throws Exception {
         //given
-        UserEntity writer = userRepository.save(createUser("test@email.com"));
-        UserEntity commenter1 = userRepository.save(createUser("test1@email.com"));
-        UserEntity commenter2 = userRepository.save(createUser("test2@email.com"));
+        UserEntity writer = userRepository.findByEmail("user@email.com").get();
+        UserEntity commenter1 = UserEntityFixture.of();
+        UserEntity commenter2 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(commenter1, commenter2));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-
         RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
-
-        CommentEntity commentEntity1 = createComment(commenter1, recordEntity, "content1");
-        CommentEntity commentEntity2 = createComment(commenter2, recordEntity, "content2");
-
+        CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity);
+        CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity);
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1));
 
         //when //then
@@ -612,13 +542,7 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.comments.size()").value(2));
-    }
-
-    private UserEntity createUser(String email) {
-        return UserEntity.builder()
-                .email(email)
-                .build();
+                .andExpect(jsonPath("$.data.content.size()").value(2));
     }
 
     private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {
@@ -645,26 +569,5 @@ class RecordControllerTest extends AbstractContainerBaseTest {
                 .feeling("feeling")
                 .sequence(sequence)
                 .build();
-    }
-
-    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, String content) {
-        return CommentEntity.builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
-                .content(content)
-                .build();
-    }
-
-    private UserRecordLikeEntity createRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
-        return UserRecordLikeEntity
-                .builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
-                .build();
-    }
-
-
-    private String createToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
     }
 }

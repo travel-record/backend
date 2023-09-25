@@ -1,18 +1,18 @@
 package world.trecord.controller.users;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import world.trecord.config.security.CurrentUser;
+import world.trecord.config.security.CurrentContext;
+import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
-import world.trecord.dto.comment.response.UserCommentsResponse;
+import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
-import world.trecord.dto.userrecordlike.response.UserRecordLikeListResponse;
-import world.trecord.dto.users.UserContext;
+import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.dto.users.request.UserUpdateRequest;
 import world.trecord.dto.users.response.UserInfoResponse;
 import world.trecord.service.comment.CommentService;
@@ -31,13 +31,13 @@ public class UserController {
     private final FeedContributorService feedContributorService;
 
     @GetMapping
-    public ApiResponse<UserInfoResponse> getUser(@CurrentUser UserContext userContext) {
+    public ApiResponse<UserInfoResponse> getUser(@CurrentContext UserContext userContext) {
         return ApiResponse.ok(userService.getUser(userContext.getId()));
     }
 
     @PostMapping
-    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest request,
-                                                    @CurrentUser UserContext userContext) {
+    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Validated UserUpdateRequest request,
+                                                    @CurrentContext UserContext userContext) {
         return ApiResponse.ok(userService.updateUser(userContext.getId(), request));
     }
 
@@ -48,25 +48,25 @@ public class UserController {
 
     @GetMapping("/search")
     public ApiResponse<UserInfoResponse> searchUser(@RequestParam(name = "q") String keyword,
-                                                    @CurrentUser UserContext userContext) {
+                                                    @CurrentContext UserContext userContext) {
         return ApiResponse.ok(userService.searchUser(userContext.getId(), keyword));
     }
 
     @GetMapping("/comments")
-    public ApiResponse<UserCommentsResponse> getUserComments(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                             @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(commentService.getUserComments(userContext.getId()));
+    public ApiResponse<Page<UserCommentResponse>> getUserComments(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                  @CurrentContext UserContext userContext) {
+        return ApiResponse.ok(commentService.getUserComments(userContext.getId(), pageable));
     }
 
     @GetMapping("/likes")
-    public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                                      @CurrentUser UserContext userContext) {
-        return ApiResponse.ok(userRecordLikeService.getUserRecordLikeList(userContext.getId()));
+    public ApiResponse<Page<UserRecordLikeResponse>> getUserRecordLikes(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                        @CurrentContext UserContext userContext) {
+        return ApiResponse.ok(userRecordLikeService.getUserRecordLikeList(userContext.getId(), pageable));
     }
 
     @GetMapping("/invited")
     public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                                        @CurrentUser UserContext userContext) {
+                                                                                        @CurrentContext UserContext userContext) {
         return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
     }
 }

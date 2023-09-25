@@ -4,18 +4,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.config.security.UserContext;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
-import world.trecord.dto.users.UserContext;
 import world.trecord.dto.users.request.UserUpdateRequest;
 import world.trecord.dto.users.response.UserInfoResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.fixture.UserEntityFixture;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.util.List;
 
@@ -24,14 +22,7 @@ import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 
 @Slf4j
 @Transactional
-@IntegrationTestSupport
-class UserServiceTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    UserRepository userRepository;
+class UserServiceTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("이메일로 새로운 사용자를 생성할 수 있다")
@@ -91,7 +82,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
     @DisplayName("새로운 닉네임으로 업데이트 한다")
     void updateUserTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test1@email.com", "nickname"));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test1@email.com", "nickname"));
 
         String changedNickname = "changed nickname";
 
@@ -115,8 +106,8 @@ class UserServiceTest extends AbstractContainerBaseTest {
     void updateUserWhenDuplicatedNicknameTest() throws Exception {
         //given
         String savedNickname = "nickname";
-        userRepository.save(createUser("test@email.com", savedNickname));
-        UserEntity userEntity = userRepository.save(createUser("test1@email.com", "nickname1"));
+        userRepository.save(UserEntityFixture.of("test@email.com", savedNickname));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test1@email.com", "nickname1"));
 
         UserUpdateRequest updateRequest = UserUpdateRequest.builder()
                 .nickname(savedNickname)
@@ -165,7 +156,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
     @DisplayName("사용자를 조회하여 UserContext로 반환한다")
     void loadUserContextByUserIdTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com", "nickname"));
 
         //when
         UserContext userContext = userService.getUserContextOrException(userEntity.getId());
@@ -189,11 +180,11 @@ class UserServiceTest extends AbstractContainerBaseTest {
     @DisplayName("닉네임으로 사용자를 조회하여 반환한다")
     void searchUserTest() throws Exception {
         //given
-        UserEntity userEntity1 = createUser("test1@email.com", "김");
-        UserEntity userEntity2 = createUser("test2@email.com", "이이이");
-        UserEntity userEntity3 = createUser("test3@email.com", "김박박");
-        UserEntity userEntity4 = createUser("test4@email.com", "김이박");
-        UserEntity userEntity5 = createUser("test5@email.com", "박이김");
+        UserEntity userEntity1 = UserEntityFixture.of("test1@email.com", "김");
+        UserEntity userEntity2 = UserEntityFixture.of("test2@email.com", "이이이");
+        UserEntity userEntity3 = UserEntityFixture.of("test3@email.com", "김박박");
+        UserEntity userEntity4 = UserEntityFixture.of("test4@email.com", "김이박");
+        UserEntity userEntity5 = UserEntityFixture.of("test5@email.com", "박이김");
 
         userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
 
@@ -226,7 +217,7 @@ class UserServiceTest extends AbstractContainerBaseTest {
     @DisplayName("자신의 닉네임으로 사용자를 검색하는 경우 검색 결과에서 제외된다")
     void searchUserWhenSelfNicknameTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test1@email.com", "김"));
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test1@email.com", "김"));
         String keyword = "김";
 
         //when
@@ -234,12 +225,5 @@ class UserServiceTest extends AbstractContainerBaseTest {
 
         //then
         Assertions.assertThat(response).isNull();
-    }
-
-    private UserEntity createUser(String email, String nickname) {
-        return UserEntity.builder()
-                .email(email)
-                .nickname(nickname)
-                .build();
     }
 }

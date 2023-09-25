@@ -4,66 +4,41 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
-import world.trecord.domain.feedcontributor.FeedContributorRepository;
-import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.feedcontributor.request.FeedExpelRequest;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
-import world.trecord.event.notification.NotificationEventListener;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.fixture.FeedContributorFixture;
+import world.trecord.infra.fixture.FeedEntityFixture;
+import world.trecord.infra.fixture.RecordEntityFixture;
+import world.trecord.infra.fixture.UserEntityFixture;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static world.trecord.domain.feedcontributor.FeedContributorStatus.LEFT;
 
 @Transactional
-@IntegrationTestSupport
-class FeedContributorServiceTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @Autowired
-    FeedContributorRepository feedContributorRepository;
-
-    @Autowired
-    FeedContributorService feedContributorService;
-
-    @Autowired
-    RecordRepository recordRepository;
-
-    @MockBean
-    NotificationEventListener mockEventListener;
+class FeedContributorServiceTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("피드 주인이 다른 사용자를 피드에 초대하면 초대된 사용자는 피드 매니저가 된다")
     void inviteUserManagerTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         FeedInviteRequest request = FeedInviteRequest.builder()
                 .userToId(invitedUser.getId())
@@ -83,8 +58,8 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("존재하지 않는 피드에 사용자를 초대할 수 없다")
     void inviteUserInNotExistingFeedThrowExceptionTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
         long notExistingFeedId = -1L;
 
@@ -103,12 +78,12 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드에서 나간 사용자를 다시 초대할 수 있다")
     void inviteUserWhoLeaveFeedBeforeTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
-        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+        feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
 
         feedEntity.removeFeedContributor(invitedUser.getId());
         feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(invitedUser.getId(), feedEntity.getId(), LEFT);
@@ -131,8 +106,8 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("존재하지 않는 사용자를 초대할 수 없다")
     void inviteNotExistingUserThrowExceptionTest() throws Exception {
         //given
-        UserEntity owner = userRepository.save(createUser("owner@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        UserEntity owner = userRepository.save(UserEntityFixture.of("owner@email.com"));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
         long notExistingUserId = -1L;
 
         FeedInviteRequest request = FeedInviteRequest.builder()
@@ -150,11 +125,11 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드에 초대된 사용자는 자신의 글에 대한 모든 권한을 가진다")
     void managerPermissionTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         FeedInviteRequest request = FeedInviteRequest.builder()
                 .userToId(invitedUser.getId())
@@ -171,12 +146,12 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 주인이 아닌 사람이 다른 사용자를 초대하면 예외가 발생한다")
     void inviteUserWhenNotOwnerTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity other = createUser("other@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity other = UserEntityFixture.of("other@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, other, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         //when //then
         Assertions.assertThatThrownBy(() -> feedContributorService.inviteUserToFeed(other.getId(), feedEntity.getId(), null))
@@ -189,8 +164,8 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 주인이 자기 자신을 초대하면 예외가 발생한다")
     void inviteUserWhenSelfInviteTest() throws Exception {
         //given
-        UserEntity owner = userRepository.save(createUser("owner@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        UserEntity owner = userRepository.save(UserEntityFixture.of("owner@email.com"));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         FeedInviteRequest request = FeedInviteRequest.builder()
                 .userToId(owner.getId())
@@ -207,11 +182,11 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 주인이 다른 사용자를 초대하면 초대된 사용자에게 알림이 전송된다")
     void inviteUserNotificationTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         FeedInviteRequest request = FeedInviteRequest.builder()
                 .userToId(invitedUser.getId())
@@ -230,13 +205,13 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드에 이미 초대된 사용자에게 피드 초대를 하면 예외가 발생한다")
     void inviteUserWhoAlreadyInvitedTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity alreadyInvitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity alreadyInvitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, alreadyInvitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
-        feedContributorRepository.save(createFeedContributor(alreadyInvitedUser, feedEntity));
+        feedContributorRepository.save(FeedContributorFixture.of(alreadyInvitedUser, feedEntity));
 
         FeedInviteRequest request = FeedInviteRequest.builder()
                 .userToId(alreadyInvitedUser.getId())
@@ -253,13 +228,13 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 주인이 피드에 초대된 사용자를 내보내면 피드 컨트리뷰터에서 제거된다")
     void expelUserTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
-        feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+        feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
 
         FeedExpelRequest request = FeedExpelRequest.builder()
                 .userToId(invitedUser.getId())
@@ -276,7 +251,7 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("존재하지 않는 피드에서 사용자를 내보내려고 하면 예외가 발생한다")
     void expelUserWhenNotExistingFeedTest() throws Exception {
         //given
-        UserEntity owner = userRepository.save(createUser("owner@email.com"));
+        UserEntity owner = userRepository.save(UserEntityFixture.of("owner@email.com"));
         long notExistingFeedId = 0L;
 
         FeedExpelRequest request = FeedExpelRequest.builder()
@@ -293,12 +268,12 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 주인이 아닌 사람이 사용자를 내보려고 하면 예외가 발생한다")
     void expelUserByNotFeedOwnerTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity other = createUser("other@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity other = UserEntityFixture.of("other@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, other, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         //when //then
         Assertions.assertThatThrownBy(() -> feedContributorService.expelUserFromFeed(other.getId(), invitedUser.getId(), feedEntity.getId()))
@@ -311,11 +286,11 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 컨트리뷰터가 아닌 사용자를 내보려고 하면 예외가 발생한다")
     void expelNotFeedContributorUserTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity other = createUser("other@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity other = UserEntityFixture.of("other@email.com");
         userRepository.saveAll(List.of(owner, other));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         FeedExpelRequest request = FeedExpelRequest.builder()
                 .userToId(other.getId())
@@ -332,8 +307,8 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 주인이 자기 자신을 내보낼 수 없다")
     void expelUserWhenFeedOwnerSelfExpelTest() throws Exception {
         //given
-        UserEntity owner = userRepository.save(createUser("owner@email.com"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
+        UserEntity owner = userRepository.save(UserEntityFixture.of("owner@email.com"));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
         FeedExpelRequest request = FeedExpelRequest.builder()
                 .userToId(owner.getId())
@@ -350,20 +325,20 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("자신이 피드 컨트리뷰터로 참여하는 피드 정보와 피드 주인 정보를 페이지네이션으로 조회한다")
     void getUserFeedContributorsTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
-        FeedEntity feedEntity1 = createFeed(owner);
-        FeedEntity feedEntity2 = createFeed(owner);
-        FeedEntity feedEntity3 = createFeed(owner);
-        FeedEntity feedEntity4 = createFeed(owner);
+        FeedEntity feedEntity1 = FeedEntityFixture.of(owner);
+        FeedEntity feedEntity2 = FeedEntityFixture.of(owner);
+        FeedEntity feedEntity3 = FeedEntityFixture.of(owner);
+        FeedEntity feedEntity4 = FeedEntityFixture.of(owner);
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
-        FeedContributorEntity feedContributor1 = createFeedContributor(invitedUser, feedEntity1);
-        FeedContributorEntity feedContributor2 = createFeedContributor(invitedUser, feedEntity2);
-        FeedContributorEntity feedContributor3 = createFeedContributor(invitedUser, feedEntity3);
-        FeedContributorEntity feedContributor4 = createFeedContributor(invitedUser, feedEntity4);
+        FeedContributorEntity feedContributor1 = FeedContributorFixture.of(invitedUser, feedEntity1);
+        FeedContributorEntity feedContributor2 = FeedContributorFixture.of(invitedUser, feedEntity2);
+        FeedContributorEntity feedContributor3 = FeedContributorFixture.of(invitedUser, feedEntity3);
+        FeedContributorEntity feedContributor4 = FeedContributorFixture.of(invitedUser, feedEntity4);
         feedContributorRepository.saveAll(List.of(feedContributor1, feedContributor2, feedContributor3, feedContributor4));
 
         PageRequest pageRequest = PageRequest.of(0, 10);
@@ -379,14 +354,14 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 컨트리뷰터를 내보낼때 피드 컨트리뷰터가 작성한 기록이 삭제된다")
     void expelUserFromFeedAndDeleteRecordWhenFeedContributorExpelledTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
-        FeedContributorEntity feedContributor = feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        FeedContributorEntity feedContributor = feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
 
-        recordRepository.save(createRecord(invitedUser, feedEntity));
+        recordRepository.save(RecordEntityFixture.of(invitedUser, feedEntity, 1));
 
         //when
         feedContributorService.expelUserFromFeed(owner.getId(), invitedUser.getId(), feedEntity.getId());
@@ -399,60 +374,19 @@ class FeedContributorServiceTest extends AbstractContainerBaseTest {
     @DisplayName("피드 컨트리뷰터가 피드를 나갈 때 자신이 작성한 기록이 삭제된다")
     void leaveFeedAndDeleteRecordWhenFeedContributorExpelledTest() throws Exception {
         //given
-        UserEntity owner = createUser("owner@email.com");
-        UserEntity invitedUser = createUser("invited@email.com");
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity invitedUser = UserEntityFixture.of("invited@email.com");
         userRepository.saveAll(List.of(owner, invitedUser));
 
-        FeedEntity feedEntity = feedRepository.save(createFeed(owner));
-        FeedContributorEntity feedContributor = feedContributorRepository.save(createFeedContributor(invitedUser, feedEntity));
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        FeedContributorEntity feedContributor = feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
 
-        recordRepository.save(createRecord(invitedUser, feedEntity));
+        recordRepository.save(RecordEntityFixture.of(invitedUser, feedEntity, 1));
 
         //when
         feedContributorService.leaveFeed(invitedUser.getId(), feedEntity.getId());
 
         //then
         Assertions.assertThat(recordRepository.findAll()).isEmpty();
-    }
-
-    private UserEntity createUser(String email) {
-        return UserEntity.builder()
-                .email(email)
-                .build();
-    }
-
-    private FeedEntity createFeed(UserEntity userEntity) {
-        return FeedEntity.builder()
-                .userEntity(userEntity)
-                .name("name")
-                .startAt(LocalDateTime.now())
-                .endAt(LocalDateTime.now())
-                .build();
-    }
-
-    private RecordEntity createRecord(UserEntity userEntity, FeedEntity feedEntity) {
-        return RecordEntity.builder()
-                .userEntity(userEntity)
-                .feedEntity(feedEntity)
-                .title("record")
-                .place("place")
-                .longitude("longitude")
-                .latitude("latitude")
-                .longitude("longitude")
-                .latitude("latitude")
-                .date(LocalDateTime.of(2022, 10, 1, 0, 0))
-                .content("content")
-                .weather("weather")
-                .transportation("satisfaction")
-                .feeling("feeling")
-                .sequence(1)
-                .build();
-    }
-
-    private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
-        return FeedContributorEntity.builder()
-                .userEntity(userEntity)
-                .feedEntity(feedEntity)
-                .build();
     }
 }

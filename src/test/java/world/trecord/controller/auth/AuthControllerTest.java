@@ -1,20 +1,13 @@
 package world.trecord.controller.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.config.properties.JwtProperties;
-import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.controller.auth.request.GoogleLoginRequest;
 import world.trecord.controller.auth.request.RefreshTokenRequest;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
+import world.trecord.infra.test.AbstractMockMvcTest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,23 +16,7 @@ import static world.trecord.exception.CustomExceptionError.INVALID_ARGUMENT;
 import static world.trecord.exception.CustomExceptionError.INVALID_TOKEN;
 
 @Transactional
-@MockMvcTestSupport
-class AuthControllerTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    JwtTokenHandler jwtTokenHandler;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    JwtProperties jwtProperties;
+class AuthControllerTest extends AbstractMockMvcTest {
 
     @Test
     @DisplayName("POST /api/v1/auth/google-login - 실패 (올바르지 않은 파라미터)")
@@ -51,7 +28,7 @@ class AuthControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         post("/api/v1/auth/google-login")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));
@@ -76,7 +53,7 @@ class AuthControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         post("/api/v1/auth/token")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isOk());
     }
@@ -95,14 +72,14 @@ class AuthControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         post("/api/v1/auth/token")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
     }
 
     @Test
-    @DisplayName("POST /api/v1/auth/token - 실패 (파라미터 보내지 않음)")
+    @DisplayName("POST /api/v1/auth/token - 실패 (유효하지 않은 파라미터)")
     void refreshTokenWithEmptyTokenTest() throws Exception {
         //given
         RefreshTokenRequest request = RefreshTokenRequest.builder().build();
@@ -111,7 +88,7 @@ class AuthControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         post("/api/v1/auth/token")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(INVALID_ARGUMENT.code()));

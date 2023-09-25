@@ -4,12 +4,10 @@ import io.jsonwebtoken.JwtException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.redis.UserCacheRepository;
@@ -20,6 +18,7 @@ import world.trecord.dto.auth.response.LoginResponse;
 import world.trecord.dto.auth.response.RefreshResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
+import world.trecord.infra.test.AbstractMockMvcTest;
 import world.trecord.service.users.UserService;
 
 import java.util.Optional;
@@ -29,8 +28,7 @@ import static org.mockito.BDDMockito.doThrow;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+class AuthServiceTest extends AbstractMockMvcTest {
 
     @Mock
     GoogleAuthService googleAuthService;

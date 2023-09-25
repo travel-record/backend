@@ -8,39 +8,38 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
-import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.comment.request.CommentCreateRequest;
 import world.trecord.dto.comment.request.CommentUpdateRequest;
 import world.trecord.dto.comment.response.CommentResponse;
-import world.trecord.dto.comment.response.UserCommentsResponse;
+import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
+import world.trecord.service.record.RecordService;
+import world.trecord.service.users.UserService;
 
-import java.util.List;
 import java.util.Optional;
 
 import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
-import static world.trecord.exception.CustomExceptionError.*;
+import static world.trecord.exception.CustomExceptionError.COMMENT_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class CommentService {
 
+    private final UserService userService;
+    private final RecordService recordService;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
-    private final RecordRepository recordRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createComment(Long userFromId, CommentCreateRequest request) {
-        UserEntity userEntity = findUserOrException(userFromId);
-        RecordEntity recordEntity = findRecordOrException(request.getRecordId());
+        UserEntity userEntity = userService.findUserOrException(userFromId);
+        RecordEntity recordEntity = recordService.findRecordOrException(request.getRecordId());
         Optional<CommentEntity> parentOptional = findCommentOrOptional(request.getParentId());
 
         if (request.getParentId() != null && parentOptional.isEmpty()) {
@@ -85,23 +84,8 @@ public class CommentService {
                         .build());
     }
 
-    public UserCommentsResponse getUserComments(Long userId) {
-        UserEntity userEntity = findUserOrException(userId);
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
-
-        return UserCommentsResponse.builder()
-                .projectionList(projectionList)
-                .build();
-    }
-
-    private UserEntity findUserOrException(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-    }
-
-    private RecordEntity findRecordOrException(Long recordId) {
-        return recordRepository.findById(recordId)
-                .orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    public Page<UserCommentResponse> getUserComments(Long userId, Pageable pageable) {
+        return commentRepository.findByUserId(userId, pageable).map(UserCommentResponse::of);
     }
 
     private CommentEntity findCommentOrException(Long commentId) {

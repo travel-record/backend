@@ -4,28 +4,22 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import world.trecord.client.feign.client.response.GoogleUserInfoResponse;
 import world.trecord.exception.CustomException;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.IntegrationTestSupport;
+import world.trecord.infra.test.AbstractIntegrationTest;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
 @AutoConfigureWireMock(port = 8089)
-@IntegrationTestSupport
-class GoogleUserInfoFeignClientTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    private GoogleUserInfoFeignClient client;
+class GoogleUserInfoFeignClientTest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("올바른 엑세스 토큰으로 구글 서버에 요청하면 사용자 정보를 반환받는다")
-    public void googleTokenFeignClientCallWithValidCodeTest() {
+    void googleTokenFeignClientCallWithValidCodeTest() {
         //given
         String validToken = "valid token";
         String responseBody = "{\"email\":\"sample@gmail.com\"}";
@@ -37,7 +31,7 @@ class GoogleUserInfoFeignClientTest extends AbstractContainerBaseTest {
                         .withBody(responseBody)));
 
         //when
-        GoogleUserInfoResponse response = client.fetchUserInfo(validToken);
+        GoogleUserInfoResponse response = googleUserInfoFeignClient.fetchUserInfo(validToken);
 
         //then
         Assertions.assertThat(response.getEmail()).isEqualTo("sample@gmail.com");
@@ -45,7 +39,7 @@ class GoogleUserInfoFeignClientTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("올바르지 않은 엑세스 토큰으로 구글 서버에 요청하면 예외가 발생한다")
-    public void googleTokenFeignClientCallWithInvalidCodeTest() {
+    void googleTokenFeignClientCallWithInvalidCodeTest() {
         //given
         String invalidToken = "invalid token";
         String responseBody = null;
@@ -57,10 +51,9 @@ class GoogleUserInfoFeignClientTest extends AbstractContainerBaseTest {
                         .withBody(responseBody)));
 
         //when //then
-        Assertions.assertThatThrownBy(() -> client.fetchUserInfo("Bearer " + invalidToken))
+        Assertions.assertThatThrownBy(() -> googleUserInfoFeignClient.fetchUserInfo("Bearer " + invalidToken))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);
     }
-
 }

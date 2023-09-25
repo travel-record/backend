@@ -6,9 +6,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.config.redis.UserCacheRepository;
+import world.trecord.config.security.UserContext;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.domain.users.UserRepository;
-import world.trecord.dto.users.UserContext;
 import world.trecord.dto.users.request.UserUpdateRequest;
 import world.trecord.dto.users.response.UserInfoResponse;
 import world.trecord.exception.CustomException;
@@ -68,7 +68,6 @@ public class UserService {
 
     public UserContext getUserContextOrException(Long userId) {
         Optional<UserContext> userContextOptional = userCacheRepository.getUserContext(userId);
-
         return userContextOptional
                 .orElseGet(() -> userRepository.findById(userId)
                         .map(userEntity -> userCacheRepository.setUserContext(UserContext.fromEntity(userEntity)))
@@ -87,7 +86,7 @@ public class UserService {
                 .orElse(null);
     }
 
-    private UserEntity findUserOrException(Long userId) {
+    public UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 

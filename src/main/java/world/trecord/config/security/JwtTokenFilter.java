@@ -1,7 +1,6 @@
 package world.trecord.config.security;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,7 +16,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-import world.trecord.dto.users.UserContext;
 import world.trecord.service.users.UserService;
 
 import java.io.IOException;
@@ -28,20 +27,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final String secretKey;
     private final JwtTokenHandler jwtTokenHandler;
     private final UserService userService;
-    private final ObjectMapper objectMapper;
     private final Map<RegexRequestMatcher, List<HttpMethod>> whitelistMap = new HashMap<>();
     private final Set<RequestMatcher> tokenInParamSet = new HashSet<>();
 
     public JwtTokenFilter(String secretKey,
                           JwtTokenHandler jwtTokenHandler,
                           UserService userService,
-                          ObjectMapper objectMapper,
                           Map<String, List<HttpMethod>> whitelistMap,
                           List<String> tokenInParamUrls) {
         this.secretKey = secretKey;
         this.jwtTokenHandler = jwtTokenHandler;
         this.userService = userService;
-        this.objectMapper = objectMapper;
         whitelistMap.forEach((url, methods) -> this.whitelistMap.put(new RegexRequestMatcher(url, null), methods));
         tokenInParamUrls.forEach(url -> this.tokenInParamSet.add(new AntPathRequestMatcher(url)));
     }
@@ -58,8 +54,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 }
             }
 
-            if (token == null && isWhitelistRequest(req)) {
-                Authentication authentication = new UsernamePasswordAuthenticationToken(null, null, null);
+            if (Objects.isNull(token) && isWhitelistRequest(req) && isNotAuthenticated()) {
+                AnonymousContext anonymousContext = AnonymousContext.of();
+                Authentication authentication = new UsernamePasswordAuthenticationToken(anonymousContext, anonymousContext.getPassword(), anonymousContext.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 chain.doFilter(req, res);
                 return;
@@ -86,6 +83,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private boolean isTokenInRequestQueryParam(HttpServletRequest req) {
         return tokenInParamSet.stream().anyMatch(r -> r.matches(req));
+    }
+
+    private boolean isNotAuthenticated() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return Objects.isNull(authentication) || authentication instanceof AnonymousAuthenticationToken;
     }
 
     private void setAuthentication(UserContext userContext) {

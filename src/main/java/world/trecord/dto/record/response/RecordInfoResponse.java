@@ -30,12 +30,20 @@ public class RecordInfoResponse {
     private String companion;
     private String imageUrl;
 
+    public static RecordInfoResponse of(RecordEntity recordEntity, Long viewerId, Boolean liked) {
+        return RecordInfoResponse.builder()
+                .recordEntity(recordEntity)
+                .viewerId(viewerId)
+                .liked(liked)
+                .build();
+    }
+
     @Builder
     private RecordInfoResponse(RecordEntity recordEntity, Long viewerId, Boolean liked) {
         this.writerId = recordEntity.getFeedEntity().getUserEntity().getId();
-        this.feedId = recordEntity.getFeedEntity().getId();
+        this.feedId = recordEntity.getFeedId();
         this.recordId = recordEntity.getId();
-        this.isUpdatable = recordEntity.isCreatedBy(viewerId) || recordEntity.getFeedEntity().isOwnedBy(viewerId);
+        this.isUpdatable = recordEntity.isUpdatable(viewerId);
         this.liked = liked;
         this.title = recordEntity.getTitle();
         this.date = recordEntity.convertDateToLocalDate();

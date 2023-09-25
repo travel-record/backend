@@ -7,18 +7,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.feedcontributor.FeedContributorStatus;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
+import world.trecord.service.feed.FeedService;
+import world.trecord.service.users.UserService;
 
 import java.util.Objects;
 
@@ -32,17 +32,17 @@ import static world.trecord.exception.CustomExceptionError.*;
 @Service
 public class FeedContributorService {
 
-    private final UserRepository userRepository;
-    private final FeedRepository feedRepository;
+    private final UserService userService;
+    private final FeedService feedService;
     private final RecordRepository recordRepository;
     private final FeedContributorRepository feedContributorRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void inviteUserToFeed(Long requestUserId, Long feedId, FeedInviteRequest request) {
-        FeedEntity feedEntity = findFeedWithContributorsWithLockOrException(feedId);
+        FeedEntity feedEntity = feedService.findFeedWithContributorsWithLockOrException(feedId);
         ensureRequestUserIsFeedOwner(feedEntity, requestUserId);
-        UserEntity invitee = findUserOrException(request.getUserToId());
+        UserEntity invitee = userService.findUserOrException(request.getUserToId());
         ensureNotSelfInviting(requestUserId, invitee.getId());
         ensureInviteeNotAlreadyInvited(feedEntity, invitee.getId());
         saveFeedContributor(feedEntity, invitee);
@@ -52,9 +52,9 @@ public class FeedContributorService {
 
     @Transactional
     public void expelUserFromFeed(Long requestUserId, Long contributorId, Long feedId) {
-        FeedEntity feedEntity = findFeedWithContributorsWithLockOrException(feedId);
+        FeedEntity feedEntity = feedService.findFeedWithContributorsWithLockOrException(feedId);
         ensureRequestUserIsFeedOwner(feedEntity, requestUserId);
-        UserEntity contributor = findUserOrException(contributorId);
+        UserEntity contributor = userService.findUserOrException(contributorId);
         ensureNotSelfExpelling(requestUserId, contributor.getId());
         ensureUserIsFeedContributor(feedEntity, contributor.getId());
         deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
@@ -68,7 +68,7 @@ public class FeedContributorService {
 
     @Transactional
     public void leaveFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = findFeedWithContributorsWithLockOrException(feedId);
+        FeedEntity feedEntity = feedService.findFeedWithContributorsWithLockOrException(feedId);
         ensureRequestUserIsNotFeedOwner(feedEntity, userId);
         if (!feedEntity.isContributor(userId)) {
             throw new CustomException(USER_NOT_INVITED);
@@ -99,15 +99,6 @@ public class FeedContributorService {
         if (Objects.equals(requestUserId, inviteeId)) {
             throw new CustomException(SELF_INVITATION_NOT_ALLOWED);
         }
-    }
-
-    private UserEntity findUserOrException(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-    }
-
-    private FeedEntity findFeedWithContributorsWithLockOrException(Long feedId) {
-        return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private void ensureRequestUserIsNotFeedOwner(FeedEntity feedEntity, Long userId) {

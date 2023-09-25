@@ -22,7 +22,7 @@
 
 2. After you set database
     - create schema named `trecord`
-    - and run `./sql/ddl.sql` in `trecord`
+    - and run `./database/service-domain-create.sql` in `trecord`
 
 3. After you set schema, run command below in your terminal
 
@@ -41,34 +41,25 @@ The following APIs are being invoked for Google Oauth2 authentication
 
 ### ERD
 
-![](./docs/erd%20diagram.png)
+![](images/erd%20diagram.png)
 
 ### AWS Architecture
 
-![](./docs/aws%20architecture.jpg)
+![](images/aws%20architecture.jpg)
 
 ### Git flow
 
 ```sh
 |-- master
 |   |-- hotfix
-|   |   |-- issue-#885
+|   |   |-- #885
 |-- develop
 |   |-- feat
-|   |   |-- issue-#883
-|   |   |-- issue-#884
+|   |   |-- #883
+|   |   |-- #884
 |   |-- refactor
-|   |   |-- issue-#887
+|   |   |-- #887
 ```
-
-### Branch Merge
-
-- feat/refactor -> develop : Squash and Merge
-    - merge commit message => feat(#2): 사용자 등록 기능을 추가한다
-- hotfix -> main : Squash and Merge
-    - merge commit message => fix(#2): 예약 시 매장 회원에게 승인 요청이 안가는 오류를 수정한다
-- develop -> main : Rebase and Merge
-    - merge commit message => develop(#2): 백엔드 프로젝트를 생성한다
 
 ### Issue
 
