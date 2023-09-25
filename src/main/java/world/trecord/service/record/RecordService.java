@@ -118,7 +118,7 @@ public class RecordService {
     }
 
     public RecordEntity findRecordWithLockOrException(Long recordId) {
-        return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+        return recordRepository.findForUpdateById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
     private void ensureUserHasWritePermissionOverRecord(Long userId, FeedEntity feedEntity) {

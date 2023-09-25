@@ -30,12 +30,12 @@ class RecordRepositoryTest extends AbstractIntegrationTest {
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(userEntity, feedEntity, 0));
 
         //when
-        RecordEntity lockedRecord = recordRepository.findByIdForUpdate(recordEntity.getId()).orElse(null);
+        RecordEntity lockedRecord = recordRepository.findForUpdateById(recordEntity.getId()).orElse(null);
 
         //then
         Assertions.assertThat(lockedRecord).isNotNull();
     }
-    
+
     @Test
     @DisplayName("기록을 조회할 때 피드와 함께 조회한다")
     void findRecordEntityWithFeedEntityTest() throws Exception {

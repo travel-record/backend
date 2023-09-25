@@ -32,7 +32,7 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
     @DisplayName("사용자가 동일한 기록에 좋아요 요청을 동시에 해도 순서대로 실행된다")
     void toggleLikeConcurrencyTest() throws Exception {
         //given
-        final int TOTAL_REQUEST_COUNT = 10;
+        final int TOTAL_REQUEST_COUNT = 11;
 
         UserEntity owner = UserEntityFixture.of();
         UserEntity other = UserEntityFixture.of();

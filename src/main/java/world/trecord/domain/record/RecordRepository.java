@@ -20,10 +20,7 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
     Optional<RecordEntity> findWithFeedEntityById(Long recordId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT re " +
-            "FROM RecordEntity re " +
-            "WHERE re.id = :recordId")
-    Optional<RecordEntity> findByIdForUpdate(@Param("recordId") Long recordId);
+    Optional<RecordEntity> findForUpdateById(Long recordId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT re " +

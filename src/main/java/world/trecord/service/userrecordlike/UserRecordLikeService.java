@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
@@ -29,11 +30,10 @@ public class UserRecordLikeService {
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public UserRecordLikedResponse toggleLike(Long userId, Long recordId) {
         UserEntity userEntity = userService.findUserOrException(userId);
         RecordEntity recordEntity = recordService.findRecordWithLockOrException(recordId);
-
         return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
                 .map(this::unlike)
                 .orElseGet(() -> like(userEntity, recordEntity));
