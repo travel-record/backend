@@ -16,12 +16,10 @@ import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractConcurrencyTest;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.IntStream;
 
 class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
 
@@ -38,18 +36,14 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
     @DisplayName("같은 피드에 같은 날짜에 기록을 동시에 저장해도 같은 순서 번호를 가지지 않는다")
     void createRecordWithSequenceConcurrencyTest() throws InterruptedException {
         //given
-        final int NUMBER_OF_REQUESTS = 200;
-        List<Callable<RecordCreateResponse>> tasks = new ArrayList<>();
+        final int TOTAL_REQUEST_COUNT = 200;
 
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
 
-        IntStream.range(0, NUMBER_OF_REQUESTS).forEach(request -> {
-            tasks.add(() -> {
-                RecordCreateRequest recordCreateRequest = buildCreateRequest(feedEntity);
-                return recordService.createRecord(userEntity.getId(), recordCreateRequest);
-            });
-
+        List<Callable<RecordCreateResponse>> tasks = generateConcurrentTasks(TOTAL_REQUEST_COUNT, () -> {
+            RecordCreateRequest recordCreateRequest = buildCreateRequest(feedEntity);
+            return recordService.createRecord(userEntity.getId(), recordCreateRequest);
         });
 
         //when
@@ -69,20 +63,19 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
 
         Assertions.assertThat(recordRepository.findAll())
                 .extracting("sequence")
-                .hasSize(NUMBER_OF_REQUESTS)
+                .hasSize(TOTAL_REQUEST_COUNT)
                 .doesNotHaveDuplicates();
 
         Assertions.assertThat(recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), buildCreateRequest(feedEntity).getDate()))
                 .isPresent()
-                .hasValue(NUMBER_OF_REQUESTS);
+                .hasValue(TOTAL_REQUEST_COUNT);
     }
 
     @Test
     @DisplayName("같은 날짜를 가진 기록들의 순서 변경을 동시에 해도 순서가 순서대로 변경된다")
     void swapSequenceConcurrencyTest() throws Exception {
         //given
-        final int NUMBER_OF_REQUESTS = 1;
-        List<Callable<Void>> tasks = new ArrayList<>();
+        final int TOTAL_REQUEST_COUNT = 11;
 
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
@@ -95,11 +88,9 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
 
         RecordSequenceSwapRequest swapRequest = buildSwapRequest(recordEntity1, recordEntity2);
 
-        IntStream.of(0, NUMBER_OF_REQUESTS).forEach(request -> {
-            tasks.add(() -> {
-                recordService.swapRecordSequence(userEntity.getId(), swapRequest);
-                return null;
-            });
+        List<Callable<Void>> tasks = generateConcurrentTasks(TOTAL_REQUEST_COUNT, () -> {
+            recordService.swapRecordSequence(userEntity.getId(), swapRequest);
+            return null;
         });
 
         //when

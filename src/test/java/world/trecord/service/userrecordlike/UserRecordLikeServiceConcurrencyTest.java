@@ -12,12 +12,10 @@ import world.trecord.infra.fixture.RecordEntityFixture;
 import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractConcurrencyTest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.IntStream;
 
 class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
 
@@ -34,8 +32,7 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
     @DisplayName("사용자가 동일한 기록에 좋아요 요청을 동시에 해도 순서대로 실행된다")
     void toggleLikeConcurrencyTest() throws Exception {
         //given
-        final int NUMBER_OF_REQUESTS = 10;
-        List<Callable<Void>> tasks = new ArrayList<>();
+        final int TOTAL_REQUEST_COUNT = 10;
 
         UserEntity owner = UserEntityFixture.of();
         UserEntity other = UserEntityFixture.of();
@@ -43,11 +40,9 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
-        IntStream.rangeClosed(0, NUMBER_OF_REQUESTS).forEach(request -> {
-            tasks.add(() -> {
-                userRecordLikeService.toggleLike(other.getId(), recordEntity.getId());
-                return null;
-            });
+        List<Callable<Void>> tasks = generateConcurrentTasks(TOTAL_REQUEST_COUNT, () -> {
+            userRecordLikeService.toggleLike(other.getId(), recordEntity.getId());
+            return null;
         });
 
         //when
