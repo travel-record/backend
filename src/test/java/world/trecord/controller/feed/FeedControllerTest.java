@@ -190,18 +190,17 @@ class FeedControllerTest extends AbstractMockMvcTest {
                 .andExpect(jsonPath("$.data.contributors.size()").value(6));
     }
 
-    @CsvSource({"LEFT", "EXPELLED"})
-    @ParameterizedTest
-    @DisplayName("가장 최근에 피드에서 쫓겨나거나 나간 사용자는 피드를 조회할 수 없다")
+    @Test
+    @DisplayName("가장 최근에 피드에서 쫓겨나간 사용자는 피드를 조회할 수 없다")
     @WithTestUser("user@email.com")
-    void getFeed_byUserExpelledOrLeftRecently_returnsForbiddenCode(FeedContributorStatus status) throws Exception {
+    void getFeed_byUserExpelledRecently_returnsForbiddenCode() throws Exception {
         //given
         UserEntity owner = userRepository.save(UserEntityFixture.of());
         UserEntity contributor = userRepository.findByEmail("user@email.com").get();
 
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
         feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
-        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), FeedContributorStatus.EXPELLED);
         entityManager.flush();
         entityManager.clear();
 

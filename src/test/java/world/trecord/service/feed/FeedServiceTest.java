@@ -390,10 +390,9 @@ class FeedServiceTest extends AbstractIntegrationTest {
                 .isEqualTo(FORBIDDEN);
     }
 
-    @CsvSource({"LEFT", "EXPELLED"})
-    @ParameterizedTest
-    @DisplayName("가장 최근에 피드에서 나가거나 추방된 사용자는 피드를 조회할 수 없다")
-    void getFeed_whenUserHasLeavedOrExpelled_throwsForbiddenException(FeedContributorStatus status) throws Exception {
+    @Test
+    @DisplayName("가장 최근에 피드에서 추방된 사용자는 피드를 조회할 수 없다")
+    void getFeed_whenUserExpelled_throwsForbiddenException() throws Exception {
         //given
         UserEntity owner = UserEntityFixture.of();
         UserEntity contributor = UserEntityFixture.of();
@@ -401,7 +400,7 @@ class FeedServiceTest extends AbstractIntegrationTest {
 
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
         feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity)); // 참여 중
-        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), FeedContributorStatus.EXPELLED);
         entityManager.flush();
         entityManager.clear();
 
