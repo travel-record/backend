@@ -32,10 +32,10 @@ public class FeedInfoResponse {
                 .viewerId(viewerId)
                 .build();
     }
-    
+
     @Builder
     private FeedInfoResponse(FeedEntity feedEntity, Long viewerId) {
-        this.writerId = feedEntity.getUserEntity().getId();
+        this.writerId = feedEntity.getUserId();
         this.feedId = feedEntity.getId();
         this.isUpdatable = feedEntity.isOwnedBy(viewerId);
         this.name = feedEntity.getName();

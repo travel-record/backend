@@ -110,17 +110,11 @@ public class FeedEntity extends BaseEntity {
     }
 
     public LocalDate convertStartAtToLocalDate() {
-        if (Objects.isNull(this.startAt)) {
-            return null;
-        }
-        return this.startAt.toLocalDate();
+        return Objects.nonNull(this.startAt) ? this.startAt.toLocalDate() : null;
     }
 
     public LocalDate convertEndAtToLocalDate() {
-        if (Objects.isNull(this.endAt)) {
-            return null;
-        }
-        return this.endAt.toLocalDate();
+        return Objects.nonNull(this.endAt) ? this.endAt.toLocalDate() : null;
     }
 
     public boolean isOwnedBy(Long userId) {
@@ -137,5 +131,9 @@ public class FeedEntity extends BaseEntity {
 
     public void removeFeedContributor(Long userId) {
         feedContributors.removeIf(contributor -> Objects.equals(contributor.getUserEntity().getId(), userId));
+    }
+
+    public Long getUserId() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getId() : null;
     }
 }
