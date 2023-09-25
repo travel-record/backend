@@ -10,10 +10,12 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import world.trecord.domain.BaseEntity;
-import world.trecord.domain.notification.args.NotificationArgs;
+import world.trecord.domain.notification.args.*;
 import world.trecord.domain.notification.enumeration.NotificationStatus;
 import world.trecord.domain.notification.enumeration.NotificationType;
 import world.trecord.domain.users.UserEntity;
+
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -54,5 +56,21 @@ public class NotificationEntity extends BaseEntity {
 
     public String getNotificationContent() {
         return type.getContent(this);
+    }
+
+    public UserFromArgs getUserFromArgs() {
+        return Objects.nonNull(this.args) ? args.getUserFrom() : null;
+    }
+
+    public FeedArgs getFeedArgs() {
+        return Objects.nonNull(this.args) ? args.getFeed() : null;
+    }
+
+    public RecordArgs getRecordArgs() {
+        return Objects.nonNull(this.args) ? args.getRecord() : null;
+    }
+
+    public CommentArgs getCommentArgs() {
+        return Objects.nonNull(this.args) ? args.getComment() : null;
     }
 }

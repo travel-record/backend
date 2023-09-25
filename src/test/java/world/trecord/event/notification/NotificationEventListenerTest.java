@@ -53,11 +53,6 @@ class NotificationEventListenerTest extends AbstractMockTest {
         NotificationArgs args = mock(NotificationArgs.class);
 
         NotificationEntity mockNotificationEntity = mock(NotificationEntity.class);
-        when(mockNotificationEntity.getArgs()).thenReturn(args);
-        when(mockNotificationEntity.getArgs().getFeed()).thenReturn(null);
-        when(mockNotificationEntity.getArgs().getRecord()).thenReturn(null);
-        when(mockNotificationEntity.getArgs().getComment()).thenReturn(null);
-        when(mockNotificationEntity.getId()).thenReturn(123L);
         when(notificationService.createNotification(userToId, type, args)).thenReturn(mockNotificationEntity);
 
         NotificationEvent notificationEvent = new NotificationEvent(userToId, userFromId, type, args);
@@ -87,7 +82,7 @@ class NotificationEventListenerTest extends AbstractMockTest {
         //when
         Assertions.assertThatThrownBy(() -> notificationEventListener.handleNotificationEventListener(notificationEvent))
                 .isInstanceOf(RuntimeException.class);
-        
+
         verify(sseEmitterService, never()).send(anyLong(), anyLong(), any(SseEmitterEvent.class));
     }
 
