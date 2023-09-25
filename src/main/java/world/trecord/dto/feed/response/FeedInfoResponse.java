@@ -17,7 +17,8 @@ public class FeedInfoResponse {
 
     private Long writerId;
     private Long feedId;
-    private Boolean isUpdatable;
+    private Boolean canModifyFeed;
+    private Boolean canWriteRecord;
     private String name;
     private String imageUrl;
     private String description;
@@ -43,7 +44,8 @@ public class FeedInfoResponse {
         this.writerId = feedEntity.getUserId();
         this.contributors = contributors;
         this.feedId = feedEntity.getId();
-        this.isUpdatable = feedEntity.isOwnedBy(viewerId);
+        this.canModifyFeed = feedEntity.isOwnedBy(viewerId);
+        this.canWriteRecord = feedEntity.canWriteRecord(viewerId);
         this.name = feedEntity.getName();
         this.imageUrl = feedEntity.getImageUrl();
         this.description = feedEntity.getDescription();

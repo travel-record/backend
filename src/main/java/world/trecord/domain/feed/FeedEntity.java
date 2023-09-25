@@ -122,6 +122,16 @@ public class FeedEntity extends BaseEntity {
         return Objects.equals(this.userEntity.getId(), userId);
     }
 
+    public boolean canWriteRecord(Long userId) {
+        if (isOwnedBy(userId)) {
+            return true;
+        }
+        return feedContributors.stream()
+                .map(FeedContributorEntity::getUserEntity)
+                .map(UserEntity::getId)
+                .anyMatch(contributorUserId -> Objects.equals(contributorUserId, userId));
+    }
+
     public void addFeedContributor(FeedContributorEntity feedContributorEntity) {
         this.feedContributors.add(feedContributorEntity);
     }

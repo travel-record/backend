@@ -48,9 +48,8 @@ public class RecordService {
     private final FeedContributorRepository feedContributorRepository;
 
     public RecordInfoResponse getRecord(Long userId, Long recordId) {
-        RecordEntity recordEntity = findRecordOrException(recordId);
+        RecordEntity recordEntity = findRecordWithUserOrException(recordId);
         Optional<Long> userIdOpt = Optional.ofNullable(userId);
-
         boolean liked = userLiked(recordEntity, userIdOpt);
         return RecordInfoResponse.of(recordEntity, userIdOpt.orElse(null), liked);
     }
@@ -71,7 +70,6 @@ public class RecordService {
         RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedEntity().getId());
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
-
         recordEntity.update(request.toUpdateEntity());
         recordRepository.saveAndFlush(recordEntity);
     }
@@ -118,6 +116,10 @@ public class RecordService {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
 
+    public RecordEntity findRecordWithUserOrException(Long recordId) {
+        return recordRepository.findWithUserById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    }
+
     public RecordEntity findRecordWithLockOrException(Long recordId) {
         return recordRepository.findForUpdateById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
     }
@@ -129,7 +131,7 @@ public class RecordService {
 
         boolean hasWritePermission = feedContributorRepository
                 .findByUserEntityIdAndFeedEntityId(userId, feedEntity.getId())
-                .map(contributor -> contributor.getPermission().getRecord().getWrite())
+                .map(it -> it.getPermission().getRecord().getWrite())
                 .orElse(false);
 
         if (!hasWritePermission) {

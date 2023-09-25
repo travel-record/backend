@@ -172,7 +172,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
         Assertions.assertThat(recordInfoResponse.getTitle()).isEqualTo(recordEntity.getTitle());
         Assertions.assertThat(recordInfoResponse.getContent()).isEqualTo(recordEntity.getContent());
-        Assertions.assertThat(recordInfoResponse.getIsUpdatable()).isTrue();
+        Assertions.assertThat(recordInfoResponse.getCanModifyRecord()).isTrue();
     }
 
     @Test
@@ -197,7 +197,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
         Assertions.assertThat(recordInfoResponse.getTitle()).isEqualTo(recordEntity.getTitle());
         Assertions.assertThat(recordInfoResponse.getContent()).isEqualTo(recordEntity.getContent());
-        Assertions.assertThat(recordInfoResponse.getIsUpdatable()).isFalse();
+        Assertions.assertThat(recordInfoResponse.getCanModifyRecord()).isFalse();
     }
 
     @Test
@@ -220,7 +220,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
 
         //then
         Assertions.assertThat(response)
-                .extracting("writerId", "title", "content", "isUpdatable")
+                .extracting("writerId", "title", "content", "canModifyRecord")
                 .containsExactly(writer.getId(), recordEntity.getTitle(), recordEntity.getContent(), false);
     }
 

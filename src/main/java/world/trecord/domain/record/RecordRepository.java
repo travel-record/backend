@@ -22,6 +22,9 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<RecordEntity> findForUpdateById(Long recordId);
 
+    @EntityGraph(attributePaths = "userEntity")
+    Optional<RecordEntity> findWithUserById(Long recordId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT re " +
             "FROM RecordEntity re " +

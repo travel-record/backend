@@ -105,6 +105,62 @@ class FeedControllerTest extends AbstractMockMvcTest {
     }
 
     @Test
+    @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 주인은 피드를 수정할 수 있고 피드 아래에 기록을 작성할 수 있다)")
+    @WithTestUser("user@email.com")
+    void getFeed_byFeedOwner_returnCanModifyFeedTrue() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.now(), LocalDateTime.now()));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canWriteRecord").value(true))
+                .andExpect(jsonPath("$.data.canModifyFeed").value(true));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 컨트리뷰터는 피드 아래에 기록을 작성할 수 있고 피드 수정은 불가능하다)")
+    @WithTestUser("contributor@email.com")
+    void getFeed_byFeedContributor_returnCanWriteRecordTrue() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("contributor@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                                .header(AUTHORIZATION, token(contributor.getId()))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canWriteRecord").value(true))
+                .andExpect(jsonPath("$.data.canModifyFeed").value(false));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 주인이나 피드 컨트리뷰터가 아니면 피드 수정과 피드 아래에 기록을 작성할 수 없다)")
+    @WithAnonymousUser
+    void getFeed_byNotFeedContributorAndOwner_returnCanWriteRecordFalse() throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity contributor = UserEntityFixture.of("contributor@email.com");
+        userRepository.saveAll(List.of(owner, contributor));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canWriteRecord").value(false))
+                .andExpect(jsonPath("$.data.canModifyFeed").value(false));
+    }
+
+    @Test
     @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 컨트리뷰터 리스트 조회)")
     @WithTestUser
     void getFeed_byFeedOwner() throws Exception {
