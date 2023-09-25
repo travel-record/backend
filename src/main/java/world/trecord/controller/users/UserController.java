@@ -1,11 +1,11 @@
 package world.trecord.controller.users;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.CurrentContext;
 import world.trecord.config.security.UserContext;
@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest request,
+    public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Validated UserUpdateRequest request,
                                                     @CurrentContext UserContext userContext) {
         return ApiResponse.ok(userService.updateUser(userContext.getId(), request));
     }

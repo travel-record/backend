@@ -1,6 +1,5 @@
 package world.trecord.controller.record;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -62,7 +61,7 @@ public class RecordController {
 
     @PutMapping("/{recordId}")
     public ApiResponse<Void> updateRecord(@PathVariable Long recordId,
-                                          @RequestBody @Valid RecordUpdateRequest request,
+                                          @RequestBody @Validated RecordUpdateRequest request,
                                           @CurrentContext UserContext userContext) throws BindException {
         recordValidator.verify(recordId, request);
         recordService.updateRecord(userContext.getId(), recordId, request);

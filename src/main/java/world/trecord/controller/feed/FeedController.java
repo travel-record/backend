@@ -1,12 +1,12 @@
 package world.trecord.controller.feed;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindException;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
@@ -53,7 +53,7 @@ public class FeedController {
     }
 
     @PostMapping
-    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request,
+    public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Validated FeedCreateRequest request,
                                                       @CurrentContext UserContext userContext) throws BindException {
         feedValidator.verify(request);
         return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
@@ -61,7 +61,7 @@ public class FeedController {
 
     @PutMapping("/{feedId}")
     public ApiResponse<Void> updateFeed(@PathVariable Long feedId,
-                                        @RequestBody @Valid FeedUpdateRequest request,
+                                        @RequestBody @Validated FeedUpdateRequest request,
                                         @CurrentContext UserContext userContext) throws BindException {
         feedValidator.verify(request);
         feedService.updateFeed(userContext.getId(), feedId, request);
@@ -77,7 +77,7 @@ public class FeedController {
 
     @PostMapping("/{feedId}/contributors/invite")
     public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
-                                        @RequestBody @Valid FeedInviteRequest request,
+                                        @RequestBody @Validated FeedInviteRequest request,
                                         @CurrentContext UserContext userContext) {
         feedContributorService.inviteUserToFeed(userContext.getId(), feedId, request);
         return ApiResponse.ok();

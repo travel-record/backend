@@ -1,11 +1,11 @@
 package world.trecord.controller.comment;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
@@ -33,7 +33,7 @@ public class CommentController {
     }
 
     @PostMapping
-    public ApiResponse<Void> createComment(@RequestBody @Valid CommentCreateRequest request,
+    public ApiResponse<Void> createComment(@RequestBody @Validated CommentCreateRequest request,
                                            @CurrentContext UserContext userContext) {
         commentService.createComment(userContext.getId(), request);
         return ApiResponse.ok();
@@ -41,7 +41,7 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     public ApiResponse<Void> updateComment(@PathVariable Long commentId,
-                                           @RequestBody @Valid CommentUpdateRequest request,
+                                           @RequestBody @Validated CommentUpdateRequest request,
                                            @CurrentContext UserContext userContext) {
         commentService.updateComment(userContext.getId(), commentId, request);
         return ApiResponse.ok();
