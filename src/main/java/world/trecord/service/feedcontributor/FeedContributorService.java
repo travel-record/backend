@@ -14,12 +14,14 @@ import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
+import world.trecord.dto.feedcontributor.response.FeedInvitationHistoryResponse;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
 import world.trecord.service.feed.FeedService;
 import world.trecord.service.users.UserService;
 
+import java.util.List;
 import java.util.Objects;
 
 import static world.trecord.domain.feedcontributor.FeedContributorStatus.EXPELLED;
@@ -62,21 +64,24 @@ public class FeedContributorService {
         deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
     }
 
+    @Transactional
+    public void leaveFeed(Long userId, Long feedId) {
+        FeedEntity feedEntity = feedService.findFeedWithContributorsWithLockOrException(feedId);
+        ensureRequestUserIsNotFeedOwner(feedEntity, userId);
+        ensureUserIsFeedContributor(feedEntity, userId);
+
+        deleteFeedContributor(feedEntity, userId, LEFT);
+    }
+
     public Page<UserFeedContributorListResponse> getUserParticipatingFeeds(Long userId, Pageable pageable) {
         return feedContributorRepository.findWithFeedEntityByUserEntityId(userId, pageable)
                 .map(FeedContributorEntity::getFeedEntity)
                 .map(UserFeedContributorListResponse::fromEntity);
     }
 
-    @Transactional
-    public void leaveFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = feedService.findFeedWithContributorsWithLockOrException(feedId);
-        ensureRequestUserIsNotFeedOwner(feedEntity, userId);
-        if (!feedEntity.isContributor(userId)) {
-            throw new CustomException(USER_NOT_INVITED);
-        }
-
-        deleteFeedContributor(feedEntity, userId, LEFT);
+    public FeedInvitationHistoryResponse getRecentUniqueMaxThreeInvitees(Long userId) {
+        List<Object[]> objects = feedContributorRepository.findRecentMaxThreeContributorsByUserId(userId);
+        return FeedInvitationHistoryResponse.of(objects);
     }
 
     private void saveFeedContributor(FeedEntity feedEntity, UserEntity userEntity) {

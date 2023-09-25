@@ -19,6 +19,7 @@ import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
+import world.trecord.dto.feedcontributor.response.FeedInvitationHistoryResponse;
 import world.trecord.service.feed.FeedService;
 import world.trecord.service.feedcontributor.FeedContributorService;
 
@@ -70,6 +71,11 @@ public class FeedController {
                                         @CurrentContext AccountContext accountContext) {
         feedService.deleteFeed(accountContext.getId(), feedId);
         return ApiResponse.ok();
+    }
+
+    @GetMapping("/invitations/history")
+    public ApiResponse<FeedInvitationHistoryResponse> invitationHistory(@CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(feedContributorService.getRecentUniqueMaxThreeInvitees(accountContext.getId()));
     }
 
     @PostMapping("/{feedId}/contributors/invite")

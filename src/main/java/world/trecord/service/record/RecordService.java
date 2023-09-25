@@ -65,6 +65,7 @@ public class RecordService {
         return RecordCreateResponse.of(recordEntity);
     }
 
+    // TODO 권한 체크
     @Transactional
     public void updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         RecordEntity recordEntity = findRecordOrException(recordId);
@@ -92,6 +93,7 @@ public class RecordService {
         recordRepository.saveAllAndFlush(List.of(originalRecord, targetRecord));
     }
 
+    // TODO 권한 체크
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
