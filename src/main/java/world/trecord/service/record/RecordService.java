@@ -47,10 +47,12 @@ public class RecordService {
     private final CommentRepository commentRepository;
     private final FeedContributorRepository feedContributorRepository;
 
-    public RecordInfoResponse getRecord(Optional<Long> viewerId, Long recordId) {
+    public RecordInfoResponse getRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        boolean liked = userLiked(recordEntity, viewerId);
-        return RecordInfoResponse.of(recordEntity, viewerId.orElse(null), liked);
+        Optional<Long> userIdOpt = Optional.ofNullable(userId);
+
+        boolean liked = userLiked(recordEntity, userIdOpt);
+        return RecordInfoResponse.of(recordEntity, userIdOpt.orElse(null), liked);
     }
 
     @Transactional
@@ -58,6 +60,7 @@ public class RecordService {
         UserEntity userEntity = userService.findUserOrException(userId);
         FeedEntity feedEntity = feedService.findFeedOrException(request.getFeedId());
         ensureUserHasWritePermissionOverRecord(userId, feedEntity);
+
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
         RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, nextSequence));
         return RecordCreateResponse.of(userEntity, recordEntity);
@@ -67,7 +70,6 @@ public class RecordService {
     public void updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedEntity().getId());
-
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
 
         recordEntity.update(request.toUpdateEntity());
@@ -86,7 +88,6 @@ public class RecordService {
         RecordEntity originalRecord = recordEntityList.get(0);
         RecordEntity targetRecord = recordEntityList.get(1);
         ensureRecordsHasSameFeed(originalRecord, targetRecord);
-
         FeedEntity feedEntity = feedService.findFeedOrException(originalRecord.getFeedId());
         ensureUserHasPermissionOverFeed(userId, feedEntity);
 
@@ -98,7 +99,6 @@ public class RecordService {
     public void deleteRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
         FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedId());
-
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
 
         commentRepository.deleteAllByRecordEntityId(recordId);
@@ -107,10 +107,11 @@ public class RecordService {
         recordRepository.delete(recordEntity);
     }
 
-    public Page<RecordCommentResponse> getRecordComments(Optional<Long> viewerId, Long recordId, Pageable pageable) {
+    public Page<RecordCommentResponse> getRecordComments(Long userId, Long recordId, Pageable pageable) {
         RecordEntity recordEntity = findRecordOrException(recordId);
+        Optional<Long> userIdOpt = Optional.ofNullable(userId);
         Page<CommentEntity> commentEntities = commentRepository.findWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageable);
-        return commentEntities.map(it -> RecordCommentResponse.of(it, viewerId.orElse(null)));
+        return commentEntities.map(it -> RecordCommentResponse.of(it, userIdOpt.orElse(null)));
     }
 
     public RecordEntity findRecordOrException(Long recordId) {

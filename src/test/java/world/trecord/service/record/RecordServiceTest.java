@@ -23,7 +23,6 @@ import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static world.trecord.exception.CustomExceptionError.*;
@@ -167,7 +166,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(writer, feedEntity, 0));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecord(Optional.of(writer.getId()), recordEntity.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecord(writer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -192,7 +191,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
 
         //when
-        RecordInfoResponse recordInfoResponse = recordService.getRecord(Optional.of(commenter1.getId()), recordEntity.getId());
+        RecordInfoResponse recordInfoResponse = recordService.getRecord(commenter1.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(recordInfoResponse.getWriterId()).isEqualTo(writer.getId());
@@ -214,9 +213,10 @@ class RecordServiceTest extends AbstractIntegrationTest {
         CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity);
         CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
+        Long notExistingUserId = null;
 
         //when
-        RecordInfoResponse response = recordService.getRecord(Optional.empty(), recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(notExistingUserId, recordEntity.getId());
 
         //then
         Assertions.assertThat(response)
@@ -232,7 +232,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         long notExistingRecordId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> recordService.getRecord(Optional.of(viewerId), notExistingRecordId))
+        Assertions.assertThatThrownBy(() -> recordService.getRecord(viewerId, notExistingRecordId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(RECORD_NOT_FOUND);
@@ -479,7 +479,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         userRecordLikeRepository.save(UserRecordLikeFixture.of(viewer, recordEntity));
 
         //when
-        RecordInfoResponse response = recordService.getRecord(Optional.of(viewer.getId()), recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(viewer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isTrue();
@@ -495,7 +495,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(writer, feedEntity, 0));
 
         //when
-        RecordInfoResponse response = recordService.getRecord(Optional.of(viewer.getId()), recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(viewer.getId(), recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();
@@ -508,9 +508,10 @@ class RecordServiceTest extends AbstractIntegrationTest {
         UserEntity writer = userRepository.save(UserEntityFixture.of("test@email.com"));
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(writer));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(writer, feedEntity, 0));
+        Long notExistingUserId = null;
 
         //when
-        RecordInfoResponse response = recordService.getRecord(Optional.empty(), recordEntity.getId());
+        RecordInfoResponse response = recordService.getRecord(notExistingUserId, recordEntity.getId());
 
         //then
         Assertions.assertThat(response.getLiked()).isFalse();
@@ -536,7 +537,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<RecordCommentResponse> page = recordService.getRecordComments(Optional.of(viewer.getId()), recordEntity.getId(), pageRequest);
+        Page<RecordCommentResponse> page = recordService.getRecordComments(viewer.getId(), recordEntity.getId(), pageRequest);
 
         //then
         Assertions.assertThat(page.getContent())
@@ -569,7 +570,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<RecordCommentResponse> page = recordService.getRecordComments(Optional.of(commenter.getId()), recordEntity.getId(), pageRequest);
+        Page<RecordCommentResponse> page = recordService.getRecordComments(commenter.getId(), recordEntity.getId(), pageRequest);
 
         //then
         Assertions.assertThat(page.getContent())
@@ -591,7 +592,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<RecordCommentResponse> page = recordService.getRecordComments(Optional.of(writer.getId()), recordEntity.getId(), pageRequest);
+        Page<RecordCommentResponse> page = recordService.getRecordComments(writer.getId(), recordEntity.getId(), pageRequest);
 
         //then
         Assertions.assertThat(page.getContent()).isEmpty();
@@ -619,7 +620,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<RecordCommentResponse> page = recordService.getRecordComments(Optional.of(commenter1.getId()), recordEntity.getId(), pageRequest);
+        Page<RecordCommentResponse> page = recordService.getRecordComments(commenter1.getId(), recordEntity.getId(), pageRequest);
 
         //then
         Assertions.assertThat(page.getContent()).hasSize(1);
@@ -705,7 +706,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<RecordCommentResponse> page = recordService.getRecordComments(Optional.of(writer.getId()), recordEntity.getId(), pageRequest);
+        Page<RecordCommentResponse> page = recordService.getRecordComments(writer.getId(), recordEntity.getId(), pageRequest);
 
         //then
         Assertions.assertThat(page.getContent())

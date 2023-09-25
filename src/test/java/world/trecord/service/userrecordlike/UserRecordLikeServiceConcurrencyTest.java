@@ -30,7 +30,7 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
     }
 
     @DisplayName("사용자가 동일한 기록에 좋아요 요청을 동시에 요청해도 순서대로 처리된다")
-    @CsvSource({"10,false", "11,true"})
+    @CsvSource({"100,false", "101,true"})
     @ParameterizedTest
     void toggleLikeConcurrencyTest(int totalRequestCount, boolean expected) throws Exception {
         //given
