@@ -1,16 +1,12 @@
 package world.trecord.dto.userrecordlike.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import world.trecord.domain.userrecordlike.projection.UserRecordProjection;
 
 import java.util.List;
 
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 public class UserRecordLikeListResponse {
 
     private List<Record> records;

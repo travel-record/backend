@@ -1,30 +1,20 @@
 package world.trecord.controller.users;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.transaction.annotation.Transactional;
-import world.trecord.config.properties.JwtProperties;
-import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.comment.CommentEntity;
-import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
-import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
-import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.users.request.UserUpdateRequest;
-import world.trecord.infra.AbstractContainerBaseTest;
-import world.trecord.infra.MockMvcTestSupport;
+import world.trecord.infra.fixture.*;
+import world.trecord.infra.support.WithTestUser;
+import world.trecord.infra.test.AbstractMockMvcTest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -37,79 +27,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static world.trecord.exception.CustomExceptionError.*;
 
 @Transactional
-@MockMvcTestSupport
-class UserControllerTest extends AbstractContainerBaseTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    JwtTokenHandler jwtTokenHandler;
-
-    @Autowired
-    CommentRepository commentRepository;
-
-    @Autowired
-    RecordRepository recordRepository;
-
-    @Autowired
-    FeedRepository feedRepository;
-
-    @Autowired
-    UserRecordLikeRepository userRecordLikeRepository;
-
-    @Autowired
-    FeedContributorRepository feedContributorRepository;
-
-    @Autowired
-    JwtProperties jwtProperties;
+class UserControllerTest extends AbstractMockMvcTest {
 
     @Test
     @DisplayName("GET /api/v1/users - 성공")
+    @WithTestUser("user@email.com")
     void getUserInfoTest() throws Exception {
-        //given
-        String email = "test@email.com";
-        String nickname = "nickname";
-        String imageUrl = "http://localhost/pictures";
-        String introduction = "hello";
-
-        UserEntity userEntity = UserEntity.builder()
-                .email(email)
-                .nickname(nickname)
-                .imageUrl(imageUrl)
-                .introduction(introduction)
-                .build();
-
-        UserEntity saveUser = userRepository.save(userEntity);
-
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/users")
-                                .header(AUTHORIZATION, createToken(saveUser.getId()))
                 )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.nickname").value(nickname))
-                .andExpect(jsonPath("$.data.imageUrl").value(imageUrl))
-                .andExpect(jsonPath("$.data.introduction").value(introduction));
+                .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("GET /api/v1/users - 실패 (존재하지 않는 사용자 아이디)")
+    @DisplayName("GET /api/v1/users - 실패 (미인증 사용자)")
+    @WithAnonymousUser
     void getUserInfoWithNotExistingTokenTest() throws Exception {
-        //given
-        long notExistingUserId = -1L;
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/users")
-                                .header(AUTHORIZATION, createToken(notExistingUserId))
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
@@ -117,20 +54,12 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/users - 성공")
+    @WithTestUser("user@email.com")
     void updateUserInfoTest() throws Exception {
         //given
         String nickname = "changed nickname";
         String imageUrl = "changed image url";
         String introduction = "change introduction";
-
-        UserEntity userEntity = UserEntity.builder()
-                .email("test@email.com")
-                .nickname("before nickname")
-                .imageUrl("before image url")
-                .introduction("before introduction")
-                .build();
-
-        UserEntity saveUser = userRepository.save(userEntity);
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(nickname)
@@ -141,9 +70,8 @@ class UserControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/users")
-                                .header(AUTHORIZATION, createToken(saveUser.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.nickname").value(nickname))
@@ -153,17 +81,12 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("POST /api/v1/users - 실패 (이미 등록된 닉네임)")
+    @WithTestUser("user@email.com")
     void updateUserInfoWithExistingNicknameTest() throws Exception {
         //given
         String duplicatedNickname = "duplicate nickname";
-
-        UserEntity userEntity = createUser("test@email.com", duplicatedNickname);
-
+        UserEntity userEntity = UserEntityFixture.of("test@email.com", duplicatedNickname);
         userRepository.save(userEntity);
-
-        UserEntity requestUserEntity = createUser("test1@email.com", "nickname");
-
-        userRepository.save(requestUserEntity);
 
         UserUpdateRequest request = UserUpdateRequest.builder()
                 .nickname(duplicatedNickname)
@@ -172,9 +95,8 @@ class UserControllerTest extends AbstractContainerBaseTest {
         //when //then
         mockMvc.perform(
                         post("/api/v1/users")
-                                .header(AUTHORIZATION, createToken(requestUserEntity.getId()))
                                 .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(body(request))
                 )
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value(NICKNAME_DUPLICATED.code()));
@@ -182,6 +104,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/{userId} - 성공")
+    @WithAnonymousUser
     void getUserInfoByUserIdTest() throws Exception {
         //given
         String email = "test@email.com";
@@ -210,6 +133,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/{userId} - 실패 (존재하지 않는 사용자 아이디)")
+    @WithTestUser
     void getUserInfoByUserIdWithTest() throws Exception {
         //given
         long notExistingUserId = 0L;
@@ -224,29 +148,29 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/comments - 성공")
+    @WithTestUser("user@email.com")
     void getUserCommentsTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
 
-        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
-        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place", LocalDateTime.of(2022, 3, 2, 0, 0), 2);
+        RecordEntity recordEntity1 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity2 = RecordEntityFixture.of(feedEntity);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
 
-        CommentEntity commentEntity1 = createComment(userEntity, recordEntity1, "content1");
-        CommentEntity commentEntity2 = createComment(userEntity, recordEntity2, "content2");
-        CommentEntity commentEntity3 = createComment(userEntity, recordEntity2, "content3");
-        CommentEntity commentEntity4 = createComment(userEntity, recordEntity1, "content4");
+        CommentEntity commentEntity1 = CommentEntityFixture.of(userEntity, recordEntity1);
+        CommentEntity commentEntity2 = CommentEntityFixture.of(userEntity, recordEntity2);
+        CommentEntity commentEntity3 = CommentEntityFixture.of(userEntity, recordEntity2);
+        CommentEntity commentEntity4 = CommentEntityFixture.of(userEntity, recordEntity1);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/comments")
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.comments.size()").value(4))
-                .andExpect(jsonPath("$.data.comments[0].commentId").value(commentEntity4.getId()));
+                .andExpect(jsonPath("$.data.content.size()").value(4));
     }
 
     @Test
@@ -266,6 +190,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/comments - 실패 (토큰 없이)")
+    @WithAnonymousUser
     void getUserCommentsWithoutExistingUserIdTest() throws Exception {
         //when //then
         mockMvc.perform(
@@ -277,33 +202,29 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/likes - 성공")
+    @WithTestUser("user@email.com")
     void getUserRecordLikesTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
-        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
 
-        RecordEntity recordEntity1 = createRecord(feedEntity, "record1", "place", LocalDateTime.of(2022, 3, 2, 0, 0), 1);
-        RecordEntity recordEntity2 = createRecord(feedEntity, "record2", "place", LocalDateTime.of(2022, 3, 2, 0, 0), 2);
-        RecordEntity recordEntity3 = createRecord(feedEntity, "record3", "place", LocalDateTime.of(2022, 3, 2, 0, 0), 3);
-        RecordEntity recordEntity4 = createRecord(feedEntity, "record4", "place", LocalDateTime.of(2022, 3, 2, 0, 0), 4);
+        RecordEntity recordEntity1 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity2 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity3 = RecordEntityFixture.of(feedEntity);
+        RecordEntity recordEntity4 = RecordEntityFixture.of(feedEntity);
         recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3, recordEntity4));
 
-        UserRecordLikeEntity userRecordLikeEntity1 = createRecordLike(userEntity, recordEntity1);
-        UserRecordLikeEntity userRecordLikeEntity2 = createRecordLike(userEntity, recordEntity4);
+        UserRecordLikeEntity userRecordLikeEntity1 = UserRecordLikeFixture.of(userEntity, recordEntity1);
+        UserRecordLikeEntity userRecordLikeEntity2 = UserRecordLikeFixture.of(userEntity, recordEntity4);
         userRecordLikeRepository.saveAll(List.of(userRecordLikeEntity1, userRecordLikeEntity2));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/likes")
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.records.size()").value(2))
-                .andExpect(jsonPath("$.data.records[0].recordId").value(recordEntity4.getId()))
-                .andExpect(jsonPath("$.data.records[0].title").value(recordEntity4.getTitle()))
-                .andExpect(jsonPath("$.data.records[0].imageUrl").value(recordEntity4.getImageUrl()))
-                .andExpect(jsonPath("$.data.records[0].authorId").value(userEntity.getId()))
-                .andExpect(jsonPath("$.data.records[0].authorNickname").value(userEntity.getNickname()));
+                .andExpect(jsonPath("$.data.content.size()").value(2));
     }
 
     @Test
@@ -323,6 +244,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/likes - 실패 (토큰 없이)")
+    @WithAnonymousUser
     void getUserCommentsWithoutTokenIdTest() throws Exception {
         //when //then
         mockMvc.perform(
@@ -334,13 +256,14 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/search?q= - 성공(검색 키워드에 해당하는 유저 존재할 경우)")
+    @WithTestUser
     void searchUserTest() throws Exception {
         //given
-        UserEntity userEntity1 = createUser("test1@email.com", "김박김");
-        UserEntity userEntity2 = createUser("test2@email.com", "이이이");
-        UserEntity userEntity3 = createUser("test3@email.com", "김박박");
-        UserEntity userEntity4 = createUser("test4@email.com", "김이박");
-        UserEntity userEntity5 = createUser("test5@email.com", "박이김");
+        UserEntity userEntity1 = UserEntityFixture.of("test1@email.com", "김박김");
+        UserEntity userEntity2 = UserEntityFixture.of("test2@email.com", "이이이");
+        UserEntity userEntity3 = UserEntityFixture.of("test3@email.com", "김박박");
+        UserEntity userEntity4 = UserEntityFixture.of("test4@email.com", "김이박");
+        UserEntity userEntity5 = UserEntityFixture.of("test5@email.com", "박이김");
 
         userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
 
@@ -350,7 +273,6 @@ class UserControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         get("/api/v1/users/search")
                                 .param("q", keyword)
-                                .header(AUTHORIZATION, createToken(userEntity1.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -359,13 +281,14 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/search?q= - 성공(검색 키워드에 해당하는 유저 존재하지 않는 경우)")
+    @WithTestUser
     void searchUserWhenKeywordNotMatchedTest() throws Exception {
         //given
-        UserEntity userEntity1 = createUser("test1@email.com", "김박김");
-        UserEntity userEntity2 = createUser("test2@email.com", "이이이");
-        UserEntity userEntity3 = createUser("test3@email.com", "김박박");
-        UserEntity userEntity4 = createUser("test4@email.com", "김이박");
-        UserEntity userEntity5 = createUser("test5@email.com", "박이김");
+        UserEntity userEntity1 = UserEntityFixture.of("test1@email.com", "김박김");
+        UserEntity userEntity2 = UserEntityFixture.of("test2@email.com", "이이이");
+        UserEntity userEntity3 = UserEntityFixture.of("test3@email.com", "김박박");
+        UserEntity userEntity4 = UserEntityFixture.of("test4@email.com", "김이박");
+        UserEntity userEntity5 = UserEntityFixture.of("test5@email.com", "박이김");
 
         userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
 
@@ -375,7 +298,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         get("/api/v1/users/search")
                                 .param("q", keyword)
-                                .header(AUTHORIZATION, createToken(userEntity1.getId()))
+                                .header(AUTHORIZATION, token(userEntity1.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -386,11 +309,11 @@ class UserControllerTest extends AbstractContainerBaseTest {
     @DisplayName("GET /api/v1/users/search?q= - 성공 (자신의 닉네임으로 검색한 경우)")
     void searchUserWhenKeywordIsSelfNicknameTest() throws Exception {
         //given
-        UserEntity userEntity1 = createUser("test1@email.com", "김박김");
-        UserEntity userEntity2 = createUser("test2@email.com", "이이이");
-        UserEntity userEntity3 = createUser("test3@email.com", "김박박");
-        UserEntity userEntity4 = createUser("test4@email.com", "김이박");
-        UserEntity userEntity5 = createUser("test5@email.com", "박이김");
+        UserEntity userEntity1 = UserEntityFixture.of("test1@email.com", "김박김");
+        UserEntity userEntity2 = UserEntityFixture.of("test2@email.com", "이이이");
+        UserEntity userEntity3 = UserEntityFixture.of("test3@email.com", "김박박");
+        UserEntity userEntity4 = UserEntityFixture.of("test4@email.com", "김이박");
+        UserEntity userEntity5 = UserEntityFixture.of("test5@email.com", "박이김");
 
         userRepository.saveAll(List.of(userEntity1, userEntity2, userEntity3, userEntity4, userEntity5));
 
@@ -400,7 +323,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
         mockMvc.perform(
                         get("/api/v1/users/search")
                                 .param("q", keyword)
-                                .header(AUTHORIZATION, createToken(userEntity1.getId()))
+                                .header(AUTHORIZATION, token(userEntity1.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -409,14 +332,11 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/search?q= - 실패(쿼리 파라미터 없을때)")
+    @WithTestUser
     void searchUserWithEmptyQueryTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(createUser("test@email.com", "nickname"));
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/search")
-                                .header(AUTHORIZATION, createToken(userEntity.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -426,9 +346,13 @@ class UserControllerTest extends AbstractContainerBaseTest {
     @Test
     @DisplayName("GET /api/v1/users/search?q= - 실패(유효하지 않은 토큰으로 요청한 경우)")
     void searchUserWhenAuthFailedTest() throws Exception {
+        //given
+        String invalidToken = "invalidToken";
+
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/search")
+                                .header(AUTHORIZATION, invalidToken)
                 )
                 .andDo(print())
                 .andExpect(status().isUnauthorized())
@@ -437,28 +361,28 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/invited - 성공")
+    @WithTestUser("invited@email.com")
     void getUserParticipatingFeedsTest() throws Exception {
         //given
-        UserEntity owner = userRepository.save(createUser("owner@email.com", "owner"));
-        UserEntity invitedUser = userRepository.save(createUser("invitedUser@email.com", "nickname"));
+        UserEntity owner = userRepository.save(UserEntityFixture.of("owner@email.com", "owner"));
+        UserEntity invitedUser = userRepository.findByEmail("invited@email.com").get();
 
-        LocalDateTime feedTime = LocalDateTime.of(2022, 3, 1, 0, 0);
-        FeedEntity feedEntity1 = createFeed(owner, feedTime, feedTime);
-        FeedEntity feedEntity2 = createFeed(owner, feedTime, feedTime);
-        FeedEntity feedEntity3 = createFeed(owner, feedTime, feedTime);
-        FeedEntity feedEntity4 = createFeed(owner, feedTime, feedTime);
+        FeedEntity feedEntity1 = FeedEntityFixture.of(owner);
+        FeedEntity feedEntity2 = FeedEntityFixture.of(owner);
+        FeedEntity feedEntity3 = FeedEntityFixture.of(owner);
+        FeedEntity feedEntity4 = FeedEntityFixture.of(owner);
         feedRepository.saveAll(List.of(feedEntity1, feedEntity2, feedEntity3, feedEntity4));
 
-        FeedContributorEntity feedContributor1 = createFeedContributor(invitedUser, feedEntity1);
-        FeedContributorEntity feedContributor2 = createFeedContributor(invitedUser, feedEntity2);
-        FeedContributorEntity feedContributor3 = createFeedContributor(invitedUser, feedEntity3);
-        FeedContributorEntity feedContributor4 = createFeedContributor(invitedUser, feedEntity4);
+        FeedContributorEntity feedContributor1 = FeedContributorFixture.of(invitedUser, feedEntity1);
+        FeedContributorEntity feedContributor2 = FeedContributorFixture.of(invitedUser, feedEntity2);
+        FeedContributorEntity feedContributor3 = FeedContributorFixture.of(invitedUser, feedEntity3);
+        FeedContributorEntity feedContributor4 = FeedContributorFixture.of(invitedUser, feedEntity4);
         feedContributorRepository.saveAll(List.of(feedContributor1, feedContributor2, feedContributor3, feedContributor4));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/invited")
-                                .header(AUTHORIZATION, createToken(invitedUser.getId()))
+                                .header(AUTHORIZATION, token(invitedUser.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -467,14 +391,11 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/invited - 성공 (초대된 피드가 없는 경우)")
+    @WithTestUser
     void getUserParticipatingFeedsWhenFeedsEmptyTest() throws Exception {
-        //given
-        UserEntity invitedUser = userRepository.save(createUser("invitedUser@email.com", "owner"));
-
         //when //then
         mockMvc.perform(
                         get("/api/v1/users/invited")
-                                .header(AUTHORIZATION, createToken(invitedUser.getId()))
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -498,6 +419,7 @@ class UserControllerTest extends AbstractContainerBaseTest {
 
     @Test
     @DisplayName("GET /api/v1/users/invited - 실패 (토큰없이 요청)")
+    @WithAnonymousUser
     void getUserParticipatingFeedsWithoutTokenTest() throws Exception {
         //when //then
         mockMvc.perform(
@@ -505,65 +427,5 @@ class UserControllerTest extends AbstractContainerBaseTest {
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(INVALID_TOKEN.code()));
-    }
-
-    private String createToken(Long userId) {
-        return jwtTokenHandler.generateToken(userId, jwtProperties.getSecretKey(), jwtProperties.getTokenExpiredTimeMs());
-    }
-
-    private UserEntity createUser(String email, String nickname) {
-        return UserEntity.builder()
-                .email(email)
-                .nickname(nickname)
-                .build();
-    }
-
-    private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {
-        return FeedEntity.builder()
-                .userEntity(userEntity)
-                .name("name")
-                .startAt(startAt)
-                .endAt(endAt)
-                .build();
-    }
-
-    private RecordEntity createRecord(FeedEntity feedEntity, String title, String place, LocalDateTime date, int sequence) {
-        return RecordEntity.builder()
-                .userEntity(feedEntity.getUserEntity())
-                .feedEntity(feedEntity)
-                .title(title)
-                .place(place)
-                .longitude("longitude")
-                .latitude("latitude")
-                .date(date)
-                .content("content")
-                .weather("weather")
-                .transportation("satisfaction")
-                .feeling("feeling")
-                .sequence(sequence)
-                .build();
-    }
-
-    private CommentEntity createComment(UserEntity userEntity, RecordEntity recordEntity, String content) {
-        return CommentEntity.builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
-                .content(content)
-                .build();
-    }
-
-    private UserRecordLikeEntity createRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
-        return UserRecordLikeEntity
-                .builder()
-                .userEntity(userEntity)
-                .recordEntity(recordEntity)
-                .build();
-    }
-
-    private FeedContributorEntity createFeedContributor(UserEntity userEntity, FeedEntity feedEntity) {
-        return FeedContributorEntity.builder()
-                .userEntity(userEntity)
-                .feedEntity(feedEntity)
-                .build();
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
-import world.trecord.domain.comment.projection.CommentRecordProjection;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
@@ -17,11 +16,10 @@ import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.comment.request.CommentCreateRequest;
 import world.trecord.dto.comment.request.CommentUpdateRequest;
 import world.trecord.dto.comment.response.CommentResponse;
-import world.trecord.dto.comment.response.UserCommentsResponse;
+import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
 
-import java.util.List;
 import java.util.Optional;
 
 import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
@@ -85,13 +83,8 @@ public class CommentService {
                         .build());
     }
 
-    public UserCommentsResponse getUserComments(Long userId) {
-        UserEntity userEntity = findUserOrException(userId);
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
-
-        return UserCommentsResponse.builder()
-                .projectionList(projectionList)
-                .build();
+    public Page<UserCommentResponse> getUserComments(Long userId, Pageable pageable) {
+        return commentRepository.findByUserId(userId, pageable).map(UserCommentResponse::of);
     }
 
     private UserEntity findUserOrException(Long userId) {

@@ -11,17 +11,14 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.projection.CommentRecordProjection;
 
-import java.util.List;
-
 @Repository
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     @Query("SELECT re.id as recordId, re.title as recordTitle, ce.id as commentId, ce.content as content, ce.createdDateTime as createdDateTime " +
             "FROM CommentEntity ce " +
             "JOIN ce.recordEntity re " +
-            "WHERE ce.userEntity.id = :userId " +
-            "ORDER BY ce.createdDateTime DESC")
-    List<CommentRecordProjection> findByUserEntityIdOrderByCreatedDateTimeDesc(@Param("userId") Long userId);
+            "WHERE ce.userEntity.id = :userId")
+    Page<CommentRecordProjection> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT ce " +
             "FROM CommentEntity ce " +
@@ -29,7 +26,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
             "JOIN FETCH ce.userEntity ue " +
             "WHERE ce.parentCommentEntity IS NULL " +
             "ORDER BY ce.createdDateTime ASC")
-    Page<CommentEntity> findCommentWithCommenterAndRepliesByRecordId(Long recordId, Pageable pageable);
+    Page<CommentEntity> findWithCommenterAndRepliesByRecordId(Long recordId, Pageable pageable);
 
     @EntityGraph(attributePaths = "userEntity")
     Page<CommentEntity> findWithUserEntityByParentCommentEntityId(Long parentCommentEntityId, Pageable pageable);

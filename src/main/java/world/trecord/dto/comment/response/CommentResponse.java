@@ -2,17 +2,15 @@ package world.trecord.dto.comment.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 public class CommentResponse {
 
     private Long commenterId;
@@ -22,7 +20,6 @@ public class CommentResponse {
     private Long commentId;
     private String content;
     private boolean isUpdatable;
-
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime createdDateTime;
 

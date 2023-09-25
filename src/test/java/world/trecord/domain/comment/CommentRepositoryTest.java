@@ -40,14 +40,18 @@ class CommentRepositoryTest extends AbstractIntegrationTest {
         CommentEntity commentEntity4 = CommentEntityFixture.of(userEntity, recordEntity1);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2, commentEntity3, commentEntity4));
 
+        int pageSize = 5;
+        int pageNumber = 0;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         //when
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
+        Page<CommentRecordProjection> page = commentRepository.findByUserId(userEntity.getId(), pageRequest);
 
         //then
-        Assertions.assertThat(projectionList)
+        Assertions.assertThat(page.getContent())
                 .hasSize(4)
                 .extracting("recordId", "commentId")
-                .containsExactly(
+                .containsOnly(
                         tuple(recordEntity1.getId(), commentEntity4.getId()),
                         tuple(recordEntity2.getId(), commentEntity3.getId()),
                         tuple(recordEntity2.getId(), commentEntity2.getId()),
@@ -58,17 +62,21 @@ class CommentRepositoryTest extends AbstractIntegrationTest {
     @DisplayName("사용자가 작성한 댓글이 없으면 빈 배열을 반환한다")
     void findByUserEntityOrderByCreatedDateTimeDescWhenUserNotCommentOnRecordTest() throws Exception {
         //given
+        int pageSize = 5;
+        int pageNumber = 0;
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
 
         //when
-        List<CommentRecordProjection> projectionList = commentRepository.findByUserEntityIdOrderByCreatedDateTimeDesc(userEntity.getId());
+        Page<CommentRecordProjection> page = commentRepository.findByUserId(userEntity.getId(), pageRequest);
 
         //then
-        Assertions.assertThat(projectionList).isEmpty();
+        Assertions.assertThat(page.getContent()).isEmpty();
     }
 
     @Test
-    @DisplayName("기록에 등록된 댓글 리스트를 댓글 작성자, 대댓글과 함께 등록 시간 오름차순으로 조회한다")
+    @DisplayName("기록에 등록된 댓글 리스트를 댓글 작성자, 대댓글과 페이지네이션으로 조회한다")
     void findCommentEntityByRecordEntityOrderByCreatedDateTimeAsc() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
@@ -86,7 +94,7 @@ class CommentRepositoryTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<CommentEntity> page = commentRepository.findCommentWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageRequest);
+        Page<CommentEntity> page = commentRepository.findWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageRequest);
 
         //then
         Assertions.assertThat(page.getContent())
@@ -108,7 +116,7 @@ class CommentRepositoryTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<CommentEntity> page = commentRepository.findCommentWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageRequest);
+        Page<CommentEntity> page = commentRepository.findWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageRequest);
 
         //then
         Assertions.assertThat(page.getContent()).isEmpty();

@@ -111,7 +111,7 @@ public class RecordService {
 
     public Page<RecordCommentResponse> getRecordComments(Optional<Long> viewerId, Long recordId, Pageable pageable) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        Page<CommentEntity> commentEntities = commentRepository.findCommentWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageable);
+        Page<CommentEntity> commentEntities = commentRepository.findWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageable);
         return commentEntities.map(it -> RecordCommentResponse.of(it, viewerId.orElse(null)));
     }
 

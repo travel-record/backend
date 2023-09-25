@@ -9,10 +9,10 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PROTECTED;
-import static world.trecord.domain.users.Role.ROLE_USER;
 
 @Data
 @NoArgsConstructor(access = PROTECTED)
@@ -28,7 +28,7 @@ public class AnonymousContext implements UserDetails, AccountContext {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return AuthorityUtils.createAuthorityList(ROLE_USER.name());
+        return AuthorityUtils.createAuthorityList(List.of());
     }
 
     @Override

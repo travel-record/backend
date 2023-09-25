@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.CurrentContext;
 import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
-import world.trecord.dto.comment.response.UserCommentsResponse;
+import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
-import world.trecord.dto.userrecordlike.response.UserRecordLikeListResponse;
+import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.dto.users.request.UserUpdateRequest;
 import world.trecord.dto.users.response.UserInfoResponse;
 import world.trecord.service.comment.CommentService;
@@ -53,15 +53,15 @@ public class UserController {
     }
 
     @GetMapping("/comments")
-    public ApiResponse<UserCommentsResponse> getUserComments(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                             @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(commentService.getUserComments(userContext.getId()));
+    public ApiResponse<Page<UserCommentResponse>> getUserComments(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                  @CurrentContext UserContext userContext) {
+        return ApiResponse.ok(commentService.getUserComments(userContext.getId(), pageable));
     }
 
     @GetMapping("/likes")
-    public ApiResponse<UserRecordLikeListResponse> getUserRecordLikes(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
-                                                                      @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(userRecordLikeService.getUserRecordLikeList(userContext.getId()));
+    public ApiResponse<Page<UserRecordLikeResponse>> getUserRecordLikes(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
+                                                                        @CurrentContext UserContext userContext) {
+        return ApiResponse.ok(userRecordLikeService.getUserRecordLikeList(userContext.getId(), pageable));
     }
 
     @GetMapping("/invited")

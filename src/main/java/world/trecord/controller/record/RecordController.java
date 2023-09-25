@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
+import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
 import world.trecord.dto.record.request.RecordCreateRequest;
 import world.trecord.dto.record.request.RecordSequenceSwapRequest;
@@ -18,7 +19,7 @@ import world.trecord.dto.record.request.RecordUpdateRequest;
 import world.trecord.dto.record.response.RecordCommentResponse;
 import world.trecord.dto.record.response.RecordCreateResponse;
 import world.trecord.dto.record.response.RecordInfoResponse;
-import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
+import world.trecord.dto.userrecordlike.response.UserRecordLikedResponse;
 import world.trecord.service.record.RecordService;
 import world.trecord.service.userrecordlike.UserRecordLikeService;
 
@@ -48,34 +49,34 @@ public class RecordController {
     }
 
     @PostMapping
-    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Validated RecordCreateRequest request, @CurrentContext AccountContext accountContext) throws BindException {
+    public ApiResponse<RecordCreateResponse> createRecord(@RequestBody @Validated RecordCreateRequest request, @CurrentContext UserContext userContext) throws BindException {
         recordValidator.verify(request);
-        return ApiResponse.ok(recordService.createRecord(accountContext.getId(), request));
+        return ApiResponse.ok(recordService.createRecord(userContext.getId(), request));
     }
 
     @PostMapping("/sequence/swap")
-    public ApiResponse<Void> swapRecordSequence(@RequestBody @Validated RecordSequenceSwapRequest request, @CurrentContext AccountContext accountContext) {
-        recordService.swapRecordSequence(accountContext.getId(), request);
+    public ApiResponse<Void> swapRecordSequence(@RequestBody @Validated RecordSequenceSwapRequest request, @CurrentContext UserContext userContext) {
+        recordService.swapRecordSequence(userContext.getId(), request);
         return ApiResponse.ok();
     }
 
     @PutMapping("/{recordId}")
     public ApiResponse<Void> updateRecord(@PathVariable Long recordId,
                                           @RequestBody @Valid RecordUpdateRequest request,
-                                          @CurrentContext AccountContext accountContext) throws BindException {
+                                          @CurrentContext UserContext userContext) throws BindException {
         recordValidator.verify(recordId, request);
-        recordService.updateRecord(accountContext.getId(), recordId, request);
+        recordService.updateRecord(userContext.getId(), recordId, request);
         return ApiResponse.ok();
     }
 
     @DeleteMapping("/{recordId}")
-    public ApiResponse<Void> deleteRecord(@PathVariable Long recordId, @CurrentContext AccountContext accountContext) {
-        recordService.deleteRecord(accountContext.getId(), recordId);
+    public ApiResponse<Void> deleteRecord(@PathVariable Long recordId, @CurrentContext UserContext userContext) {
+        recordService.deleteRecord(userContext.getId(), recordId);
         return ApiResponse.ok();
     }
 
     @PostMapping("/{recordId}/like")
-    public ApiResponse<UserRecordLikeResponse> toggleLike(@PathVariable Long recordId, @CurrentContext AccountContext accountContext) {
-        return ApiResponse.ok(userRecordLikeService.toggleLike(accountContext.getId(), recordId));
+    public ApiResponse<UserRecordLikedResponse> toggleLike(@PathVariable Long recordId, @CurrentContext UserContext userContext) {
+        return ApiResponse.ok(userRecordLikeService.toggleLike(userContext.getId(), recordId));
     }
 }
