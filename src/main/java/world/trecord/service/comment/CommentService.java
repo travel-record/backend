@@ -41,7 +41,6 @@ public class CommentService {
         UserEntity userEntity = userService.findUserOrException(userFromId);
         RecordEntity recordEntity = recordService.findRecordOrException(request.getRecordId());
         Optional<CommentEntity> parentOptional = findCommentOrOptional(request.getParentId());
-
         if (request.getParentId() != null && parentOptional.isEmpty()) {
             throw new CustomException(COMMENT_NOT_FOUND);
         }
@@ -56,7 +55,6 @@ public class CommentService {
     @Transactional
     public void updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
         CommentEntity commentEntity = findCommentOrException(commentId);
-
         ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentEntity.update(request.toUpdateEntity());
@@ -66,22 +64,16 @@ public class CommentService {
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
         CommentEntity commentEntity = findCommentOrException(commentId);
-
         ensureUserHasPermissionOverComment(commentEntity, userId);
 
         commentRepository.deleteAllByCommentEntityId(commentId);
         commentRepository.delete(commentEntity);
     }
 
-    public Page<CommentResponse> getReplies(Optional<Long> viewerId, Long commentId, Pageable pageable) {
+    public Page<CommentResponse> getReplies(Long userId, Long commentId, Pageable pageable) {
         CommentEntity parentComment = findCommentOrException(commentId);
-
         return commentRepository.findWithUserEntityByParentCommentEntityId(parentComment.getId(), pageable)
-                .map(it -> CommentResponse.builder()
-                        .userEntity(it.getUserEntity())
-                        .commentEntity(it)
-                        .viewerId(viewerId.orElse(null))
-                        .build());
+                .map(it -> CommentResponse.of(it.getUserEntity(), it, userId));
     }
 
     public Page<UserCommentResponse> getUserComments(Long userId, Pageable pageable) {

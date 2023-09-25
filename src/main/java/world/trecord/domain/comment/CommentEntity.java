@@ -70,10 +70,26 @@ public class CommentEntity extends BaseEntity {
     }
 
     public Long getParentCommentId() {
-        if (Objects.isNull(this.parentCommentEntity)) {
-            return null;
-        }
+        return Objects.nonNull(this.parentCommentEntity) ? this.parentCommentEntity.getId() : null;
+    }
 
-        return this.parentCommentEntity.getId();
+    public Long getRecordId() {
+        return Objects.nonNull(this.recordEntity) ? this.recordEntity.getId() : null;
+    }
+
+    public Long getUserId() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getId() : null;
+    }
+
+    public String getUserNickname() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getNickname() : null;
+    }
+
+    public String getUserImageUrl() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getImageUrl() : null;
+    }
+
+    public int getReplyCount() {
+        return Objects.nonNull(this.childCommentEntities) ? this.childCommentEntities.size() : 0;
     }
 }

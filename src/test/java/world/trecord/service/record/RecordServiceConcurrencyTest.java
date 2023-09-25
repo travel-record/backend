@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
@@ -71,12 +73,11 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
                 .hasValue(TOTAL_REQUEST_COUNT);
     }
 
-    @Test
+    @CsvSource({"10,1,2", "11,2,1"})
+    @ParameterizedTest
     @DisplayName("같은 날짜를 가진 기록들의 순서 변경을 동시에 해도 순서가 순서대로 변경된다")
-    void swapSequenceConcurrencyTest() throws Exception {
+    void swapSequenceConcurrencyTest(int totalRequestCount, int expectedFirstRecordSequence, int expectedSecondRecordSequence) throws Exception {
         //given
-        final int TOTAL_REQUEST_COUNT = 11;
-
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
 
@@ -88,7 +89,7 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
 
         RecordSequenceSwapRequest swapRequest = buildSwapRequest(recordEntity1, recordEntity2);
 
-        List<Callable<Void>> tasks = generateConcurrentTasks(TOTAL_REQUEST_COUNT, () -> {
+        List<Callable<Void>> tasks = generateConcurrentTasks(totalRequestCount, () -> {
             recordService.swapRecordSequence(userEntity.getId(), swapRequest);
             return null;
         });
@@ -107,8 +108,8 @@ class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
         }
 
         Assertions.assertThat(exceptionCount).isZero();
-        Assertions.assertThat(recordRepository.findById(recordEntity1.getId()).get().getSequence()).isEqualTo(recordSequence2);
-        Assertions.assertThat(recordRepository.findById(recordEntity2.getId()).get().getSequence()).isEqualTo(recordSequence1);
+        Assertions.assertThat(recordRepository.findById(recordEntity1.getId()).get().getSequence()).isEqualTo(expectedFirstRecordSequence);
+        Assertions.assertThat(recordRepository.findById(recordEntity2.getId()).get().getSequence()).isEqualTo(expectedSecondRecordSequence);
     }
 
     private RecordSequenceSwapRequest buildSwapRequest(RecordEntity recordEntity1, RecordEntity recordEntity2) {

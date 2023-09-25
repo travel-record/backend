@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
 import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
@@ -31,13 +32,13 @@ public class NotificationController {
 
     @GetMapping
     public ApiResponse<Page<NotificationResponse>> getNotifications(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                    @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(notificationService.getNotifications(userContext.getId(), pageable));
+                                                                    @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(notificationService.getNotifications(accountContext.getId(), pageable));
     }
 
     @GetMapping("/check")
-    public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentContext UserContext userContext) {
-        return ApiResponse.ok(notificationService.checkUnreadNotifications(userContext.getId()));
+    public ApiResponse<CheckNewNotificationResponse> checkNewNotification(@CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(notificationService.checkUnreadNotifications(accountContext.getId()));
     }
 
     @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
@@ -48,14 +49,14 @@ public class NotificationController {
     @GetMapping("/type/{type}")
     public ApiResponse<Page<NotificationResponse>> getNotificationsByType(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
                                                                           @PathVariable NotificationType type,
-                                                                          @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(notificationService.getNotificationsByType(userContext.getId(), type, pageable));
+                                                                          @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(notificationService.getNotificationsByType(accountContext.getId(), type, pageable));
     }
 
     @DeleteMapping("/{notificationId}")
     public ApiResponse<Void> deleteNotification(@PathVariable Long notificationId,
-                                                @CurrentContext UserContext userContext) {
-        notificationService.deleteNotification(userContext.getId(), notificationId);
+                                                @CurrentContext AccountContext accountContext) {
+        notificationService.deleteNotification(accountContext.getId(), notificationId);
         return ApiResponse.ok();
     }
 }

@@ -14,6 +14,7 @@ import world.trecord.domain.users.UserEntity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -110,21 +111,25 @@ public class FeedEntity extends BaseEntity {
     }
 
     public LocalDate convertStartAtToLocalDate() {
-        if (Objects.isNull(this.startAt)) {
-            return null;
-        }
-        return this.startAt.toLocalDate();
+        return Objects.nonNull(this.startAt) ? this.startAt.toLocalDate() : null;
     }
 
     public LocalDate convertEndAtToLocalDate() {
-        if (Objects.isNull(this.endAt)) {
-            return null;
-        }
-        return this.endAt.toLocalDate();
+        return Objects.nonNull(this.endAt) ? this.endAt.toLocalDate() : null;
     }
 
     public boolean isOwnedBy(Long userId) {
         return Objects.equals(this.userEntity.getId(), userId);
+    }
+
+    public boolean canWriteRecord(Long userId) {
+        if (isOwnedBy(userId)) {
+            return true;
+        }
+        return feedContributors.stream()
+                .map(FeedContributorEntity::getUserEntity)
+                .map(UserEntity::getId)
+                .anyMatch(contributorUserId -> Objects.equals(contributorUserId, userId));
     }
 
     public void addFeedContributor(FeedContributorEntity feedContributorEntity) {
@@ -137,5 +142,17 @@ public class FeedEntity extends BaseEntity {
 
     public void removeFeedContributor(Long userId) {
         feedContributors.removeIf(contributor -> Objects.equals(contributor.getUserEntity().getId(), userId));
+    }
+
+    public Long getUserId() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getId() : null;
+    }
+
+    public String getUserNickname() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getNickname() : null;
+    }
+
+    public List<FeedContributorEntity> getContributors() {
+        return Objects.nonNull(this.feedContributors) ? this.feedContributors.stream().toList() : null;
     }
 }

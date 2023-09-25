@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.record.projection.RecordWithFeedProjection;
+import world.trecord.utils.TimeUtils;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -39,6 +40,6 @@ public class FeedRecordsResponse {
         this.longitude = projection.getLongitude();
         this.place = projection.getPlace();
         this.imageUrl = projection.getImageUrl();
-        this.date = projection.getDate().toLocalDate();
+        this.date = TimeUtils.toLocalDate(projection.getDate());
     }
 }

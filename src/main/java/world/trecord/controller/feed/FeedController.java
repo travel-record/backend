@@ -22,8 +22,6 @@ import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.service.feed.FeedService;
 import world.trecord.service.feedcontributor.FeedContributorService;
 
-import java.util.Optional;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/feeds")
@@ -35,15 +33,14 @@ public class FeedController {
 
     @GetMapping
     public ApiResponse<Page<FeedListResponse>> getFeedList(@PageableDefault(sort = "startAt", direction = Sort.Direction.DESC) Pageable pageable,
-                                                           @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(feedService.getFeedList(userContext.getId(), pageable));
+                                                           @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(feedService.getFeedList(accountContext.getId(), pageable));
     }
 
     @GetMapping("/{feedId}")
     public ApiResponse<FeedInfoResponse> getFeed(@PathVariable Long feedId,
                                                  @CurrentContext AccountContext accountContext) {
-        Optional<Long> idOpt = Optional.ofNullable(accountContext.getId());
-        return ApiResponse.ok(feedService.getFeed(idOpt, feedId));
+        return ApiResponse.ok(feedService.getFeed(accountContext.getId(), feedId));
     }
 
     @GetMapping("/{feedId}/records")
@@ -54,40 +51,40 @@ public class FeedController {
 
     @PostMapping
     public ApiResponse<FeedCreateResponse> createFeed(@RequestBody @Valid FeedCreateRequest request,
-                                                      @CurrentContext UserContext userContext) throws BindException {
+                                                      @CurrentContext AccountContext accountContext) throws BindException {
         feedValidator.verify(request);
-        return ApiResponse.ok(feedService.createFeed(userContext.getId(), request));
+        return ApiResponse.ok(feedService.createFeed(accountContext.getId(), request));
     }
 
     @PutMapping("/{feedId}")
     public ApiResponse<Void> updateFeed(@PathVariable Long feedId,
                                         @RequestBody @Valid FeedUpdateRequest request,
-                                        @CurrentContext UserContext userContext) throws BindException {
+                                        @CurrentContext AccountContext accountContext) throws BindException {
         feedValidator.verify(request);
-        feedService.updateFeed(userContext.getId(), feedId, request);
+        feedService.updateFeed(accountContext.getId(), feedId, request);
         return ApiResponse.ok();
     }
 
     @DeleteMapping("/{feedId}")
     public ApiResponse<Void> deleteFeed(@PathVariable Long feedId,
-                                        @CurrentContext UserContext userContext) {
-        feedService.deleteFeed(userContext.getId(), feedId);
+                                        @CurrentContext AccountContext accountContext) {
+        feedService.deleteFeed(accountContext.getId(), feedId);
         return ApiResponse.ok();
     }
 
     @PostMapping("/{feedId}/contributors/invite")
     public ApiResponse<Void> inviteUser(@PathVariable Long feedId,
                                         @RequestBody @Valid FeedInviteRequest request,
-                                        @CurrentContext UserContext userContext) {
-        feedContributorService.inviteUserToFeed(userContext.getId(), feedId, request);
+                                        @CurrentContext AccountContext accountContext) {
+        feedContributorService.inviteUserToFeed(accountContext.getId(), feedId, request);
         return ApiResponse.ok();
     }
 
     @DeleteMapping("/{feedId}/contributors/{contributorId}")
     public ApiResponse<Void> expelUser(@PathVariable Long feedId,
                                        @PathVariable Long contributorId,
-                                       @CurrentContext UserContext userContext) {
-        feedContributorService.expelUserFromFeed(userContext.getId(), contributorId, feedId);
+                                       @CurrentContext AccountContext accountContext) {
+        feedContributorService.expelUserFromFeed(accountContext.getId(), contributorId, feedId);
         return ApiResponse.ok();
     }
 

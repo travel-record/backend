@@ -5,16 +5,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.feed.FeedEntity;
+import world.trecord.dto.users.response.UserInfoResponse;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @NoArgsConstructor
 @Setter
 @Getter
 public class FeedInfoResponse {
+
     private Long writerId;
     private Long feedId;
-    private Boolean isUpdatable;
+    private Boolean canModifyFeed;
+    private Boolean canWriteRecord;
     private String name;
     private String imageUrl;
     private String description;
@@ -25,19 +29,23 @@ public class FeedInfoResponse {
     private String satisfaction;
     private LocalDate startAt;
     private LocalDate endAt;
+    private List<UserInfoResponse> contributors;
 
-    public static FeedInfoResponse of(FeedEntity feedEntity, Long viewerId) {
+    public static FeedInfoResponse of(FeedEntity feedEntity, List<UserInfoResponse> contributors, Long viewerId) {
         return FeedInfoResponse.builder()
                 .feedEntity(feedEntity)
+                .contributors(contributors)
                 .viewerId(viewerId)
                 .build();
     }
-    
+
     @Builder
-    private FeedInfoResponse(FeedEntity feedEntity, Long viewerId) {
-        this.writerId = feedEntity.getUserEntity().getId();
+    private FeedInfoResponse(FeedEntity feedEntity, List<UserInfoResponse> contributors, Long viewerId) {
+        this.writerId = feedEntity.getUserId();
+        this.contributors = contributors;
         this.feedId = feedEntity.getId();
-        this.isUpdatable = feedEntity.isOwnedBy(viewerId);
+        this.canModifyFeed = feedEntity.isOwnedBy(viewerId);
+        this.canWriteRecord = feedEntity.canWriteRecord(viewerId);
         this.name = feedEntity.getName();
         this.imageUrl = feedEntity.getImageUrl();
         this.description = feedEntity.getDescription();

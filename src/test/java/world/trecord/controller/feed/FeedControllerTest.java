@@ -3,16 +3,20 @@ package world.trecord.controller.feed;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
+import world.trecord.domain.feedcontributor.FeedContributorStatus;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.feed.request.FeedCreateRequest;
 import world.trecord.dto.feed.request.FeedUpdateRequest;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.infra.fixture.FeedContributorFixture;
+import world.trecord.infra.fixture.FeedEntityFixture;
 import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.support.WithTestUser;
 import world.trecord.infra.test.AbstractMockMvcTest;
@@ -85,7 +89,13 @@ class FeedControllerTest extends AbstractMockMvcTest {
     void getFeedByAuthenticatedUserTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
+        UserEntity contributor = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.now(), LocalDateTime.now()));
+
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        feedContributorRepository.findTopByUserIdAndFeedIdOrderByModifiedAtDesc(contributor.getId(), feedEntity.getId());
+        entityManager.flush();
+        entityManager.clear();
 
         //when //then
         mockMvc.perform(
@@ -95,17 +105,151 @@ class FeedControllerTest extends AbstractMockMvcTest {
     }
 
     @Test
+    @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 주인은 피드를 수정할 수 있고 피드 아래에 기록을 작성할 수 있다)")
+    @WithTestUser("user@email.com")
+    void getFeed_byFeedOwner_returnCanModifyFeedTrue() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.now(), LocalDateTime.now()));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canWriteRecord").value(true))
+                .andExpect(jsonPath("$.data.canModifyFeed").value(true));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 컨트리뷰터는 피드 아래에 기록을 작성할 수 있고 피드 수정은 불가능하다)")
+    @WithTestUser("contributor@email.com")
+    void getFeed_byFeedContributor_returnCanWriteRecordTrue() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("contributor@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                                .header(AUTHORIZATION, token(contributor.getId()))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canWriteRecord").value(true))
+                .andExpect(jsonPath("$.data.canModifyFeed").value(false));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 주인이나 피드 컨트리뷰터가 아니면 피드 수정과 피드 아래에 기록을 작성할 수 없다)")
+    @WithAnonymousUser
+    void getFeed_byNotFeedContributorAndOwner_returnCanWriteRecordFalse() throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of("owner@email.com");
+        UserEntity contributor = UserEntityFixture.of("contributor@email.com");
+        userRepository.saveAll(List.of(owner, contributor));
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.now(), LocalDateTime.now()));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.canWriteRecord").value(false))
+                .andExpect(jsonPath("$.data.canModifyFeed").value(false));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (피드 컨트리뷰터 리스트 조회)")
+    @WithTestUser
+    void getFeed_byFeedOwner() throws Exception {
+        //given
+        UserEntity userEntity = UserEntityFixture.of();
+        UserEntity contributor1 = UserEntityFixture.of();
+        UserEntity contributor2 = UserEntityFixture.of();
+        UserEntity contributor3 = UserEntityFixture.of();
+        UserEntity contributor4 = UserEntityFixture.of();
+        UserEntity contributor5 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(userEntity, contributor1, contributor2, contributor3, contributor4, contributor5));
+
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.now(), LocalDateTime.now()));
+        FeedContributorEntity feedContributor1 = FeedContributorFixture.of(contributor1, feedEntity);
+        FeedContributorEntity feedContributor2 = FeedContributorFixture.of(contributor2, feedEntity);
+        FeedContributorEntity feedContributor3 = FeedContributorFixture.of(contributor3, feedEntity);
+        FeedContributorEntity feedContributor4 = FeedContributorFixture.of(contributor4, feedEntity);
+        FeedContributorEntity feedContributor5 = FeedContributorFixture.of(contributor5, feedEntity);
+        feedContributorRepository.saveAll(List.of(feedContributor1, feedContributor2, feedContributor3, feedContributor4, feedContributor5));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.contributors.size()").value(6));
+    }
+
+    @CsvSource({"LEFT", "EXPELLED"})
+    @ParameterizedTest
+    @DisplayName("가장 최근에 피드에서 쫓겨나거나 나간 사용자는 피드를 조회할 수 없다")
+    @WithTestUser("user@email.com")
+    void getFeed_byUserExpelledOrLeftRecently_returnsForbiddenCode(FeedContributorStatus status) throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("user@email.com").get();
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        entityManager.flush();
+        entityManager.clear();
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(FORBIDDEN.code()));
+    }
+
+    @CsvSource({"LEFT", "EXPELLED"})
+    @ParameterizedTest
+    @DisplayName("피드에 나갔다가 다시 피드에 참여하는 사용자는 피드를 조회할 수 있다")
+    @WithTestUser("user@email.com")
+    void getFeed_byUserExpelledOrLeftBefore_returnsForbiddenCode(FeedContributorStatus status) throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("user@email.com").get();
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        entityManager.flush();
+        entityManager.clear();
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/feeds/{feedId}", feedEntity.getId())
+                )
+                .andExpect(status().isOk());
+    }
+
+
+    @Test
     @DisplayName("GET /api/v1/feeds/{feedId} - 성공 (미인증 사용자)")
     @WithAnonymousUser
     void getFeedByNotAuthenticatedUserTest() throws Exception {
         //given
-        UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
+        UserEntity savedUserEntity = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(createFeed(savedUserEntity, LocalDateTime.now(), LocalDateTime.now()));
 
         //when //then
         mockMvc.perform(
                         get("/api/v1/feeds/{feedId}", feedEntity.getId())
                 )
+                .andDo(print())
                 .andExpect(status().isOk());
     }
 

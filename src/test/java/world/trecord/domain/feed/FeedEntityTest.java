@@ -212,4 +212,53 @@ class FeedEntityTest {
         //then
         Assertions.assertThat(feedEntity.getFeedContributors()).isEmpty();
     }
+
+    @Test
+    @DisplayName("피드 주인이나 피드 컨트리뷰터는 피드 아래에 기록을 작성할 수 있다")
+    void canWriteRecord_byFeedOwnerOrFeedContributor_returnTrue() throws Exception {
+        //given
+        UserEntity owner = UserEntity.builder().build();
+        ReflectionTestUtils.setField(owner, "id", 1L);
+
+        UserEntity contributor = UserEntity.builder().build();
+        ReflectionTestUtils.setField(contributor, "id", 2L);
+
+        FeedEntity feedEntity = FeedEntity.builder()
+                .userEntity(owner)
+                .build();
+
+        FeedContributorEntity feedContributorEntity = FeedContributorEntity.builder()
+                .userEntity(contributor)
+                .feedEntity(feedEntity)
+                .build();
+
+        feedEntity.addFeedContributor(feedContributorEntity);
+
+        //when
+        boolean result = feedEntity.canWriteRecord(contributor.getId());
+
+        //then
+        Assertions.assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("피드 주인이나 피드 컨트리뷰터가 아니면 피드 아래에 기록을 작성할 수 없다")
+    void canWriteRecord_byNotFeedOwnerAndFeedContributor_returnFalse() throws Exception {
+        //given
+        UserEntity owner = UserEntity.builder().build();
+        ReflectionTestUtils.setField(owner, "id", 1L);
+
+        UserEntity other = UserEntity.builder().build();
+        ReflectionTestUtils.setField(other, "id", 2L);
+
+        FeedEntity feedEntity = FeedEntity.builder()
+                .userEntity(owner)
+                .build();
+
+        //when
+        boolean result = feedEntity.canWriteRecord(other.getId());
+
+        //then
+        Assertions.assertThat(result).isFalse();
+    }
 }

@@ -3,6 +3,8 @@ package world.trecord.domain.feedcontributor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +16,10 @@ import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.util.List;
+import java.util.Optional;
 
 import static world.trecord.domain.feedcontributor.FeedContributorStatus.EXPELLED;
+import static world.trecord.domain.feedcontributor.FeedContributorStatus.PARTICIPATING;
 
 @Transactional
 class FeedContributorRepositoryTest extends AbstractIntegrationTest {
@@ -53,7 +57,6 @@ class FeedContributorRepositoryTest extends AbstractIntegrationTest {
         userRepository.saveAll(List.of(owner, userEntity));
 
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
-
         feedContributorRepository.save(FeedContributorFixture.of(userEntity, feedEntity));
 
         //when
@@ -116,6 +119,79 @@ class FeedContributorRepositoryTest extends AbstractIntegrationTest {
                 .hasSize(1)
                 .extracting("feedEntity")
                 .containsExactly(feedEntity);
+    }
+
+    @CsvSource({"LEFT", "EXPELLED"})
+    @ParameterizedTest
+    @DisplayName("현재 피드에 참여 중인 피드 컨트리뷰터이면 참여중 상태를 반환한다")
+    void findTopByUserEntityIdAndFeedEntityIdOrderByCreatedDateTimeDesc_whenUserParticipating_returnStatusParticipating(FeedContributorStatus status) throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity contributor = UserEntityFixture.of();
+        userRepository.saveAll(List.of(owner, contributor));
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        entityManager.flush();
+        entityManager.clear();
+
+        //when
+        Optional<FeedContributorEntity> feedOpt = feedContributorRepository.findTopByUserIdAndFeedIdOrderByModifiedAtDesc(contributor.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(feedOpt)
+                .isPresent()
+                .hasValueSatisfying(
+                        it -> {
+                            Assertions.assertThat(it.getStatus()).isEqualByComparingTo(PARTICIPATING);
+                        }
+                );
+    }
+
+    @CsvSource({"LEFT", "EXPELLED"})
+    @ParameterizedTest
+    @DisplayName("가장 최근에 피드에서 나갔거나, 쫓겨난 사용자는 피드에 참여중 상태가 아니다")
+    void findTopByUserEntityIdAndFeedEntityIdOrderByCreatedDateTimeDesc_whenUserExpelledOrLeaved_returnStatusParticipating(FeedContributorStatus status) throws Exception {
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity contributor = UserEntityFixture.of();
+        userRepository.saveAll(List.of(owner, contributor));
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        entityManager.flush();
+        entityManager.clear();
+
+        //when
+        Optional<FeedContributorEntity> feedOpt = feedContributorRepository.findTopByUserIdAndFeedIdOrderByModifiedAtDesc(contributor.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(feedOpt)
+                .isPresent()
+                .hasValueSatisfying(
+                        it -> {
+                            Assertions.assertThat(it.getStatus()).isNotEqualByComparingTo(PARTICIPATING);
+                        }
+                );
+    }
+
+    @Test
+    @DisplayName("피드 컨트리뷰터로 참여하지 않았던 사용자는 empty를 반환한다")
+    void findTopByUserEntityIdAndFeedEntityIdOrderByCreatedDateTimeDesc_whenUserNotParticipating_returnStatusParticipating() throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity other = UserEntityFixture.of();
+        userRepository.saveAll(List.of(owner, other));
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+
+        //when
+        Optional<FeedContributorEntity> feedOpt = feedContributorRepository.findTopByUserIdAndFeedIdOrderByModifiedAtDesc(other.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(feedOpt).isEmpty();
     }
 
 }

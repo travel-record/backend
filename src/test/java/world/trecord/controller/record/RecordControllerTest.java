@@ -33,13 +33,13 @@ import static world.trecord.exception.CustomExceptionError.*;
 class RecordControllerTest extends AbstractMockMvcTest {
 
     @Test
-    @DisplayName("GET /api/v1/records/{recordId} - 성공")
+    @DisplayName("GET /api/v1/records/{recordId} - 성공 (피드 주인은 기록을 수정할 수 있다)")
     @WithTestUser("user@email.com")
     void getRecordInfoByWriterTest() throws Exception {
         //given
         UserEntity writer = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
 
         //when //then
         mockMvc.perform(
@@ -49,10 +49,93 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
                 .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
                 .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
-                .andExpect(jsonPath("$.data.isUpdatable").value(true));
+                .andExpect(jsonPath("$.data.canModifyRecord").value(true))
+                .andExpect(jsonPath("$.data.author.userId").value(writer.getId()));
     }
 
-    // TODO 피드 컨트리뷰터는 자신이 작성한 기록을 수정할 수 있다
+    @Test
+    @DisplayName("GET /api/v1/records/{recordId} - 성공(피드 컨트리뷰터는 자신이 작성한 기록을 수정할 수 있다)")
+    @WithTestUser("user@email.com")
+    void getRecord_byFeedContributor_returnCanModifyRecordTrue() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(contributor, feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+
+        //when //then
+        mockMvc.perform(
+                        get("/api/v1/records/{recordId}", recordEntity.getId())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.writerId").value(owner.getId()))
+                .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
+                .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
+                .andExpect(jsonPath("$.data.canModifyRecord").value(true))
+                .andExpect(jsonPath("$.data.author.userId").value(contributor.getId()));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/records/{recordId} - 성공(피드 컨트리뷰터는 자신이 작성한 기록을 수정할 수 있다)")
+    @WithTestUser("user@email.com")
+    void updateRecord_byFeedContributor() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(contributor, feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+
+        String changedTitle = "change title";
+        LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
+        String changedPlace = "changed place";
+        String changedLongitude = "changed longitude";
+        String changedLatitude = "changed latitude";
+        String changedContent = "changed content";
+        String changedFeeling = "changed feeling";
+        String changedWeather = "changed weather";
+        String changedCompanion = "changed changedCompanion";
+        String changedTransportation = "changed transportation";
+        String changedImageUrl = "changed image url";
+
+        RecordUpdateRequest request = RecordUpdateRequest.builder()
+                .title(changedTitle)
+                .date(changedDate)
+                .place(changedPlace)
+                .latitude(changedLatitude)
+                .longitude(changedLongitude)
+                .content(changedContent)
+                .feeling(changedFeeling)
+                .weather(changedWeather)
+                .companion(changedCompanion)
+                .transportation(changedTransportation)
+                .imageUrl(changedImageUrl)
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        put("/api/v1/records/{recordId}", recordEntity.getId())
+                                .contentType(APPLICATION_JSON)
+                                .content(body(request))
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/records/{recordId} - 성공(피드 컨트리뷰터는 자신이 작성한 기록을 삭제할 수 있다)")
+    @WithTestUser("user@email.com")
+    void deleteRecord_byFeedContributor() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity contributor = userRepository.findByEmail("user@email.com").get();
+        FeedEntity feedEntity = feedRepository.save(createFeed(owner, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+        RecordEntity recordEntity = recordRepository.save(createRecord(contributor, feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+        //when //then
+        mockMvc.perform(
+                        delete("/api/v1/records/{recordId}", recordEntity.getId())
+                )
+                .andExpect(status().isOk());
+        Assertions.assertThat(recordRepository.findAll()).isEmpty();
+    }
 
     @Test
     @DisplayName("GET /api/v1/records/{recordId} - 성공 (인증되지 않은 사용자)")
@@ -61,7 +144,7 @@ class RecordControllerTest extends AbstractMockMvcTest {
         //given
         UserEntity writer = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
 
         //when //then
         mockMvc.perform(
@@ -71,7 +154,8 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .andExpect(jsonPath("$.data.writerId").value(writer.getId()))
                 .andExpect(jsonPath("$.data.title").value(recordEntity.getTitle()))
                 .andExpect(jsonPath("$.data.content").value(recordEntity.getContent()))
-                .andExpect(jsonPath("$.data.isUpdatable").value(false));
+                .andExpect(jsonPath("$.data.canModifyRecord").value(false))
+                .andExpect(jsonPath("$.data.author.userId").value(writer.getId()));
     }
 
     @Test
@@ -222,7 +306,7 @@ class RecordControllerTest extends AbstractMockMvcTest {
         //given
         UserEntity writer = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity savedRecord = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
+        RecordEntity savedRecord = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
 
         String changedTitle = "change title";
         LocalDateTime changedDate = LocalDateTime.of(2021, 10, 2, 0, 0);
@@ -283,7 +367,7 @@ class RecordControllerTest extends AbstractMockMvcTest {
         UserEntity writer = userRepository.save(UserEntityFixture.of());
         UserEntity other = userRepository.findByEmail("other@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
 
         RecordUpdateRequest request = RecordUpdateRequest.builder()
                 .title("change title")
@@ -318,10 +402,10 @@ class RecordControllerTest extends AbstractMockMvcTest {
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
         final int sequence1 = 1;
-        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), sequence1));
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), sequence1));
 
         final int sequence2 = 2;
-        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), sequence2));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), sequence2));
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
                 .originalRecordId(recordEntity1.getId())
@@ -359,8 +443,8 @@ class RecordControllerTest extends AbstractMockMvcTest {
         FeedEntity feedEntity1 = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
         FeedEntity feedEntity2 = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity1, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
-        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity2, LocalDateTime.of(2021, 10, 1, 0, 0), 1));
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity1.getUserEntity(), feedEntity1, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity2.getUserEntity(), feedEntity2, LocalDateTime.of(2021, 10, 1, 0, 0), 1));
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
                 .originalRecordId(recordEntity1.getId())
@@ -387,8 +471,8 @@ class RecordControllerTest extends AbstractMockMvcTest {
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
-        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 1));
+        RecordEntity recordEntity1 = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
+        RecordEntity recordEntity2 = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 1));
 
         RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
                 .originalRecordId(recordEntity1.getId())
@@ -469,7 +553,7 @@ class RecordControllerTest extends AbstractMockMvcTest {
         userRepository.saveAll(List.of(commenter1, commenter2));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
         CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity);
         CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity);
         commentRepository.saveAll(List.of(commentEntity1, commentEntity2));
@@ -490,7 +574,7 @@ class RecordControllerTest extends AbstractMockMvcTest {
         //given
         UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
         userRecordLikeRepository.save(UserRecordLikeFixture.of(userEntity, recordEntity));
 
         //when //then
@@ -510,7 +594,7 @@ class RecordControllerTest extends AbstractMockMvcTest {
         //given
         UserEntity userEntity = userRepository.findByEmail("user@email.com").get();
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2022, 3, 2, 0, 0), 0));
 
         //when //then
         mockMvc.perform(
@@ -531,7 +615,7 @@ class RecordControllerTest extends AbstractMockMvcTest {
         userRepository.saveAll(List.of(commenter1, commenter2));
 
         FeedEntity feedEntity = feedRepository.save(createFeed(writer, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
-        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
+        RecordEntity recordEntity = recordRepository.save(createRecord(feedEntity.getUserEntity(), feedEntity, LocalDateTime.of(2021, 10, 1, 0, 0), 0));
         CommentEntity commentEntity1 = CommentEntityFixture.of(commenter1, recordEntity);
         CommentEntity commentEntity2 = CommentEntityFixture.of(commenter2, recordEntity);
         commentRepository.saveAll(List.of(commentEntity2, commentEntity1));
@@ -554,9 +638,9 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .build();
     }
 
-    private RecordEntity createRecord(FeedEntity feedEntity, LocalDateTime date, int sequence) {
+    private RecordEntity createRecord(UserEntity userEntity, FeedEntity feedEntity, LocalDateTime date, int sequence) {
         return RecordEntity.builder()
-                .userEntity(feedEntity.getUserEntity())
+                .userEntity(userEntity)
                 .feedEntity(feedEntity)
                 .title("record")
                 .place("place")

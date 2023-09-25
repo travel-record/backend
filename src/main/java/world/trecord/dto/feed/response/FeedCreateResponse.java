@@ -22,7 +22,7 @@ public class FeedCreateResponse {
 
     @Builder
     private FeedCreateResponse(FeedEntity feedEntity) {
-        this.writerId = feedEntity.getUserEntity().getId();
+        this.writerId = feedEntity.getUserId();
         this.feedId = feedEntity.getId();
     }
 }

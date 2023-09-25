@@ -25,7 +25,6 @@ import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static world.trecord.exception.CustomExceptionError.*;
@@ -145,7 +144,7 @@ class CommentServiceTest extends AbstractIntegrationTest {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
         //when
-        Page<CommentResponse> response = commentService.getReplies(Optional.of(author.getId()), originalComment.getId(), pageRequest);
+        Page<CommentResponse> response = commentService.getReplies(author.getId(), originalComment.getId(), pageRequest);
 
         //then
         Assertions.assertThat(response.getSize()).isEqualTo(pageSize);

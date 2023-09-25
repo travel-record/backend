@@ -9,14 +9,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
-import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
 import world.trecord.dto.comment.request.CommentCreateRequest;
 import world.trecord.dto.comment.request.CommentUpdateRequest;
 import world.trecord.dto.comment.response.CommentResponse;
 import world.trecord.service.comment.CommentService;
-
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -28,29 +25,28 @@ public class CommentController {
     public ApiResponse<Page<CommentResponse>> getReplies(@PathVariable Long commentId,
                                                          @PageableDefault(sort = "createdDateTime", direction = Sort.Direction.ASC) Pageable pageable,
                                                          @CurrentContext AccountContext accountContext) {
-        Optional<Long> itOpt = Optional.ofNullable(accountContext.getId());
-        return ApiResponse.ok(commentService.getReplies(itOpt, commentId, pageable));
+        return ApiResponse.ok(commentService.getReplies(accountContext.getId(), commentId, pageable));
     }
 
     @PostMapping
     public ApiResponse<Void> createComment(@RequestBody @Valid CommentCreateRequest request,
-                                           @CurrentContext UserContext userContext) {
-        commentService.createComment(userContext.getId(), request);
+                                           @CurrentContext AccountContext accountContext) {
+        commentService.createComment(accountContext.getId(), request);
         return ApiResponse.ok();
     }
 
     @PutMapping("/{commentId}")
     public ApiResponse<Void> updateComment(@PathVariable Long commentId,
                                            @RequestBody @Valid CommentUpdateRequest request,
-                                           @CurrentContext UserContext userContext) {
-        commentService.updateComment(userContext.getId(), commentId, request);
+                                           @CurrentContext AccountContext accountContext) {
+        commentService.updateComment(accountContext.getId(), commentId, request);
         return ApiResponse.ok();
     }
 
     @DeleteMapping("/{commentId}")
     public ApiResponse<Void> deleteComment(@PathVariable Long commentId,
-                                           @CurrentContext UserContext userContext) {
-        commentService.deleteComment(userContext.getId(), commentId);
+                                           @CurrentContext AccountContext accountContext) {
+        commentService.deleteComment(accountContext.getId(), commentId);
         return ApiResponse.ok();
     }
 }

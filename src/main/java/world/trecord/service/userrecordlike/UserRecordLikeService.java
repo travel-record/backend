@@ -46,14 +46,14 @@ public class UserRecordLikeService {
 
     private UserRecordLikedResponse unlike(UserRecordLikeEntity userRecordLikeEntity) {
         userRecordLikeRepository.delete(userRecordLikeEntity);
-        return buildLikeResponse(false);
+        return UserRecordLikedResponse.of(false);
     }
 
     private UserRecordLikedResponse like(UserEntity userEntity, RecordEntity recordEntity) {
         saveRecordLike(userEntity, recordEntity);
         Long userToId = recordEntity.getFeedEntity().getUserEntity().getId();
         eventPublisher.publishEvent(new NotificationEvent(userToId, userEntity.getId(), RECORD_LIKE, buildNotificationArgs(userEntity, recordEntity)));
-        return buildLikeResponse(true);
+        return UserRecordLikedResponse.of(true);
     }
 
     private void saveRecordLike(UserEntity userEntity, RecordEntity recordEntity) {
@@ -63,12 +63,6 @@ public class UserRecordLikeService {
                 .build();
 
         userRecordLikeRepository.save(userRecordLikeEntity);
-    }
-
-    private UserRecordLikedResponse buildLikeResponse(boolean liked) {
-        return UserRecordLikedResponse.builder()
-                .liked(liked)
-                .build();
     }
 
     private NotificationArgs buildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {

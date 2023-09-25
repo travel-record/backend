@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import world.trecord.domain.record.RecordEntity;
-import world.trecord.domain.users.UserEntity;
 
 @NoArgsConstructor
 @Setter
@@ -16,16 +15,15 @@ public class RecordCreateResponse {
     private Long feedId;
     private Long recordId;
 
-    public static RecordCreateResponse of(UserEntity writerEntity, RecordEntity recordEntity) {
+    public static RecordCreateResponse of(RecordEntity recordEntity) {
         return RecordCreateResponse.builder()
-                .writerEntity(writerEntity)
                 .recordEntity(recordEntity)
                 .build();
     }
 
     @Builder
-    private RecordCreateResponse(UserEntity writerEntity, RecordEntity recordEntity) {
-        this.writerId = writerEntity.getId();
+    private RecordCreateResponse(RecordEntity recordEntity) {
+        this.writerId = recordEntity.getUserId();
         this.feedId = recordEntity.getFeedId();
         this.recordId = recordEntity.getId();
     }

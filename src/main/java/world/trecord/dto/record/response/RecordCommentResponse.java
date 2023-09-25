@@ -35,9 +35,9 @@ public class RecordCommentResponse {
         this.content = commentEntity.getContent();
         this.isUpdatable = commentEntity.isCommenter(viewerId);
         this.commentCreatedDate = commentEntity.getCreatedDateTime();
-        this.commenterId = commentEntity.getUserEntity().getId();
-        this.commenterImageUrl = commentEntity.getUserEntity().getImageUrl();
-        this.commenterNickname = commentEntity.getUserEntity().getNickname();
-        this.replyCount = commentEntity.getChildCommentEntities().size();
+        this.commenterId = commentEntity.getUserId();
+        this.commenterImageUrl = commentEntity.getUserImageUrl();
+        this.commenterNickname = commentEntity.getUserNickname();
+        this.replyCount = commentEntity.getReplyCount();
     }
 }

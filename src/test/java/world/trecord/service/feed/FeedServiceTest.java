@@ -3,10 +3,14 @@ package world.trecord.service.feed;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
+import world.trecord.domain.feedcontributor.FeedContributorStatus;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
 import world.trecord.dto.feed.request.FeedCreateRequest;
@@ -16,14 +20,16 @@ import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.exception.CustomException;
+import world.trecord.infra.fixture.FeedContributorFixture;
+import world.trecord.infra.fixture.FeedEntityFixture;
 import world.trecord.infra.fixture.RecordEntityFixture;
 import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
+import static org.assertj.core.groups.Tuple.tuple;
 import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
@@ -71,19 +77,73 @@ class FeedServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("사용자가 등록한 특정 피드를 기록과 함께 반환한다")
+    @DisplayName("피드 아이디로 현재 참여 중인 피드 컨트리뷰터와 함께 피드 조회한다")
+    void getFeed_withFeedContributors() throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity contributor1 = UserEntityFixture.of();
+        UserEntity contributor2 = UserEntityFixture.of();
+        UserEntity contributor3 = UserEntityFixture.of();
+        UserEntity contributor4 = UserEntityFixture.of();
+        UserEntity contributor5 = UserEntityFixture.of();
+        UserEntity contributor6 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(owner, contributor1, contributor2, contributor3, contributor4, contributor5, contributor6));
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+
+        FeedContributorEntity feedContributor1 = FeedContributorFixture.of(contributor1, feedEntity);
+        FeedContributorEntity feedContributor2 = FeedContributorFixture.of(contributor2, feedEntity);
+        FeedContributorEntity feedContributor3 = FeedContributorFixture.of(contributor3, feedEntity);
+        FeedContributorEntity feedContributor4 = FeedContributorFixture.of(contributor4, feedEntity);
+        FeedContributorEntity feedContributor5 = FeedContributorFixture.of(contributor5, feedEntity);
+        FeedContributorEntity feedContributor6 = FeedContributorFixture.of(contributor6, feedEntity);
+        feedContributorRepository.saveAll(List.of(feedContributor1, feedContributor2, feedContributor3, feedContributor4, feedContributor5, feedContributor6));
+
+        feedContributorService.leaveFeed(contributor5.getId(), feedEntity.getId()); // feed leave
+        feedContributorService.expelUserFromFeed(owner.getId(), contributor6.getId(), feedEntity.getId()); // feed expel
+
+        //when
+        FeedInfoResponse response = feedService.getFeed(owner.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(response.getContributors())
+                .hasSize(5)
+                .extracting("userId", "nickname", "imageUrl")
+                .containsOnly(
+                        tuple(owner.getId(), owner.getNickname(), owner.getImageUrl()),
+                        tuple(contributor1.getId(), contributor1.getNickname(), contributor1.getImageUrl()),
+                        tuple(contributor2.getId(), contributor2.getNickname(), contributor2.getImageUrl()),
+                        tuple(contributor3.getId(), contributor3.getNickname(), contributor3.getImageUrl()),
+                        tuple(contributor4.getId(), contributor4.getNickname(), contributor4.getImageUrl()));
+    }
+
+    @Test
+    @DisplayName("사용자가 등록한 특정 피드를 반환한다")
     void getFeedByFeedIdTest() throws Exception {
         //given
         UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
         FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
 
-        RecordEntity recordEntity1 = RecordEntityFixture.of(feedEntity);
-        RecordEntity recordEntity2 = RecordEntityFixture.of(feedEntity);
-        RecordEntity recordEntity3 = RecordEntityFixture.of(feedEntity);
-        recordRepository.saveAll(List.of(recordEntity1, recordEntity2, recordEntity3));
+        //when
+        FeedInfoResponse response = feedService.getFeed(userEntity.getId(), feedEntity.getId());
+
+        //then
+        Assertions.assertThat(response)
+                .extracting("writerId", "feedId", "startAt", "endAt")
+                .containsExactly(userEntity.getId(), feedEntity.getId(),
+                        feedEntity.convertStartAtToLocalDate(), feedEntity.convertEndAtToLocalDate());
+    }
+
+    @Test
+    @DisplayName("인증되지 않은 사용자도 피드를 조회할 수 있다")
+    void getFeed_byAnonymousUser_returnResponse() throws Exception {
+        //given
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of("test@email.com"));
+        FeedEntity feedEntity = feedRepository.save(createFeed(userEntity, LocalDateTime.of(2021, 9, 30, 0, 0), LocalDateTime.of(2021, 10, 2, 0, 0)));
+
 
         //when
-        FeedInfoResponse response = feedService.getFeed(Optional.of(userEntity.getId()), feedEntity.getId());
+        FeedInfoResponse response = feedService.getFeed(null, feedEntity.getId());
 
         //then
         Assertions.assertThat(response)
@@ -123,7 +183,7 @@ class FeedServiceTest extends AbstractIntegrationTest {
         Long notExistingUserId = 0L;
 
         //when //then
-        Assertions.assertThatThrownBy(() -> feedService.getFeed(Optional.of(notExistingUserId), notExistingFeedId))
+        Assertions.assertThatThrownBy(() -> feedService.getFeed(notExistingUserId, notExistingFeedId))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(FEED_NOT_FOUND);
@@ -328,6 +388,48 @@ class FeedServiceTest extends AbstractIntegrationTest {
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(FORBIDDEN);
+    }
+
+    @CsvSource({"LEFT", "EXPELLED"})
+    @ParameterizedTest
+    @DisplayName("가장 최근에 피드에서 나가거나 추방된 사용자는 피드를 조회할 수 없다")
+    void getFeed_whenUserHasLeavedOrExpelled_throwsForbiddenException(FeedContributorStatus status) throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity contributor = UserEntityFixture.of();
+        userRepository.saveAll(List.of(owner, contributor));
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity)); // 참여 중
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        entityManager.flush();
+        entityManager.clear();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> feedService.getFeed(contributor.getId(), feedEntity.getId()))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(FORBIDDEN);
+    }
+
+    @CsvSource({"LEFT", "EXPELLED"})
+    @ParameterizedTest
+    @DisplayName("예전에 피드에 나갔다가 다시 참여하는 사용자는 피드를 조회할 수 있다")
+    void getFeed_whenUserHasLeavedOrExpelledBefore_pass(FeedContributorStatus status) throws Exception {
+        //given
+        UserEntity owner = UserEntityFixture.of();
+        UserEntity contributor = UserEntityFixture.of();
+        userRepository.saveAll(List.of(owner, contributor));
+
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        feedContributorRepository.updateStatusAndDeleteByUserEntityIdAndFeedEntityId(contributor.getId(), feedEntity.getId(), status);
+        feedContributorRepository.save(FeedContributorFixture.of(contributor, feedEntity));
+        entityManager.flush();
+        entityManager.clear();
+
+        //when //then
+        feedService.getFeed(contributor.getId(), feedEntity.getId());
     }
 
     private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {
