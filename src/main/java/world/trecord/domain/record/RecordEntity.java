@@ -57,10 +57,6 @@ public class RecordEntity extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
-    // TODO delete
-    @Column(name = "companion")
-    private String companion;
-
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
@@ -87,7 +83,6 @@ public class RecordEntity extends BaseEntity {
                          String weather,
                          String transportation,
                          String content,
-                         String companion,
                          String imageUrl,
                          int sequence) {
         this.userEntity = userEntity;
@@ -101,7 +96,6 @@ public class RecordEntity extends BaseEntity {
         this.weather = weather;
         this.transportation = transportation;
         this.content = content;
-        this.companion = companion;
         this.imageUrl = imageUrl;
         this.sequence = sequence;
     }
@@ -116,7 +110,6 @@ public class RecordEntity extends BaseEntity {
         this.weather = updateEntity.getWeather();
         this.transportation = updateEntity.getTransportation();
         this.content = updateEntity.getContent();
-        this.companion = updateEntity.getCompanion();
         this.imageUrl = updateEntity.getImageUrl();
     }
 

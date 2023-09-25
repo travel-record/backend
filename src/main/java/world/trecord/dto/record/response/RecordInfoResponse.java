@@ -28,7 +28,6 @@ public class RecordInfoResponse {
     private String weather;
     private String transportation;
     private String content;
-    private String companion;
     private String imageUrl;
     private UserResponse author;
 
@@ -56,7 +55,6 @@ public class RecordInfoResponse {
         this.weather = recordEntity.getWeather();
         this.transportation = recordEntity.getTransportation();
         this.content = recordEntity.getContent();
-        this.companion = recordEntity.getCompanion();
         this.imageUrl = recordEntity.getImageUrl();
         this.author = UserResponse.of(recordEntity.getUserEntity());
     }

@@ -93,7 +93,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
         String changedContent = "changed content";
         String changedFeeling = "changed feeling";
         String changedWeather = "changed weather";
-        String changedCompanion = "changed changedCompanion";
         String changedTransportation = "changed transportation";
         String changedImageUrl = "changed image url";
 
@@ -106,7 +105,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .content(changedContent)
                 .feeling(changedFeeling)
                 .weather(changedWeather)
-                .companion(changedCompanion)
                 .transportation(changedTransportation)
                 .imageUrl(changedImageUrl)
                 .build();
@@ -220,7 +218,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
         String weather = "weather";
         String satisfaction = "best";
         String content = "content";
-        String companion = "companion";
         String imageUrl = "https://www.image.com";
         String longitude = "longitude";
         String latitude = "latitude";
@@ -237,7 +234,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .longitude(longitude)
                 .transportation(satisfaction)
                 .content(content)
-                .companion(companion)
                 .imageUrl(imageUrl)
                 .build();
 
@@ -268,7 +264,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
         String weather = "weather";
         String satisfaction = "best";
         String content = "content";
-        String companion = "companion";
         String imageUrl = "https://www.image.com";
         String longitude = "longitude";
         String latitude = "latitude";
@@ -285,7 +280,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .weather(weather)
                 .transportation(satisfaction)
                 .content(content)
-                .companion(companion)
                 .imageUrl(imageUrl)
                 .build();
 
@@ -316,7 +310,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
         String changedContent = "changed content";
         String changedFeeling = "changed feeling";
         String changedWeather = "changed weather";
-        String changedCompanion = "changed changedCompanion";
         String changedTransportation = "changed transportation";
         String changedImageUrl = "changed image url";
 
@@ -329,7 +322,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .content(changedContent)
                 .feeling(changedFeeling)
                 .weather(changedWeather)
-                .companion(changedCompanion)
                 .transportation(changedTransportation)
                 .imageUrl(changedImageUrl)
                 .build();
@@ -352,7 +344,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
                             Assertions.assertThat(recordEntity.getContent()).isEqualTo(changedContent);
                             Assertions.assertThat(recordEntity.getFeeling()).isEqualTo(changedFeeling);
                             Assertions.assertThat(recordEntity.getWeather()).isEqualTo(changedWeather);
-                            Assertions.assertThat(recordEntity.getCompanion()).isEqualTo(changedCompanion);
                             Assertions.assertThat(recordEntity.getTransportation()).isEqualTo(changedTransportation);
                             Assertions.assertThat(recordEntity.getImageUrl()).isEqualTo(changedImageUrl);
                         }
@@ -378,7 +369,6 @@ class RecordControllerTest extends AbstractMockMvcTest {
                 .latitude("changed latitude")
                 .feeling("changed feeling")
                 .weather("changed weather")
-                .companion("changed changedCompanion")
                 .transportation("changed satisfaction")
                 .imageUrl("changed image url")
                 .build();

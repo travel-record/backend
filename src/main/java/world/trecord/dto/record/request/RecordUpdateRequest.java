@@ -44,8 +44,6 @@ public class RecordUpdateRequest {
 
     private String imageUrl;
 
-    private String companion;
-
     @Builder
     private RecordUpdateRequest(String title,
                                 LocalDateTime date,
@@ -56,7 +54,6 @@ public class RecordUpdateRequest {
                                 String weather,
                                 String transportation,
                                 String content,
-                                String companion,
                                 String imageUrl) {
         this.title = title;
         this.date = date;
@@ -67,7 +64,6 @@ public class RecordUpdateRequest {
         this.weather = weather;
         this.transportation = transportation;
         this.content = content;
-        this.companion = companion;
         this.imageUrl = imageUrl;
     }
 
@@ -82,7 +78,6 @@ public class RecordUpdateRequest {
                 .weather(this.weather)
                 .transportation(this.transportation)
                 .content(this.content)
-                .companion(this.companion)
                 .imageUrl(this.imageUrl)
                 .build();
     }
