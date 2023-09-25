@@ -23,11 +23,19 @@ public class CommentResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime createdDateTime;
 
+    public static CommentResponse of(UserEntity userEntity, CommentEntity commentEntity, Long viewerId) {
+        return CommentResponse.builder()
+                .userEntity(userEntity)
+                .commentEntity(commentEntity)
+                .viewerId(viewerId)
+                .build();
+    }
+
     @Builder
     private CommentResponse(UserEntity userEntity, CommentEntity commentEntity, Long viewerId) {
         this.commenterId = userEntity.getId();
         this.commenterImageUrl = userEntity.getImageUrl();
-        this.recordId = commentEntity.getRecordEntity().getId();
+        this.recordId = commentEntity.getRecordId();
         this.parentId = commentEntity.getParentCommentId();
         this.commentId = commentEntity.getId();
         this.content = commentEntity.getContent();
