@@ -88,4 +88,8 @@ public class CommentEntity extends BaseEntity {
     public String getUserImageUrl() {
         return Objects.nonNull(this.userEntity) ? this.userEntity.getImageUrl() : null;
     }
+
+    public int getReplyCount() {
+        return Objects.nonNull(this.childCommentEntities) ? this.childCommentEntities.size() : 0;
+    }
 }

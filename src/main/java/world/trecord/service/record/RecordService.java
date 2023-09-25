@@ -63,7 +63,7 @@ public class RecordService {
 
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
         RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, nextSequence));
-        return RecordCreateResponse.of(userEntity, recordEntity);
+        return RecordCreateResponse.of(recordEntity);
     }
 
     @Transactional

@@ -40,7 +40,7 @@ public class RecordInfoResponse {
 
     @Builder
     private RecordInfoResponse(RecordEntity recordEntity, Long viewerId, Boolean liked) {
-        this.writerId = recordEntity.getFeedEntity().getUserEntity().getId();
+        this.writerId = recordEntity.getFeedEntity().getUserId();
         this.feedId = recordEntity.getFeedId();
         this.recordId = recordEntity.getId();
         this.isUpdatable = recordEntity.isUpdatable(viewerId);

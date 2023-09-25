@@ -38,6 +38,6 @@ public class RecordCommentResponse {
         this.commenterId = commentEntity.getUserId();
         this.commenterImageUrl = commentEntity.getUserImageUrl();
         this.commenterNickname = commentEntity.getUserNickname();
-        this.replyCount = commentEntity.getChildCommentEntities().size();
+        this.replyCount = commentEntity.getReplyCount();
     }
 }

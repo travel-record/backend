@@ -121,10 +121,7 @@ public class RecordEntity extends BaseEntity {
     }
 
     public LocalDate convertDateToLocalDate() {
-        if (Objects.isNull(this.date)) {
-            return null;
-        }
-        return this.date.toLocalDate();
+        return Objects.nonNull(this.date) ? this.date.toLocalDate() : null;
     }
 
     public boolean hasSameFeed(RecordEntity otherRecord) {
@@ -142,10 +139,11 @@ public class RecordEntity extends BaseEntity {
     }
 
     public Long getFeedId() {
-        if (Objects.nonNull(this.feedEntity)) {
-            return this.feedEntity.getId();
-        }
-        return null;
+        return Objects.nonNull(this.feedEntity) ? this.feedEntity.getId() : null;
+    }
+
+    public Long getUserId() {
+        return Objects.nonNull(this.userEntity) ? this.userEntity.getId() : null;
     }
 
     public boolean isUpdatable(Long userId) {

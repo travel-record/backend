@@ -10,6 +10,12 @@ public class UserRecordLikedResponse {
 
     private boolean liked;
 
+    public static UserRecordLikedResponse of(boolean liked) {
+        return UserRecordLikedResponse.builder()
+                .liked(liked)
+                .build();
+    }
+
     @Builder
     private UserRecordLikedResponse(boolean liked) {
         this.liked = liked;
