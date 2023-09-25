@@ -30,9 +30,9 @@ import static world.trecord.exception.CustomExceptionError.*;
 @Service
 public class CommentService {
 
-    private final CommentRepository commentRepository;
     private final UserService userService;
     private final RecordRepository recordRepository;
+    private final CommentRepository commentRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional

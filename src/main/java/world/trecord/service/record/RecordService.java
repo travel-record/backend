@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.comment.CommentEntity;
 import world.trecord.domain.comment.CommentRepository;
 import world.trecord.domain.feed.FeedEntity;
-import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordEntity;
@@ -24,6 +23,7 @@ import world.trecord.dto.record.response.RecordCommentResponse;
 import world.trecord.dto.record.response.RecordCreateResponse;
 import world.trecord.dto.record.response.RecordInfoResponse;
 import world.trecord.exception.CustomException;
+import world.trecord.service.feed.FeedService;
 import world.trecord.service.users.UserService;
 
 import java.time.LocalDateTime;
@@ -39,7 +39,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 public class RecordService {
 
     private final UserService userService;
-    private final FeedRepository feedRepository;
+    private final FeedService feedService;
     private final RecordRepository recordRepository;
     private final RecordSequenceRepository recordSequenceRepository;
     private final UserRecordLikeRepository userRecordLikeRepository;
@@ -56,7 +56,7 @@ public class RecordService {
     @Transactional
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest request) {
         UserEntity userEntity = userService.findUserOrException(userId);
-        FeedEntity feedEntity = findFeedOrException(request.getFeedId());
+        FeedEntity feedEntity = feedService.findFeedOrException(request.getFeedId());
         ensureUserHasWritePermissionOverRecord(userId, feedEntity);
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
         RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, nextSequence));
@@ -66,7 +66,7 @@ public class RecordService {
     @Transactional
     public void updateRecord(Long userId, Long recordId, RecordUpdateRequest request) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
+        FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedEntity().getId());
 
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
 
@@ -87,7 +87,7 @@ public class RecordService {
         RecordEntity targetRecord = recordEntityList.get(1);
         ensureRecordsHasSameFeed(originalRecord, targetRecord);
 
-        FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
+        FeedEntity feedEntity = feedService.findFeedOrException(originalRecord.getFeedId());
         ensureUserHasPermissionOverFeed(userId, feedEntity);
 
         originalRecord.swapSequenceWith(targetRecord);
@@ -97,7 +97,7 @@ public class RecordService {
     @Transactional
     public void deleteRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        FeedEntity feedEntity = findFeedOrException(recordEntity.getFeedEntity().getId());
+        FeedEntity feedEntity = feedService.findFeedOrException(recordEntity.getFeedId());
 
         ensureUserHasPermissionOverRecord(feedEntity, recordEntity, userId);
 
@@ -126,10 +126,6 @@ public class RecordService {
         if (!hasWritePermission) {
             throw new CustomException(FORBIDDEN);
         }
-    }
-    
-    private FeedEntity findFeedOrException(Long feedId) {
-        return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private int findNextSequence(Long feedId, LocalDateTime date) {

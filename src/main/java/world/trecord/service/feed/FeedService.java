@@ -82,8 +82,12 @@ public class FeedService {
         feedRepository.delete(feedEntity);
     }
 
-    private FeedEntity findFeedOrException(Long feedId) {
+    public FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    }
+
+    public FeedEntity findFeedWithContributorsWithLockOrException(Long feedId) {
+        return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {
