@@ -45,6 +45,7 @@ public class FeedContributorService {
         UserEntity invitee = userService.findUserOrException(request.getUserToId());
         ensureNotSelfInviting(requestUserId, invitee.getId());
         ensureInviteeNotAlreadyInvited(feedEntity, invitee.getId());
+
         saveFeedContributor(feedEntity, invitee);
 
         eventPublisher.publishEvent(new NotificationEvent(invitee.getId(), requestUserId, FEED_INVITATION, buildNotificationArgs(invitee, feedEntity)));
@@ -57,6 +58,7 @@ public class FeedContributorService {
         UserEntity contributor = userService.findUserOrException(contributorId);
         ensureNotSelfExpelling(requestUserId, contributor.getId());
         ensureUserIsFeedContributor(feedEntity, contributor.getId());
+
         deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
     }
 
@@ -73,6 +75,7 @@ public class FeedContributorService {
         if (!feedEntity.isContributor(userId)) {
             throw new CustomException(USER_NOT_INVITED);
         }
+
         deleteFeedContributor(feedEntity, userId, LEFT);
     }
 

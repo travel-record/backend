@@ -14,6 +14,7 @@ import world.trecord.domain.users.UserEntity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -139,5 +140,9 @@ public class FeedEntity extends BaseEntity {
 
     public String getUserNickname() {
         return Objects.nonNull(this.userEntity) ? this.userEntity.getNickname() : null;
+    }
+
+    public List<FeedContributorEntity> getContributors() {
+        return Objects.nonNull(this.feedContributors) ? this.feedContributors.stream().toList() : null;
     }
 }

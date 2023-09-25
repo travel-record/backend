@@ -16,6 +16,13 @@ import java.util.Optional;
 @Repository
 public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     Page<FeedEntity> findByUserEntityId(Long userId, Pageable pageable);
+    
+    @Query("SELECT DISTINCT fe " +
+            "FROM FeedEntity fe " +
+            "JOIN FETCH fe.userEntity " +
+            "LEFT JOIN FETCH fe.feedContributors fce " +
+            "WHERE fe.id = :feedId AND (fce IS NULL OR fce.status = world.trecord.domain.feedcontributor.FeedContributorStatus.PARTICIPATING)")
+    Optional<FeedEntity> findWithOwnerAndParticipatingContributorsById(@Param("feedId") Long feedId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT fe " +

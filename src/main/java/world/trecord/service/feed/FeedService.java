@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
+import world.trecord.domain.feedcontributor.FeedContributorEntity;
 import world.trecord.domain.feedcontributor.FeedContributorRepository;
+import world.trecord.domain.feedcontributor.FeedContributorStatus;
 import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
@@ -18,8 +20,13 @@ import world.trecord.dto.feed.response.FeedCreateResponse;
 import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
+import world.trecord.dto.users.response.UserInfoResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.service.users.UserService;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
@@ -40,10 +47,11 @@ public class FeedService {
         return feedRepository.findByUserEntityId(userId, pageable).map(FeedListResponse::of);
     }
 
-    // TODO feed contributors 같이 추가
     public FeedInfoResponse getFeed(Long userId, Long feedId) {
-        FeedEntity feedEntity = findFeedOrException(feedId);
-        return FeedInfoResponse.of(feedEntity, userId);
+        FeedEntity feedEntity = findFeedWithOwnerAndContributors(feedId);
+        ensureUserHasNotLeavedOrExpelledRecently(userId, feedEntity.getId());
+        List<UserInfoResponse> contributors = findFeedContributors(feedEntity);
+        return FeedInfoResponse.of(feedEntity, contributors, userId);
     }
 
     public Page<FeedRecordsResponse> getFeedRecords(Long feedId, Pageable pageable) {
@@ -79,12 +87,36 @@ public class FeedService {
         feedRepository.delete(feedEntity);
     }
 
+    public FeedEntity findFeedWithContributorsWithLockOrException(Long feedId) {
+        return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    }
+
+    private void ensureUserHasNotLeavedOrExpelledRecently(Long userId, Long feedId) {
+        Optional<Long> userIdOpt = Optional.ofNullable(userId);
+        userIdOpt.flatMap(id -> feedContributorRepository.findTopByUserIdAndFeedIdOrderByModifiedAtDesc(id, feedId))
+                .ifPresent(it -> {
+                    if (it.getStatus() != FeedContributorStatus.PARTICIPATING) {
+                        throw new CustomException(FORBIDDEN);
+                    }
+                });
+    }
+
+    private List<UserInfoResponse> findFeedContributors(FeedEntity feedEntity) {
+        List<UserInfoResponse> contributors = new ArrayList<>();
+        contributors.add(UserInfoResponse.of(feedEntity.getUserEntity()));
+        feedEntity.getContributors().stream()
+                .map(FeedContributorEntity::getUserEntity)
+                .forEach(it -> contributors.add(UserInfoResponse.of(it)));
+        return contributors;
+    }
+
     public FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
-    public FeedEntity findFeedWithContributorsWithLockOrException(Long feedId) {
-        return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
+    public FeedEntity findFeedWithOwnerAndContributors(Long feedId) {
+        return feedRepository.findWithOwnerAndParticipatingContributorsById(feedId)
+                .orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
     private void ensureUserIsFeedOwner(FeedEntity feedEntity, Long userId) {

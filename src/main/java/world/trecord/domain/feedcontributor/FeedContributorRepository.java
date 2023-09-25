@@ -15,6 +15,13 @@ import java.util.Optional;
 @Repository
 public interface FeedContributorRepository extends JpaRepository<FeedContributorEntity, Long> {
 
+    @Query(value = "SELECT * " +
+            "FROM feed_contributor fc " +
+            "WHERE fc.id_users = :userId AND fc.id_feed = :feedId " +
+            "ORDER BY fc.modified_date_time DESC " +
+            "LIMIT 1", nativeQuery = true)
+    Optional<FeedContributorEntity> findTopByUserIdAndFeedIdOrderByModifiedAtDesc(Long userId, Long feedId);
+
     Optional<FeedContributorEntity> findByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
 
     @EntityGraph(attributePaths = {"feedEntity", "userEntity"})
