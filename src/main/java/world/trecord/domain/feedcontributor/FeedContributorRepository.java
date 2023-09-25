@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface FeedContributorRepository extends JpaRepository<FeedContributorEntity, Long> {
 
     Optional<FeedContributorEntity> findByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
-    
+
     @EntityGraph(attributePaths = {"feedEntity", "userEntity"})
     Page<FeedContributorEntity> findWithFeedEntityByUserEntityId(@Param("userId") Long userId, Pageable pageable);
 
@@ -38,4 +38,9 @@ public interface FeedContributorRepository extends JpaRepository<FeedContributor
     void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
 
     void deleteByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
+
+    @Transactional
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "DELETE FROM feed_contributor", nativeQuery = true)
+    void physicallyDeleteAll();
 }

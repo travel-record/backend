@@ -29,4 +29,9 @@ public interface RecordSequenceRepository extends JpaRepository<RecordSequenceEn
             "SET rse.deletedDateTime = NOW() " +
             "where rse.feedEntity.id = :feedId")
     void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
+
+    @Transactional
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "DELETE FROM record_sequence", nativeQuery = true)
+    void physicallyDeleteAll();
 }

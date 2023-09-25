@@ -31,13 +31,6 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "WHERE re.id IN :recordIds")
     List<RecordEntity> findByIdsForUpdate(@Param("recordIds") List<Long> recordIds);
 
-    // TODO delete
-    @Query("SELECT re.id as id, re.title as title, re.place as place, re.imageUrl as imageUrl , re.date as date " +
-            "FROM RecordEntity re " +
-            "WHERE re.feedEntity.id = :feedId " +
-            "ORDER BY re.date ASC, re.sequence ASC ,re.createdDateTime ASC")
-    List<RecordWithFeedProjection> findRecordsByFeedEntityId(@Param("feedId") Long feedId);
-
     @Query("SELECT re.id as id, re.title as title, re.place as place, re.latitude as latitude, re.longitude as longitude, re.imageUrl as imageUrl , re.date as date " +
             "FROM RecordEntity re " +
             "WHERE re.feedEntity.id = :feedId")
@@ -61,4 +54,9 @@ public interface RecordRepository extends JpaRepository<RecordEntity, Long> {
             "SET re.deletedDateTime = NOW() " +
             "where re.feedEntity.id = :feedId")
     void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
+
+    @Transactional
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "DELETE FROM record", nativeQuery = true)
+    void physicallyDeleteAll();
 }

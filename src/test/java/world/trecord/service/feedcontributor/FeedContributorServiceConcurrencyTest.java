@@ -16,41 +16,44 @@ import world.trecord.infra.test.AbstractConcurrencyTest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 class FeedContributorServiceConcurrencyTest extends AbstractConcurrencyTest {
 
     @AfterEach
     void tearDown() {
         executorService.shutdown();
-        feedContributorRepository.deleteAll();
-        feedRepository.deleteAll();
-        userRepository.deleteAll();
+        feedContributorRepository.physicallyDeleteAll();
+        feedRepository.physicallyDeleteAll();
+        userRepository.physicallyDeleteAll();
     }
 
     @Test
-    @DisplayName("같은 사용자에게 초대를 동시에 해도 초대는 한 번만 된다")
+    @DisplayName("피드에 동일한 사용자에게 초대를 동시에 해도 초대는 한 번만 한다")
     void inviteUserConcurrencyTest() throws Exception {
         //given
+        final int REQUEST_COUNT = 10;
+        List<Callable<Void>> tasks = new ArrayList<>();
+
         UserEntity owner = UserEntityFixture.of();
         UserEntity invitedUser = UserEntityFixture.of();
         userRepository.saveAll(List.of(owner, invitedUser));
 
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
 
-        FeedInviteRequest request = FeedInviteRequest.builder()
+        FeedInviteRequest inviteRequest = FeedInviteRequest.builder()
                 .userToId(invitedUser.getId())
                 .build();
 
-        final int inviteRequestCount = 10;
-        List<Callable<Void>> tasks = new ArrayList<>();
-
-        for (int i = 0; i < inviteRequestCount; i++) {
+        IntStream.range(0, REQUEST_COUNT).forEach(request -> {
             tasks.add(() -> {
-                feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), request);
+                feedContributorService.inviteUserToFeed(owner.getId(), feedEntity.getId(), inviteRequest);
                 return null;
             });
-        }
+        });
 
         //when
         List<Future<Void>> futures = executorService.invokeAll(tasks);
@@ -68,14 +71,17 @@ class FeedContributorServiceConcurrencyTest extends AbstractConcurrencyTest {
             }
         }
 
-        Assertions.assertThat(exceptionCount).isEqualTo(inviteRequestCount - 1);
+        Assertions.assertThat(exceptionCount).isEqualTo(REQUEST_COUNT - 1);
         Assertions.assertThat(feedContributorRepository.findAll()).hasSize(1);
     }
 
     @Test
-    @DisplayName("피드 컨트리뷰터를 동시에 내보내도 내보내기는 한 번만 된다")
+    @DisplayName("동일한 피드 컨트리뷰터를 동시에 내보내기 요청해도 한 번만 처리한다")
     void expelUserConcurrencyTest() throws Exception {
         //given
+        final int REQUEST_COUNT = 10;
+        List<Callable<Void>> tasks = new ArrayList<>();
+
         UserEntity owner = UserEntityFixture.of();
         UserEntity invitedUser = UserEntityFixture.of();
         userRepository.saveAll(List.of(owner, invitedUser));
@@ -83,17 +89,12 @@ class FeedContributorServiceConcurrencyTest extends AbstractConcurrencyTest {
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
         feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
 
-        final int inviteRequestCount = 10;
-        int numberOfCores = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newFixedThreadPool(numberOfCores);
-        List<Callable<Void>> tasks = new ArrayList<>();
-
-        for (int i = 0; i < inviteRequestCount; i++) {
+        IntStream.range(0, REQUEST_COUNT).forEach(request -> {
             tasks.add(() -> {
                 feedContributorService.expelUserFromFeed(owner.getId(), invitedUser.getId(), feedEntity.getId());
                 return null;
             });
-        }
+        });
 
         //when
         List<Future<Void>> futures = executorService.invokeAll(tasks);
@@ -111,17 +112,17 @@ class FeedContributorServiceConcurrencyTest extends AbstractConcurrencyTest {
             }
         }
 
-        Assertions.assertThat(exceptionCount).isEqualTo(inviteRequestCount - 1);
+        Assertions.assertThat(exceptionCount).isEqualTo(REQUEST_COUNT - 1);
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
-
-        //finally
-        executorService.shutdown();
     }
 
     @Test
-    @DisplayName("피드에서 나가는 것을 동시에 요청해도 한 번만 처리된다")
+    @DisplayName("사용자가 피드에서 나가는 것을 동시에 요청해도 한 번만 처리된다")
     void leaveFeedConcurrencyTest() throws Exception {
         //given
+        final int REQUEST_COUNT = 10;
+        List<Callable<Void>> tasks = new ArrayList<>();
+
         UserEntity owner = UserEntityFixture.of();
         UserEntity invitedUser = UserEntityFixture.of();
         userRepository.saveAll(List.of(owner, invitedUser));
@@ -129,15 +130,12 @@ class FeedContributorServiceConcurrencyTest extends AbstractConcurrencyTest {
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
         feedContributorRepository.save(FeedContributorFixture.of(invitedUser, feedEntity));
 
-        final int inviteRequestCount = 10;
-        List<Callable<Void>> tasks = new ArrayList<>();
-
-        for (int i = 0; i < inviteRequestCount; i++) {
+        IntStream.range(0, REQUEST_COUNT).forEach(request -> {
             tasks.add(() -> {
                 feedContributorService.leaveFeed(invitedUser.getId(), feedEntity.getId());
                 return null;
             });
-        }
+        });
 
         //when
         List<Future<Void>> futures = executorService.invokeAll(tasks);
@@ -155,7 +153,7 @@ class FeedContributorServiceConcurrencyTest extends AbstractConcurrencyTest {
             }
         }
 
-        Assertions.assertThat(exceptionCount).isEqualTo(inviteRequestCount - 1);
+        Assertions.assertThat(exceptionCount).isEqualTo(REQUEST_COUNT - 1);
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();
     }
 }

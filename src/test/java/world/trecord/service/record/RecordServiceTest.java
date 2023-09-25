@@ -626,7 +626,7 @@ class RecordServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("같은 피드를 가지는 두 개의 기록 순서를 스왑한다")
+    @DisplayName("같은 피드에 동일한 날짜로 기록된 두 개의 기록 순서를 스왑한다")
     void updateRecordSequenceTest() throws Exception {
         //given
         UserEntity writer = userRepository.save(UserEntityFixture.of("test@email.com"));

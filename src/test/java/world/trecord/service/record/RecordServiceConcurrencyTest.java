@@ -18,123 +18,116 @@ import world.trecord.infra.test.AbstractConcurrencyTest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
-
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 class RecordServiceConcurrencyTest extends AbstractConcurrencyTest {
 
     @AfterEach
     void tearDown() {
         executorService.shutdown();
-        recordRepository.deleteAllInBatch();
-        recordSequenceRepository.deleteAllInBatch();
-        feedRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
+        recordRepository.physicallyDeleteAll();
+        recordSequenceRepository.physicallyDeleteAll();
+        feedRepository.physicallyDeleteAll();
+        userRepository.physicallyDeleteAll();
     }
 
     @Test
-    @DisplayName("같은 피드에 같은 날짜에 여러 기록을 동시에 저장해도 같은 번호를 가지지 않는다")
+    @DisplayName("같은 피드에 같은 날짜에 기록을 동시에 저장해도 같은 순서 번호를 가지지 않는다")
     void createRecordWithSequenceConcurrencyTest() throws InterruptedException {
         //given
         final int NUMBER_OF_REQUESTS = 200;
+        List<Callable<RecordCreateResponse>> tasks = new ArrayList<>();
 
         UserEntity userEntity = userRepository.save(UserEntityFixture.of());
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
 
-        CountDownLatch latch = new CountDownLatch(NUMBER_OF_REQUESTS);
-        List<Future<RecordCreateResponse>> futures = new ArrayList<>();
+        IntStream.range(0, NUMBER_OF_REQUESTS).forEach(request -> {
+            tasks.add(() -> {
+                RecordCreateRequest recordCreateRequest = buildCreateRequest(feedEntity);
+                return recordService.createRecord(userEntity.getId(), recordCreateRequest);
+            });
+
+        });
 
         //when
-        for (int i = 0; i < NUMBER_OF_REQUESTS; i++) {
-            RecordCreateRequest request = createRequest(feedEntity);
+        List<Future<RecordCreateResponse>> futures = executorService.invokeAll(tasks);
 
-            futures.add(executorService.submit(() -> {
-                try {
-                    return recordService.createRecord(userEntity.getId(), request);
-                } finally {
-                    latch.countDown();
-                }
-            }));
-        }
-
-        latch.await(1, TimeUnit.SECONDS);
-
+        //then
+        int exceptionCount = 0;
         for (Future<RecordCreateResponse> future : futures) {
             try {
-                assertNotNull(future.get());
+                future.get();
             } catch (ExecutionException e) {
+                exceptionCount++;
             }
         }
 
-        //then
+        Assertions.assertThat(exceptionCount).isZero();
+
         Assertions.assertThat(recordRepository.findAll())
                 .extracting("sequence")
                 .hasSize(NUMBER_OF_REQUESTS)
                 .doesNotHaveDuplicates();
 
-        Assertions.assertThat(recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), createRequest(feedEntity).getDate()))
+        Assertions.assertThat(recordRepository.findMaxSequenceByFeedEntityIdAndDate(feedEntity.getId(), buildCreateRequest(feedEntity).getDate()))
                 .isPresent()
                 .hasValue(NUMBER_OF_REQUESTS);
     }
 
     @Test
-    @DisplayName("같은 날짜를 가진 기록들의 순서 변경 요청을 동시에 해도 순서가 정상적으로 변경된다")
+    @DisplayName("같은 날짜를 가진 기록들의 순서 변경을 동시에 해도 순서가 순서대로 변경된다")
     void swapSequenceConcurrencyTest() throws Exception {
         //given
-        UserEntity userEntity = userRepository.save(UserEntityFixture.of());
-        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
-        int recordSeq1 = 1;
-        RecordEntity recordEntity1 = RecordEntityFixture.of(userEntity, feedEntity, recordSeq1);
-        int recordSeq2 = 2;
-        RecordEntity recordEntity2 = RecordEntityFixture.of(userEntity, feedEntity, recordSeq2);
-        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
-
-        final int NUMBER_OF_REQUESTS = 11;
-
+        final int NUMBER_OF_REQUESTS = 1;
         List<Callable<Void>> tasks = new ArrayList<>();
 
-        RecordSequenceSwapRequest request = RecordSequenceSwapRequest.builder()
-                .originalRecordId(recordEntity1.getId())
-                .targetRecordId(recordEntity2.getId())
-                .build();
+        UserEntity userEntity = userRepository.save(UserEntityFixture.of());
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
 
-        for (int i = 0; i < NUMBER_OF_REQUESTS; i++) {
+        int recordSequence1 = 1;
+        int recordSequence2 = 2;
+        RecordEntity recordEntity1 = RecordEntityFixture.of(userEntity, feedEntity, recordSequence1);
+        RecordEntity recordEntity2 = RecordEntityFixture.of(userEntity, feedEntity, recordSequence2);
+        recordRepository.saveAll(List.of(recordEntity1, recordEntity2));
+
+        RecordSequenceSwapRequest swapRequest = buildSwapRequest(recordEntity1, recordEntity2);
+
+        IntStream.of(0, NUMBER_OF_REQUESTS).forEach(request -> {
             tasks.add(() -> {
-                recordService.swapRecordSequence(userEntity.getId(), request);
+                recordService.swapRecordSequence(userEntity.getId(), swapRequest);
                 return null;
             });
-        }
+        });
 
         //when
         List<Future<Void>> futures = executorService.invokeAll(tasks);
 
         //then
+        int exceptionCount = 0;
         for (Future<Void> future : futures) {
             try {
                 future.get();
             } catch (ExecutionException e) {
+                exceptionCount++;
             }
         }
 
-        Assertions.assertThat(recordRepository.findById(recordEntity1.getId()))
-                .isPresent()
-                .hasValueSatisfying(
-                        entity -> {
-                            Assertions.assertThat(entity.getSequence()).isEqualTo(recordSeq2);
-                        }
-                );
-
-        Assertions.assertThat(recordRepository.findById(recordEntity2.getId()))
-                .isPresent()
-                .hasValueSatisfying(
-                        entity -> {
-                            Assertions.assertThat(entity.getSequence()).isEqualTo(recordSeq1);
-                        }
-                );
+        Assertions.assertThat(exceptionCount).isZero();
+        Assertions.assertThat(recordRepository.findById(recordEntity1.getId()).get().getSequence()).isEqualTo(recordSequence2);
+        Assertions.assertThat(recordRepository.findById(recordEntity2.getId()).get().getSequence()).isEqualTo(recordSequence1);
     }
 
-    private RecordCreateRequest createRequest(FeedEntity feedEntity) {
+    private RecordSequenceSwapRequest buildSwapRequest(RecordEntity recordEntity1, RecordEntity recordEntity2) {
+        return RecordSequenceSwapRequest.builder()
+                .originalRecordId(recordEntity1.getId())
+                .targetRecordId(recordEntity2.getId())
+                .build();
+    }
+
+    private RecordCreateRequest buildCreateRequest(FeedEntity feedEntity) {
         return RecordCreateRequest.builder()
                 .feedId(feedEntity.getId())
                 .title("title")

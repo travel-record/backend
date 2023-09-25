@@ -85,11 +85,9 @@ public class RecordService {
 
         RecordEntity originalRecord = recordEntityList.get(0);
         RecordEntity targetRecord = recordEntityList.get(1);
-
         ensureRecordsHasSameFeed(originalRecord, targetRecord);
 
         FeedEntity feedEntity = findFeedOrException(originalRecord.getFeedEntity().getId());
-
         ensureUserHasPermissionOverFeed(userId, feedEntity);
 
         originalRecord.swapSequenceWith(targetRecord);

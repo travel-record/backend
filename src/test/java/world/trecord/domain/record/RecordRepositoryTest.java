@@ -22,50 +22,6 @@ import java.util.Optional;
 class RecordRepositoryTest extends AbstractIntegrationTest {
 
     @Test
-    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜 오름차순으로 projection으로 조회한다")
-    void findRecordEntityByFeedIdTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(UserEntityFixture.of());
-        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
-        RecordEntity record1 = RecordEntityFixture.of(userEntity, feedEntity, 0);
-        RecordEntity record2 = RecordEntityFixture.of(userEntity, feedEntity, 1);
-        RecordEntity record3 = RecordEntityFixture.of(userEntity, feedEntity, 2);
-
-        recordRepository.saveAll(List.of(record1, record2, record3));
-
-        //when
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedEntity.getId());
-
-        //then
-        Assertions.assertThat(projectionList)
-                .hasSize(3)
-                .extracting("id")
-                .containsExactly(record1.getId(), record2.getId(), record3.getId());
-    }
-
-    @Test
-    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜가 동일하면 기록 순서 오름차순으로 projection으로 조회한다")
-    void findRecordEntityByFeedIdOrderBySequenceTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(UserEntityFixture.of());
-        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
-        RecordEntity record1 = RecordEntityFixture.of(userEntity, feedEntity, 2);
-        RecordEntity record2 = RecordEntityFixture.of(userEntity, feedEntity, 1);
-        RecordEntity record3 = RecordEntityFixture.of(userEntity, feedEntity, 0);
-
-        recordRepository.saveAll(List.of(record1, record2, record3));
-
-        //when
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedEntity.getId());
-
-        //then
-        Assertions.assertThat(projectionList)
-                .hasSize(3)
-                .extracting("id")
-                .containsExactly(record3.getId(), record2.getId(), record1.getId());
-    }
-
-    @Test
     @DisplayName("Select for update 쿼리가 날라가야한다")
     void findByIdForUpdateTest() throws Exception {
         //given
@@ -79,28 +35,7 @@ class RecordRepositoryTest extends AbstractIntegrationTest {
         //then
         Assertions.assertThat(lockedRecord).isNotNull();
     }
-
-    @Test
-    @DisplayName("피드 아이디로 기록 리스트를 기록 날짜, 기록 순서가 동일하면 기록 등록 시간 오름차순으로 projection으로 조회한다")
-    void findRecordEntityByFeedIdOrderByCreatedTimeTest() throws Exception {
-        //given
-        UserEntity userEntity = userRepository.save(UserEntityFixture.of());
-        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(userEntity));
-        RecordEntity record1 = RecordEntityFixture.of(userEntity, feedEntity, 1);
-        RecordEntity record2 = RecordEntityFixture.of(userEntity, feedEntity, 2);
-        RecordEntity record3 = RecordEntityFixture.of(userEntity, feedEntity, 3);
-        recordRepository.saveAll(List.of(record1, record2, record3));
-
-        //when
-        List<RecordWithFeedProjection> projectionList = recordRepository.findRecordsByFeedEntityId(feedEntity.getId());
-
-        //then
-        Assertions.assertThat(projectionList)
-                .hasSize(3)
-                .extracting("id")
-                .containsExactly(record1.getId(), record2.getId(), record3.getId());
-    }
-
+    
     @Test
     @DisplayName("기록을 조회할 때 피드와 함께 조회한다")
     void findRecordEntityWithFeedEntityTest() throws Exception {
