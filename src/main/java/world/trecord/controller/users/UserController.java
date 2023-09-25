@@ -7,8 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+import world.trecord.config.security.AccountContext;
 import world.trecord.config.security.CurrentContext;
-import world.trecord.config.security.UserContext;
 import world.trecord.controller.ApiResponse;
 import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
@@ -31,14 +31,14 @@ public class UserController {
     private final FeedContributorService feedContributorService;
 
     @GetMapping
-    public ApiResponse<UserInfoResponse> getUser(@CurrentContext UserContext userContext) {
-        return ApiResponse.ok(userService.getUser(userContext.getId()));
+    public ApiResponse<UserInfoResponse> getUser(@CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(userService.getUser(accountContext.getId()));
     }
 
     @PostMapping
     public ApiResponse<UserInfoResponse> updateUser(@RequestBody @Valid UserUpdateRequest request,
-                                                    @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(userService.updateUser(userContext.getId(), request));
+                                                    @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(userService.updateUser(accountContext.getId(), request));
     }
 
     @GetMapping("/{userId}")
@@ -48,25 +48,25 @@ public class UserController {
 
     @GetMapping("/search")
     public ApiResponse<UserInfoResponse> searchUser(@RequestParam(name = "q") String keyword,
-                                                    @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(userService.searchUser(userContext.getId(), keyword));
+                                                    @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(userService.searchUser(accountContext.getId(), keyword));
     }
 
     @GetMapping("/comments")
     public ApiResponse<Page<UserCommentResponse>> getUserComments(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                  @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(commentService.getUserComments(userContext.getId(), pageable));
+                                                                  @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(commentService.getUserComments(accountContext.getId(), pageable));
     }
 
     @GetMapping("/likes")
     public ApiResponse<Page<UserRecordLikeResponse>> getUserRecordLikes(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                        @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(userRecordLikeService.getUserRecordLikeList(userContext.getId(), pageable));
+                                                                        @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(userRecordLikeService.getUserRecordLikeList(accountContext.getId(), pageable));
     }
 
     @GetMapping("/invited")
     public ApiResponse<Page<UserFeedContributorListResponse>> getUserParticipatingFeeds(@PageableDefault(sort = "createdDateTime", direction = Sort.Direction.DESC) Pageable pageable,
-                                                                                        @CurrentContext UserContext userContext) {
-        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(userContext.getId(), pageable));
+                                                                                        @CurrentContext AccountContext accountContext) {
+        return ApiResponse.ok(feedContributorService.getUserParticipatingFeeds(accountContext.getId(), pageable));
     }
 }
