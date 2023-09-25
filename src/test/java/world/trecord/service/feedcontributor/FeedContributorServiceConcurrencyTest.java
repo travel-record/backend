@@ -13,6 +13,7 @@ import world.trecord.infra.fixture.FeedContributorFixture;
 import world.trecord.infra.fixture.FeedEntityFixture;
 import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractConcurrencyTest;
+import world.trecord.utils.ClassUtils;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -137,9 +138,11 @@ class FeedContributorServiceConcurrencyTest extends AbstractConcurrencyTest {
             try {
                 future.get();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof CustomException &&
-                        (((CustomException) e.getCause()).error() == CustomExceptionError.USER_NOT_INVITED)) {
-                    exceptionCount++;
+                if (e.getCause() instanceof CustomException) {
+                    CustomException customException = ClassUtils.getSafeInstance(e.getCause(), CustomException.class);
+                    if (customException.error() == CustomExceptionError.USER_NOT_INVITED) {
+                        exceptionCount++;
+                    }
                 }
             }
         }

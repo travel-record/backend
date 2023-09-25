@@ -3,7 +3,8 @@ package world.trecord.service.userrecordlike;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.users.UserEntity;
@@ -28,19 +29,18 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
         userRepository.physicallyDeleteAll();
     }
 
-    @Test
-    @DisplayName("사용자가 동일한 기록에 좋아요 요청을 동시에 해도 순서대로 실행된다")
-    void toggleLikeConcurrencyTest() throws Exception {
+    @DisplayName("사용자가 동일한 기록에 좋아요 요청을 동시에 요청해도 순서대로 처리된다")
+    @CsvSource({"10,false", "11,true"})
+    @ParameterizedTest
+    void toggleLikeConcurrencyTest(int totalRequestCount, boolean expected) throws Exception {
         //given
-        final int TOTAL_REQUEST_COUNT = 11;
-
         UserEntity owner = UserEntityFixture.of();
         UserEntity other = UserEntityFixture.of();
         userRepository.saveAll(List.of(owner, other));
         FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
         RecordEntity recordEntity = recordRepository.save(RecordEntityFixture.of(feedEntity));
 
-        List<Callable<Void>> tasks = generateConcurrentTasks(TOTAL_REQUEST_COUNT, () -> {
+        List<Callable<Void>> tasks = generateConcurrentTasks(totalRequestCount, () -> {
             userRecordLikeService.toggleLike(other.getId(), recordEntity.getId());
             return null;
         });
@@ -59,6 +59,6 @@ class UserRecordLikeServiceConcurrencyTest extends AbstractConcurrencyTest {
         }
 
         Assertions.assertThat(exceptionCount).isZero();
-        Assertions.assertThat(userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(other.getId(), recordEntity.getId())).isTrue();
+        Assertions.assertThat(userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(other.getId(), recordEntity.getId())).isEqualTo(expected);
     }
 }
