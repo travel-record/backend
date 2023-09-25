@@ -17,7 +17,6 @@ import world.trecord.domain.record.RecordSequenceEntity;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.record.request.RecordCreateRequest;
 import world.trecord.dto.record.request.RecordSequenceSwapRequest;
 import world.trecord.dto.record.request.RecordUpdateRequest;
@@ -25,6 +24,7 @@ import world.trecord.dto.record.response.RecordCommentResponse;
 import world.trecord.dto.record.response.RecordCreateResponse;
 import world.trecord.dto.record.response.RecordInfoResponse;
 import world.trecord.exception.CustomException;
+import world.trecord.service.users.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 @Service
 public class RecordService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
     private final RecordSequenceRepository recordSequenceRepository;
@@ -55,7 +55,7 @@ public class RecordService {
 
     @Transactional
     public RecordCreateResponse createRecord(Long userId, RecordCreateRequest request) {
-        UserEntity userEntity = findUserOrException(userId);
+        UserEntity userEntity = userService.findUserOrException(userId);
         FeedEntity feedEntity = findFeedOrException(request.getFeedId());
         ensureUserHasWritePermissionOverRecord(userId, feedEntity);
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
@@ -127,11 +127,7 @@ public class RecordService {
             throw new CustomException(FORBIDDEN);
         }
     }
-
-    private UserEntity findUserOrException(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-    }
-
+    
     private FeedEntity findFeedOrException(Long feedId) {
         return feedRepository.findById(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }

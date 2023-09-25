@@ -12,7 +12,6 @@ import world.trecord.domain.notification.NotificationRepository;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.record.RecordSequenceRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.feed.request.FeedCreateRequest;
 import world.trecord.dto.feed.request.FeedUpdateRequest;
 import world.trecord.dto.feed.response.FeedCreateResponse;
@@ -20,17 +19,19 @@ import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.exception.CustomException;
+import world.trecord.service.users.UserService;
 
 import java.util.Optional;
 
-import static world.trecord.exception.CustomExceptionError.*;
+import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
+import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class FeedService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
     private final FeedContributorRepository feedContributorRepository;
@@ -56,7 +57,7 @@ public class FeedService {
 
     @Transactional
     public FeedCreateResponse createFeed(Long userId, FeedCreateRequest request) {
-        UserEntity userEntity = findUserOrException(userId);
+        UserEntity userEntity = userService.findUserOrException(userId);
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
         return FeedCreateResponse.of(feedEntity);
     }
@@ -79,11 +80,6 @@ public class FeedService {
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.delete(feedEntity);
-    }
-
-    private UserEntity findUserOrException(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private FeedEntity findFeedOrException(Long feedId) {

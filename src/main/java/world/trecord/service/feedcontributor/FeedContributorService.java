@@ -14,11 +14,11 @@ import world.trecord.domain.feedcontributor.FeedContributorStatus;
 import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.feedcontributor.request.FeedInviteRequest;
 import world.trecord.dto.feedcontributor.response.UserFeedContributorListResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
+import world.trecord.service.users.UserService;
 
 import java.util.Objects;
 
@@ -32,7 +32,7 @@ import static world.trecord.exception.CustomExceptionError.*;
 @Service
 public class FeedContributorService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final FeedRepository feedRepository;
     private final RecordRepository recordRepository;
     private final FeedContributorRepository feedContributorRepository;
@@ -42,7 +42,7 @@ public class FeedContributorService {
     public void inviteUserToFeed(Long requestUserId, Long feedId, FeedInviteRequest request) {
         FeedEntity feedEntity = findFeedWithContributorsWithLockOrException(feedId);
         ensureRequestUserIsFeedOwner(feedEntity, requestUserId);
-        UserEntity invitee = findUserOrException(request.getUserToId());
+        UserEntity invitee = userService.findUserOrException(request.getUserToId());
         ensureNotSelfInviting(requestUserId, invitee.getId());
         ensureInviteeNotAlreadyInvited(feedEntity, invitee.getId());
         saveFeedContributor(feedEntity, invitee);
@@ -54,7 +54,7 @@ public class FeedContributorService {
     public void expelUserFromFeed(Long requestUserId, Long contributorId, Long feedId) {
         FeedEntity feedEntity = findFeedWithContributorsWithLockOrException(feedId);
         ensureRequestUserIsFeedOwner(feedEntity, requestUserId);
-        UserEntity contributor = findUserOrException(contributorId);
+        UserEntity contributor = userService.findUserOrException(contributorId);
         ensureNotSelfExpelling(requestUserId, contributor.getId());
         ensureUserIsFeedContributor(feedEntity, contributor.getId());
         deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
@@ -99,11 +99,6 @@ public class FeedContributorService {
         if (Objects.equals(requestUserId, inviteeId)) {
             throw new CustomException(SELF_INVITATION_NOT_ALLOWED);
         }
-    }
-
-    private UserEntity findUserOrException(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private FeedEntity findFeedWithContributorsWithLockOrException(Long feedId) {

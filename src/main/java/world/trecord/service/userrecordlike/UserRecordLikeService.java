@@ -12,15 +12,14 @@ import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.userrecordlike.UserRecordLikeEntity;
 import world.trecord.domain.userrecordlike.UserRecordLikeRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.userrecordlike.response.UserRecordLikeResponse;
 import world.trecord.dto.userrecordlike.response.UserRecordLikedResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
+import world.trecord.service.users.UserService;
 
 import static world.trecord.domain.notification.enumeration.NotificationType.RECORD_LIKE;
 import static world.trecord.exception.CustomExceptionError.RECORD_NOT_FOUND;
-import static world.trecord.exception.CustomExceptionError.USER_NOT_FOUND;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -29,12 +28,12 @@ public class UserRecordLikeService {
 
     private final UserRecordLikeRepository userRecordLikeRepository;
     private final RecordRepository recordRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public UserRecordLikedResponse toggleLike(Long userId, Long recordId) {
-        UserEntity userEntity = findUserOrException(userId);
+        UserEntity userEntity = userService.findUserOrException(userId);
         RecordEntity recordEntity = findRecordWithLockOrException(recordId);
 
         return userRecordLikeRepository.findByUserEntityIdAndRecordEntityId(userEntity.getId(), recordEntity.getId())
@@ -76,10 +75,6 @@ public class UserRecordLikeService {
 
     private RecordEntity findRecordWithLockOrException(Long recordId) {
         return recordRepository.findByIdForUpdate(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
-    }
-
-    private UserEntity findUserOrException(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private NotificationArgs buildNotificationArgs(UserEntity userEntity, RecordEntity recordEntity) {

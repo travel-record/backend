@@ -12,13 +12,13 @@ import world.trecord.domain.notification.args.NotificationArgs;
 import world.trecord.domain.record.RecordEntity;
 import world.trecord.domain.record.RecordRepository;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.comment.request.CommentCreateRequest;
 import world.trecord.dto.comment.request.CommentUpdateRequest;
 import world.trecord.dto.comment.response.CommentResponse;
 import world.trecord.dto.comment.response.UserCommentResponse;
 import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
+import world.trecord.service.users.UserService;
 
 import java.util.Optional;
 
@@ -31,13 +31,13 @@ import static world.trecord.exception.CustomExceptionError.*;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final RecordRepository recordRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createComment(Long userFromId, CommentCreateRequest request) {
-        UserEntity userEntity = findUserOrException(userFromId);
+        UserEntity userEntity = userService.findUserOrException(userFromId);
         RecordEntity recordEntity = findRecordOrException(request.getRecordId());
         Optional<CommentEntity> parentOptional = findCommentOrOptional(request.getParentId());
 
@@ -85,11 +85,6 @@ public class CommentService {
 
     public Page<UserCommentResponse> getUserComments(Long userId, Pageable pageable) {
         return commentRepository.findByUserId(userId, pageable).map(UserCommentResponse::of);
-    }
-
-    private UserEntity findUserOrException(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
     private RecordEntity findRecordOrException(Long recordId) {

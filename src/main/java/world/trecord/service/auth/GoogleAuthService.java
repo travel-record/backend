@@ -32,7 +32,7 @@ public class GoogleAuthService {
     }
 
     private String requestTokenOrException(String authorizationCode, String redirectionUri) {
-        GoogleTokenRequest request = doBuildTokenRequest(authorizationCode, redirectionUri);
+        GoogleTokenRequest request = buildTokenRequest(authorizationCode, redirectionUri);
 
         return Optional.ofNullable(googleTokenFeignClient.requestToken(request))
                 .filter(Objects::nonNull)
@@ -49,7 +49,7 @@ public class GoogleAuthService {
                 .orElseThrow(() -> new CustomException(INVALID_GOOGLE_AUTHORIZATION_CODE));
     }
 
-    private GoogleTokenRequest doBuildTokenRequest(String authorizationCode, String redirectionUri) {
+    private GoogleTokenRequest buildTokenRequest(String authorizationCode, String redirectionUri) {
         return GoogleTokenRequest.builder()
                 .clientId(googleProperties.getClientId())
                 .clientSecret(googleProperties.getClientSecret())

@@ -86,7 +86,7 @@ public class UserService {
                 .orElse(null);
     }
 
-    private UserEntity findUserOrException(Long userId) {
+    public UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
     }
 
