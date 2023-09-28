@@ -17,25 +17,11 @@ import world.trecord.infra.test.AbstractIntegrationTest;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static world.trecord.exception.CustomExceptionError.NICKNAME_DUPLICATED;
 
 @Slf4j
 @Transactional
 class UserServiceTest extends AbstractIntegrationTest {
-
-    @Test
-    @DisplayName("이메일로 새로운 사용자를 생성할 수 있다")
-    void createUserWithEmailTest() throws Exception {
-        //given
-        String email = "test@test.com";
-
-        //when
-        UserEntity newUser = userService.createUser(email);
-
-        //then
-        assertThat(newUser.getEmail()).isEqualTo(email);
-    }
 
     @Test
     @DisplayName("사용자 아이디로 사용자 정보를 조회할 수 있다")

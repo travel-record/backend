@@ -29,7 +29,19 @@ public class UserService {
     private final UserCacheRepository userCacheRepository;
 
     @Transactional
-    public UserEntity createUser(String email) {
+    public UserEntity findOrCreateUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    try {
+                        return saveUser(email);
+                    } catch (DataIntegrityViolationException ex) {
+                        return userRepository.findByEmail(email)
+                                .orElseThrow(() -> new IllegalStateException("Unexpected error while retrieving the user with email: " + email, ex));
+                    }
+                });
+    }
+    
+    public UserEntity saveUser(String email) {
         return userRepository.save(UserEntity.builder()
                 .email(email)
                 .build());

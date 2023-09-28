@@ -33,7 +33,6 @@ public class GoogleAuthService {
 
     private String requestTokenOrException(String authorizationCode, String redirectionUri) {
         GoogleTokenRequest request = buildTokenRequest(authorizationCode, redirectionUri);
-
         return Optional.ofNullable(googleTokenFeignClient.requestToken(request))
                 .filter(Objects::nonNull)
                 .map(GoogleTokenResponse::getAccessToken)

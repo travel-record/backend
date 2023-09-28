@@ -7,21 +7,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.springframework.test.util.ReflectionTestUtils;
 import world.trecord.config.properties.JwtProperties;
 import world.trecord.config.redis.UserCacheRepository;
 import world.trecord.config.security.JwtTokenHandler;
 import world.trecord.domain.users.UserEntity;
-import world.trecord.domain.users.UserRepository;
 import world.trecord.dto.auth.response.LoginResponse;
 import world.trecord.dto.auth.response.RefreshResponse;
 import world.trecord.exception.CustomException;
 import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.test.AbstractMockTest;
 import world.trecord.service.users.UserService;
-
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.doThrow;
@@ -30,11 +26,11 @@ import static org.mockito.Mockito.*;
 
 class AuthServiceTest extends AbstractMockTest {
 
+    @InjectMocks
+    AuthService authService;
+
     @Mock
     GoogleAuthService googleAuthService;
-
-    @Spy
-    UserRepository userRepository;
 
     @Mock
     JwtTokenHandler jwtTokenHandler;
@@ -47,10 +43,7 @@ class AuthServiceTest extends AbstractMockTest {
 
     @Mock
     UserCacheRepository userCacheRepository;
-
-    @InjectMocks
-    AuthService authService;
-
+    
     @Test
     @DisplayName("유효한 구글 인가 코드로 사용자 정보와 토큰을 반환한다")
     void googleLoginWithValidAccessTokenTest() throws Exception {
@@ -70,14 +63,12 @@ class AuthServiceTest extends AbstractMockTest {
         given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willReturn("test@email.com");
 
-        UserEntity userEntity = UserEntity.builder()
-                .nickname(nickname)
-                .build();
+        UserEntity userEntity = mock(UserEntity.class);
+        when(userEntity.getId()).thenReturn(userId);
+        when(userEntity.getNickname()).thenReturn(nickname);
 
-        ReflectionTestUtils.setField(userEntity, "id", userId);
-
-        given(userRepository.findByEmail(anyString()))
-                .willReturn(Optional.ofNullable(userEntity));
+        given(userService.findOrCreateUser(anyString()))
+                .willReturn(userEntity);
 
         given(jwtTokenHandler.generateToken(anyLong(), anyString(), anyLong()))
                 .willReturn(token);
@@ -92,7 +83,7 @@ class AuthServiceTest extends AbstractMockTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 이메일로 로그인 시도 시 새로운 사용자 생성한다")
+    @DisplayName("존재하지 않는 이메일로 로그인 시도 시 새로운 사용자ㄹㅡ 생성한다")
     void googleLoginWithNonExistingEmailTest() {
         //given
         String redirectionUri = "redirection uri";
@@ -107,17 +98,14 @@ class AuthServiceTest extends AbstractMockTest {
         given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willReturn("nonexisting@email.com");
 
-        given(userRepository.findByEmail(anyString()))
-                .willReturn(Optional.empty());
-
-        given(userService.createUser(anyString()))
+        given(userService.findOrCreateUser(anyString()))
                 .willReturn(UserEntity.builder().email("nonexisting@email.com").nickname("newUser").build());
 
         //when
         LoginResponse loginResponse = authService.googleLogin(accessToken, redirectionUri);
 
         //then
-        Mockito.verify(userService, times(1)).createUser(anyString());
+        Mockito.verify(userService, times(1)).findOrCreateUser(anyString());
     }
 
     @Test
@@ -134,9 +122,6 @@ class AuthServiceTest extends AbstractMockTest {
         given(googleAuthService.getUserEmail(anyString(), anyString()))
                 .willReturn("nonexisting@email.com");
 
-        given(userRepository.findByEmail(anyString()))
-                .willReturn(Optional.empty());
-
         UserEntity userEntity = UserEntity.builder()
                 .email("nonexisting@email.com")
                 .nickname("newUser")
@@ -144,7 +129,7 @@ class AuthServiceTest extends AbstractMockTest {
 
         ReflectionTestUtils.setField(userEntity, "id", 1L);
 
-        given(userService.createUser(anyString()))
+        given(userService.findOrCreateUser(anyString()))
                 .willReturn(userEntity);
 
         given(jwtTokenHandler.generateToken(eq(userEntity.getId()), anyString(), anyLong()))
@@ -194,7 +179,7 @@ class AuthServiceTest extends AbstractMockTest {
 
         UserEntity mockUser = mock(UserEntity.class);
         when(mockUser.getId()).thenReturn(userId);
-        when(userRepository.findById(any())).thenReturn(Optional.of(mockUser));
+        when(userService.findUserOrException(anyLong())).thenReturn(mockUser);
 
         //when
         RefreshResponse refreshResponse = authService.reissueToken(token);
@@ -234,7 +219,8 @@ class AuthServiceTest extends AbstractMockTest {
         given(jwtTokenHandler.getUserIdFromToken(secretKey, token))
                 .willReturn(userId);
 
-        when(userRepository.findById(any())).thenReturn(Optional.empty());
+        when(userService.findUserOrException(anyLong()))
+                .thenThrow(new CustomException(CustomExceptionError.USER_NOT_FOUND));
 
         //when //then
         Assertions.assertThatThrownBy(() -> authService.reissueToken(token))

@@ -56,7 +56,6 @@ public class CommentService {
     public void updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
         CommentEntity commentEntity = findCommentOrException(commentId);
         ensureUserHasPermissionOverComment(commentEntity, userId);
-
         commentEntity.update(request.toUpdateEntity());
         commentRepository.saveAndFlush(commentEntity);
     }
@@ -65,7 +64,6 @@ public class CommentService {
     public void deleteComment(Long userId, Long commentId) {
         CommentEntity commentEntity = findCommentOrException(commentId);
         ensureUserHasPermissionOverComment(commentEntity, userId);
-
         commentRepository.deleteAllByCommentEntityId(commentId);
         commentRepository.delete(commentEntity);
     }
