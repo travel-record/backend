@@ -17,7 +17,7 @@ import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHOR
 
 @RequiredArgsConstructor
 @Service
-public class GoogleAuthService {
+public class GoogleAuthHandler {
 
     private static final String BEARER = "Bearer ";
     private static final String GRANT_TYPE = "authorization_code";

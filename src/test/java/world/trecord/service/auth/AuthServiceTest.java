@@ -30,7 +30,7 @@ class AuthServiceTest extends AbstractMockTest {
     AuthService authService;
 
     @Mock
-    GoogleAuthService googleAuthService;
+    GoogleAuthHandler googleAuthHandler;
 
     @Mock
     JwtTokenHandler jwtTokenHandler;
@@ -43,7 +43,7 @@ class AuthServiceTest extends AbstractMockTest {
 
     @Mock
     UserCacheRepository userCacheRepository;
-    
+
     @Test
     @DisplayName("유효한 구글 인가 코드로 사용자 정보와 토큰을 반환한다")
     void googleLoginWithValidAccessTokenTest() throws Exception {
@@ -60,7 +60,7 @@ class AuthServiceTest extends AbstractMockTest {
         given(jwtProperties.getTokenExpiredTimeMs())
                 .willReturn(87654321L);
 
-        given(googleAuthService.getUserEmail(anyString(), anyString()))
+        given(googleAuthHandler.getUserEmail(anyString(), anyString()))
                 .willReturn("test@email.com");
 
         UserEntity userEntity = mock(UserEntity.class);
@@ -95,7 +95,7 @@ class AuthServiceTest extends AbstractMockTest {
         given(jwtProperties.getTokenExpiredTimeMs())
                 .willReturn(87654321L);
 
-        given(googleAuthService.getUserEmail(anyString(), anyString()))
+        given(googleAuthHandler.getUserEmail(anyString(), anyString()))
                 .willReturn("nonexisting@email.com");
 
         given(userService.findOrCreateUser(anyString()))
@@ -119,7 +119,7 @@ class AuthServiceTest extends AbstractMockTest {
         given(jwtProperties.getTokenExpiredTimeMs())
                 .willReturn(87654321L);
 
-        given(googleAuthService.getUserEmail(anyString(), anyString()))
+        given(googleAuthHandler.getUserEmail(anyString(), anyString()))
                 .willReturn("nonexisting@email.com");
 
         UserEntity userEntity = UserEntity.builder()
@@ -147,7 +147,7 @@ class AuthServiceTest extends AbstractMockTest {
         String authorizationCode = "dummy access token";
         String redirectionUri = "dummy redirection uri";
 
-        given(googleAuthService.getUserEmail(anyString(), anyString()))
+        given(googleAuthHandler.getUserEmail(anyString(), anyString()))
                 .willThrow(new CustomException(CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE));
 
         //when // then

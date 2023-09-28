@@ -18,10 +18,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static world.trecord.exception.CustomExceptionError.INVALID_GOOGLE_AUTHORIZATION_CODE;
 
-class GoogleAuthServiceTest extends AbstractMockTest {
+class GoogleAuthHandlerTest extends AbstractMockTest {
 
     @InjectMocks
-    GoogleAuthService googleAuthService;
+    GoogleAuthHandler googleAuthHandler;
 
     @Mock
     GoogleTokenFeignClient googleTokenFeignClient;
@@ -53,7 +53,7 @@ class GoogleAuthServiceTest extends AbstractMockTest {
         when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(mockUserInfoResponse);
 
         //when
-        String resultEmail = googleAuthService.getUserEmail(authorizationCode, redirectionUri);
+        String resultEmail = googleAuthHandler.getUserEmail(authorizationCode, redirectionUri);
 
         //then
         Assertions.assertThat(expectedEmail).isEqualTo(resultEmail);
@@ -69,7 +69,7 @@ class GoogleAuthServiceTest extends AbstractMockTest {
         when(googleTokenFeignClient.requestToken(any(GoogleTokenRequest.class))).thenReturn(null);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> googleAuthHandler.getUserEmail(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);
@@ -86,7 +86,7 @@ class GoogleAuthServiceTest extends AbstractMockTest {
                 .thenThrow(CustomException.class);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> googleAuthHandler.getUserEmail(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class); // or whatever exception you handle the FeignException with
     }
 
@@ -105,7 +105,7 @@ class GoogleAuthServiceTest extends AbstractMockTest {
         when(googleUserInfoFeignClient.fetchUserInfo("Bearer " + mockAccessToken)).thenReturn(null);
 
         //when //then
-        Assertions.assertThatThrownBy(() -> googleAuthService.getUserEmail(authorizationCode, redirectionUri))
+        Assertions.assertThatThrownBy(() -> googleAuthHandler.getUserEmail(authorizationCode, redirectionUri))
                 .isInstanceOf(CustomException.class)
                 .extracting("error")
                 .isEqualTo(INVALID_GOOGLE_AUTHORIZATION_CODE);

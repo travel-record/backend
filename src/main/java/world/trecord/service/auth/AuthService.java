@@ -19,7 +19,7 @@ public class AuthService {
     private final UserService userService;
     private final UserCacheRepository userCacheRepository;
     private final JwtTokenHandler jwtTokenHandler;
-    private final GoogleAuthService googleAuthHandler;
+    private final GoogleAuthHandler googleAuthHandler;
     private final JwtProperties jwtProperties;
 
     public LoginResponse googleLogin(String authorizationCode, String redirectionUri) {
