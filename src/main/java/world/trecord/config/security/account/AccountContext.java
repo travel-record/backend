@@ -1,5 +1,10 @@
 package world.trecord.config.security.account;
 
-public interface AccountContext {
-    Long getId();
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@Getter
+public class AccountContext {
+    private Long id;
 }

@@ -19,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserContext implements UserDetails, AccountContext {
+public class UserContext extends AccountContext implements UserDetails {
 
     private Long id;
     private String nickname;
