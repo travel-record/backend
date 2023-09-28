@@ -59,7 +59,6 @@ public class RecordService {
         UserEntity userEntity = userService.findUserOrException(userId);
         FeedEntity feedEntity = feedService.findFeedOrException(request.getFeedId());
         ensureUserHasWritePermissionOverRecord(userId, feedEntity);
-
         int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
         RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, nextSequence));
         return RecordCreateResponse.of(recordEntity);
