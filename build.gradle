@@ -19,6 +19,7 @@ configurations {
 }
 
 ext {
+    snippetsDir = file('build/generated-snippets')
     set('springCloudVersion', '2022.0.4')
 }
 
@@ -33,45 +34,45 @@ repositories {
 }
 
 dependencies {
-    // Springboot web
+    //springboot
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    // Spring cloud
+    //spring-cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign' // For @FeignClient
 
-    // JWT
+    //jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // QueryDSL
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
-    // Data
+    //data
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-62:3.5.1' // For @Type(JsonType.class)
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
-    // Lombok
+    //queryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    //lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    // Testcontainers
+    //testcontainers
     testImplementation "org.testcontainers:testcontainers:1.19.0"
     testImplementation "org.testcontainers:junit-jupiter:1.19.0"
     testImplementation "org.testcontainers:mariadb:1.19.0"
 
-    // Spring Test
+    //test
     testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock' // For @AutoConfigureWireMock
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
@@ -83,10 +84,13 @@ tasks.named('test') {
 
 jar.enabled = false
 
+// querydsl start
 clean {
     delete file('src/main/generated')
 }
+// querydsl end
 
+// jacoco start
 jacocoTestCoverageVerification {
     violationRules {
         rule {
@@ -101,3 +105,4 @@ jacocoTestCoverageVerification {
         }
     }
 }
+// jacoco end

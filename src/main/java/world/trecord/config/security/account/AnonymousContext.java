@@ -17,7 +17,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Data
 @NoArgsConstructor(access = PROTECTED)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AnonymousContext implements UserDetails, AccountContext {
+public class AnonymousContext extends AccountContext implements UserDetails {
 
     private Long id = null;
 

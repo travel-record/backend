@@ -49,9 +49,8 @@ public class RecordService {
 
     public RecordInfoResponse getRecord(Long userId, Long recordId) {
         RecordEntity recordEntity = findRecordWithUserOrException(recordId);
-        Optional<Long> userIdOpt = Optional.ofNullable(userId);
-        boolean liked = userLiked(recordEntity, userIdOpt);
-        return RecordInfoResponse.of(recordEntity, userIdOpt.orElse(null), liked);
+        boolean liked = hasUserLikedRecord(recordEntity, userId);
+        return RecordInfoResponse.of(recordEntity, userId, liked);
     }
 
     @Transactional
@@ -59,9 +58,8 @@ public class RecordService {
         UserEntity userEntity = userService.findUserOrException(userId);
         FeedEntity feedEntity = feedService.findFeedOrException(request.getFeedId());
         ensureUserHasWritePermissionOverRecord(userId, feedEntity);
-
-        int nextSequence = findNextSequence(feedEntity.getId(), request.getDate());
-        RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, nextSequence));
+        int recordSequence = findNextSequence(feedEntity.getId(), request.getDate());
+        RecordEntity recordEntity = recordRepository.save(request.toEntity(userEntity, feedEntity, recordSequence));
         return RecordCreateResponse.of(recordEntity);
     }
 
@@ -77,11 +75,7 @@ public class RecordService {
     public void swapRecordSequence(Long userId, RecordSequenceSwapRequest request) {
         List<Long> recordIds = Arrays.asList(request.getOriginalRecordId(), request.getTargetRecordId());
         List<RecordEntity> recordEntityList = recordRepository.findByIdsForUpdate(recordIds);
-
-        if (recordEntityList.size() != recordIds.size()) {
-            throw new CustomException(RECORD_NOT_FOUND);
-        }
-
+        ensureAllRecordsFound(recordEntityList, recordIds);
         RecordEntity originalRecord = recordEntityList.get(0);
         RecordEntity targetRecord = recordEntityList.get(1);
         ensureRecordsHasSameFeed(originalRecord, targetRecord);
@@ -105,13 +99,18 @@ public class RecordService {
 
     public Page<RecordCommentResponse> getRecordComments(Long userId, Long recordId, Pageable pageable) {
         RecordEntity recordEntity = findRecordOrException(recordId);
-        Optional<Long> userIdOpt = Optional.ofNullable(userId);
         Page<CommentEntity> commentEntities = commentRepository.findWithCommenterAndRepliesByRecordId(recordEntity.getId(), pageable);
-        return commentEntities.map(it -> RecordCommentResponse.of(it, userIdOpt.orElse(null)));
+        return commentEntities.map(it -> RecordCommentResponse.of(it, userId));
     }
 
     public RecordEntity findRecordOrException(Long recordId) {
         return recordRepository.findById(recordId).orElseThrow(() -> new CustomException(RECORD_NOT_FOUND));
+    }
+
+    private void ensureAllRecordsFound(List<RecordEntity> recordEntityList, List<Long> recordIds) {
+        if (recordEntityList.size() != recordIds.size()) {
+            throw new CustomException(RECORD_NOT_FOUND);
+        }
     }
 
     public RecordEntity findRecordWithUserOrException(Long recordId) {
@@ -164,8 +163,9 @@ public class RecordService {
         }
     }
 
-    private boolean userLiked(RecordEntity recordEntity, Optional<Long> viewerId) {
-        return viewerId
+    private boolean hasUserLikedRecord(RecordEntity recordEntity, Long viewerId) {
+        Optional<Long> viewerIdOpt = Optional.ofNullable(viewerId);
+        return viewerIdOpt
                 .filter(userId -> userRecordLikeRepository.existsByUserEntityIdAndRecordEntityId(userId, recordEntity.getId()))
                 .isPresent();
     }

@@ -20,6 +20,7 @@ import world.trecord.exception.CustomException;
 import world.trecord.service.record.RecordService;
 import world.trecord.service.users.UserService;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static world.trecord.domain.notification.enumeration.NotificationType.COMMENT;
@@ -41,14 +42,12 @@ public class CommentService {
         UserEntity userEntity = userService.findUserOrException(userFromId);
         RecordEntity recordEntity = recordService.findRecordOrException(request.getRecordId());
         Optional<CommentEntity> parentOptional = findCommentOrOptional(request.getParentId());
-        if (request.getParentId() != null && parentOptional.isEmpty()) {
-            throw new CustomException(COMMENT_NOT_FOUND);
-        }
+        ensureParentCommentIfRequestIsReplyComment(parentOptional, request.getParentId());
 
         CommentEntity parentCommentEntity = parentOptional.orElse(null);
         CommentEntity commentEntity = commentRepository.save(request.toEntity(userEntity, recordEntity, parentCommentEntity, request.getContent()));
-        Long userToId = commentEntity.getRecordEntity().getFeedEntity().getUserEntity().getId();
 
+        Long userToId = recordEntity.getUserId();
         eventPublisher.publishEvent(new NotificationEvent(userToId, userFromId, COMMENT, buildNotificationArgs(recordEntity, commentEntity, userEntity)));
     }
 
@@ -56,7 +55,6 @@ public class CommentService {
     public void updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
         CommentEntity commentEntity = findCommentOrException(commentId);
         ensureUserHasPermissionOverComment(commentEntity, userId);
-
         commentEntity.update(request.toUpdateEntity());
         commentRepository.saveAndFlush(commentEntity);
     }
@@ -65,7 +63,6 @@ public class CommentService {
     public void deleteComment(Long userId, Long commentId) {
         CommentEntity commentEntity = findCommentOrException(commentId);
         ensureUserHasPermissionOverComment(commentEntity, userId);
-
         commentRepository.deleteAllByCommentEntityId(commentId);
         commentRepository.delete(commentEntity);
     }
@@ -86,10 +83,16 @@ public class CommentService {
     }
 
     private Optional<CommentEntity> findCommentOrOptional(Long parentId) {
-        if (parentId == null) {
+        if (Objects.isNull(parentId)) {
             return Optional.empty();
         }
         return commentRepository.findById(parentId);
+    }
+
+    private void ensureParentCommentIfRequestIsReplyComment(Optional<CommentEntity> parentOptional, Long parentCommentId) {
+        if (Objects.nonNull(parentCommentId) && parentOptional.isEmpty()) {
+            throw new CustomException(COMMENT_NOT_FOUND);
+        }
     }
 
     private void ensureUserHasPermissionOverComment(CommentEntity commentEntity, Long userId) {
