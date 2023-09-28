@@ -49,7 +49,6 @@ public class FeedContributorService {
         ensureInviteeNotAlreadyInvited(feedEntity, invitee.getId());
 
         saveFeedContributor(feedEntity, invitee);
-
         eventPublisher.publishEvent(new NotificationEvent(invitee.getId(), requestUserId, FEED_INVITATION, buildNotificationArgs(invitee, feedEntity)));
     }
 
