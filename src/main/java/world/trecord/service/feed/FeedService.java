@@ -27,9 +27,11 @@ import world.trecord.service.feedcontributor.FeedContributorService;
 import world.trecord.service.users.UserService;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
+import static world.trecord.domain.feedcontributor.FeedContributorStatus.DELETED;
 import static world.trecord.exception.CustomExceptionError.FEED_NOT_FOUND;
 import static world.trecord.exception.CustomExceptionError.FORBIDDEN;
 
@@ -68,7 +70,9 @@ public class FeedService {
         UserEntity userEntity = userService.findUserOrException(userId);
         FeedEntity feedEntity = feedRepository.save(request.toEntity(userEntity));
         if (!CollectionUtils.isEmpty(request.getContributors())) {
-            List<UserEntity> userEntityList = userService.findUsersOrException(request.getContributors());
+            List<Long> contributors = new ArrayList<>(new HashSet<>(request.getContributors()));
+            contributors.remove(userId); // 피드 생성자는 제외
+            List<UserEntity> userEntityList = userService.findUsersOrException(contributors);
             feedContributorService.inviteUsersToFeed(feedEntity, userEntityList);
         }
         return FeedCreateResponse.of(feedEntity);
@@ -88,12 +92,12 @@ public class FeedService {
         ensureUserIsFeedOwner(feedEntity, userId);
 
         notificationRepository.deleteAllByFeedEntityId(feedId);
-        feedContributorRepository.deleteAllByFeedEntityId(feedId); // TODO closed 로 변경
+        feedContributorRepository.deleteAllAndUpdateStatusByFeedEntityId(feedId, DELETED);
         recordRepository.deleteAllByFeedEntityId(feedId);
         recordSequenceRepository.deleteAllByFeedEntityId(feedId);
         feedRepository.delete(feedEntity);
     }
-    
+
     private void ensureUserHasNotExpelledRecently(Long userId, Long feedId) {
         Optional<Long> userIdOpt = Optional.ofNullable(userId);
         userIdOpt.flatMap(id -> feedContributorRepository.findTopByUserIdAndFeedIdOrderByModifiedAtDesc(id, feedId))

@@ -19,15 +19,14 @@ import world.trecord.infra.test.AbstractIntegrationTest;
 import java.util.List;
 import java.util.Optional;
 
-import static world.trecord.domain.feedcontributor.FeedContributorStatus.EXPELLED;
-import static world.trecord.domain.feedcontributor.FeedContributorStatus.PARTICIPATING;
+import static world.trecord.domain.feedcontributor.FeedContributorStatus.*;
 
 @Transactional
 class FeedContributorRepositoryTest extends AbstractIntegrationTest {
 
     @Test
-    @DisplayName("피드 아이디로 피드 컨트리뷰터를 soft delete한다")
-    void deleteAllByFeedEntityIdTest() throws Exception {
+    @DisplayName("피드 아이디로 피드 컨트리뷰터의 상태를 DELETED로 변경하고 soft delete한다")
+    void deleteAllAndUpdateStatusByFeedEntityId() throws Exception {
         //given
         UserEntity owner = UserEntityFixture.of("email@email.com");
         UserEntity userEntity1 = UserEntityFixture.of("email1@email.com");
@@ -40,10 +39,11 @@ class FeedContributorRepositoryTest extends AbstractIntegrationTest {
         FeedContributorEntity contributor1 = FeedContributorFixture.of(userEntity1, feedEntity);
         FeedContributorEntity contributor2 = FeedContributorFixture.of(userEntity2, feedEntity);
         FeedContributorEntity contributor3 = FeedContributorFixture.of(userEntity3, feedEntity);
-        feedContributorRepository.saveAll(List.of(contributor1, contributor2, contributor3));
+        List<FeedContributorEntity> contributors = List.of(contributor1, contributor2, contributor3);
+        feedContributorRepository.saveAll(contributors);
 
         //when
-        feedContributorRepository.deleteAllByFeedEntityId(feedEntity.getId());
+        feedContributorRepository.deleteAllAndUpdateStatusByFeedEntityId(feedEntity.getId(), DELETED);
 
         //then
         Assertions.assertThat(feedContributorRepository.findAll()).isEmpty();

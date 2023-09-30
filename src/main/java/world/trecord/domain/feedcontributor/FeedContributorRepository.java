@@ -64,13 +64,14 @@ public interface FeedContributorRepository extends JpaRepository<FeedContributor
     void updateStatusAndDeleteByUserEntityIdAndFeedEntityId(@Param("userId") Long userId,
                                                             @Param("feedId") Long feedId,
                                                             @Param("status") FeedContributorStatus status);
-
+    
     @Transactional
     @Modifying
     @Query("UPDATE FeedContributorEntity fce " +
-            "SET fce.deletedDateTime = NOW() " +
+            "SET fce.deletedDateTime = NOW(), fce.status = :status " +
             "where fce.feedEntity.id = :feedId")
-    void deleteAllByFeedEntityId(@Param("feedId") Long feedId);
+    void deleteAllAndUpdateStatusByFeedEntityId(@Param("feedId") Long feedId,
+                                                @Param("status") FeedContributorStatus status);
 
     void deleteByUserEntityIdAndFeedEntityId(Long userId, Long feedId);
 
