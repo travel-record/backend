@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 @Data
 public class NotificationResponse {
 
+    private Long id;
     private NotificationType type;
     private NotificationStatus status;
     private String content;
@@ -38,6 +39,7 @@ public class NotificationResponse {
 
     @Builder
     private NotificationResponse(NotificationEntity notificationEntity) {
+        this.id = notificationEntity.getId();
         this.type = notificationEntity.getType();
         this.status = notificationEntity.getStatus();
         this.content = notificationEntity.getNotificationContent();

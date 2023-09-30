@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SseEmitterEvent {
 
+    private Long id;
     private NotificationType type;
     private NotificationStatus status;
     private String content;
@@ -34,6 +35,7 @@ public class SseEmitterEvent {
 
     @Builder
     private SseEmitterEvent(NotificationEntity notificationEntity) {
+        this.id = notificationEntity.getId();
         this.type = notificationEntity.getType();
         this.status = notificationEntity.getStatus();
         this.content = notificationEntity.getNotificationContent();

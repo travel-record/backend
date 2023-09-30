@@ -130,7 +130,7 @@ class NotificationControllerTest extends AbstractMockMvcTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/notifications/{type} - 성공")
+    @DisplayName("GET /api/v1/notifications/type/{type} - 성공")
     @WithTestUser("user@email.com")
     void getNotificationsByTypeTest() throws Exception {
         //given
@@ -164,7 +164,7 @@ class NotificationControllerTest extends AbstractMockMvcTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/notifications/{type} - 실패(존재하지 않는 타입)")
+    @DisplayName("GET /api/v1/notifications/type/{type} - 실패(존재하지 않는 타입)")
     @WithTestUser
     void getNotificationsByNotExistingTypeTest() throws Exception {
         //given
