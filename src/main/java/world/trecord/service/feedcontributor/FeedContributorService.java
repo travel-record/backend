@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.feed.FeedRepository;
 import world.trecord.domain.feedcontributor.FeedContributorEntity;
@@ -55,6 +56,9 @@ public class FeedContributorService {
 
     @Transactional
     public void inviteUsersToFeed(FeedEntity feedEntity, List<UserEntity> userEntityList) {
+        if (CollectionUtils.isEmpty(userEntityList)) {
+            return;
+        }
         List<FeedContributorEntity> feedContributorEntityList = new ArrayList<>();
         for (UserEntity invitee : userEntityList) {
             FeedContributorEntity feedContributorEntity = FeedContributorEntity.builder()
