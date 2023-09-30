@@ -10,6 +10,8 @@ import world.trecord.domain.feed.FeedEntity;
 import world.trecord.domain.users.UserEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @Setter
@@ -33,17 +35,16 @@ public class FeedCreateRequest {
     @NotNull
     private LocalDateTime endAt;
 
-    private String companion;
-
     private String description;
 
     private String imageUrl;
+
+    private List<Long> contributors = new ArrayList<>();
 
     public FeedEntity toEntity(UserEntity userEntity) {
         return FeedEntity.builder()
                 .userEntity(userEntity)
                 .name(this.name)
-                .companion(this.companion)
                 .satisfaction(this.satisfaction)
                 .description(this.description)
                 .imageUrl(this.imageUrl)
@@ -63,9 +64,9 @@ public class FeedCreateRequest {
                               String latitude,
                               LocalDateTime startAt,
                               LocalDateTime endAt,
-                              String companion,
                               String description,
-                              String imageUrl) {
+                              String imageUrl,
+                              List<Long> contributors) {
         this.name = name;
         this.satisfaction = satisfaction;
         this.place = place;
@@ -73,8 +74,8 @@ public class FeedCreateRequest {
         this.latitude = latitude;
         this.startAt = startAt;
         this.endAt = endAt;
-        this.companion = companion;
         this.description = description;
         this.imageUrl = imageUrl;
+        this.contributors = contributors;
     }
 }

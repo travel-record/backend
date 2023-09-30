@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import world.trecord.config.redis.UserCacheRepository;
 import world.trecord.config.security.account.UserContext;
 import world.trecord.domain.users.UserEntity;
@@ -13,6 +14,8 @@ import world.trecord.dto.users.request.UserUpdateRequest;
 import world.trecord.dto.users.response.UserResponse;
 import world.trecord.exception.CustomException;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -40,7 +43,7 @@ public class UserService {
                     }
                 });
     }
-    
+
     public UserEntity saveUser(String email) {
         return userRepository.save(UserEntity.builder()
                 .email(email)
@@ -93,6 +96,17 @@ public class UserService {
 
     public UserEntity findUserOrException(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+    }
+
+    public List<UserEntity> findUsersOrException(List<Long> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return Collections.emptyList();
+        }
+        List<UserEntity> userEntityList = userRepository.findByIds(userIds);
+        if (CollectionUtils.isEmpty(userIds) || userIds.size() != userEntityList.size()) {
+            throw new CustomException(USER_NOT_FOUND);
+        }
+        return userEntityList;
     }
 
     private boolean isNicknameUpdated(String originalNickname, String updatedNickname) {

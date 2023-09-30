@@ -20,6 +20,7 @@ import world.trecord.dto.feed.response.FeedInfoResponse;
 import world.trecord.dto.feed.response.FeedListResponse;
 import world.trecord.dto.feed.response.FeedRecordsResponse;
 import world.trecord.exception.CustomException;
+import world.trecord.exception.CustomExceptionError;
 import world.trecord.infra.fixture.FeedContributorFixture;
 import world.trecord.infra.fixture.FeedEntityFixture;
 import world.trecord.infra.fixture.RecordEntityFixture;
@@ -197,7 +198,6 @@ class FeedServiceTest extends AbstractIntegrationTest {
 
         String feedName = "name";
         String imageUrl = "image";
-        String companion = "companion1 companion2";
         LocalDateTime startAt = LocalDateTime.of(2022, 12, 25, 0, 0);
         LocalDateTime endAt = LocalDateTime.of(2022, 12, 30, 0, 0);
         String place = "jeju";
@@ -206,7 +206,6 @@ class FeedServiceTest extends AbstractIntegrationTest {
 
         FeedCreateRequest request = FeedCreateRequest.builder()
                 .name(feedName)
-                .companion(companion)
                 .imageUrl(imageUrl)
                 .description(description)
                 .startAt(startAt)
@@ -429,6 +428,71 @@ class FeedServiceTest extends AbstractIntegrationTest {
 
         //when //then
         feedService.getFeed(contributor.getId(), feedEntity.getId());
+    }
+
+
+    @Test
+    @DisplayName("피드 등록 시 컨트리뷰터와 함께 등록한다")
+    void createFeed_whenContributorsExist_returnResponse() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity invitee1 = UserEntityFixture.of();
+        UserEntity invitee2 = UserEntityFixture.of();
+        UserEntity invitee3 = UserEntityFixture.of();
+        UserEntity invitee4 = UserEntityFixture.of();
+        UserEntity invitee5 = UserEntityFixture.of();
+        List<UserEntity> invitees = List.of(invitee1, invitee2, invitee3, invitee4, invitee5);
+        userRepository.saveAll(invitees);
+
+        FeedCreateRequest request = FeedCreateRequest.builder()
+                .name("name")
+                .imageUrl("image")
+                .description("description")
+                .startAt(LocalDateTime.of(2022, 12, 25, 0, 0))
+                .endAt(LocalDateTime.of(2022, 12, 30, 0, 0))
+                .place("jeju")
+                .satisfaction("good")
+                .contributors(List.of(invitee1.getId(), invitee2.getId(), invitee3.getId(), invitee4.getId(), invitee5.getId()))
+                .build();
+
+        //when
+        FeedCreateResponse response = feedService.createFeed(owner.getId(), request);
+
+        //then
+        Assertions.assertThat(feedRepository.findAll()).hasSize(1);
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(invitees.size());
+    }
+
+    @Test
+    @DisplayName("피드 등록 시 컨트리뷰터가 DB에서 조회되지 않으면 예외가 발생한다")
+    void createFeed_whenContributorsNotFound_throwException() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity invitee1 = UserEntityFixture.of();
+        UserEntity invitee2 = UserEntityFixture.of();
+        UserEntity invitee3 = UserEntityFixture.of();
+        UserEntity invitee4 = UserEntityFixture.of();
+        UserEntity invitee5 = UserEntityFixture.of();
+        List<UserEntity> invitees = List.of(invitee1, invitee2, invitee3, invitee4, invitee5);
+        userRepository.saveAll(invitees);
+        long notExistUserId = -1L;
+
+        FeedCreateRequest request = FeedCreateRequest.builder()
+                .name("name")
+                .imageUrl("image")
+                .description("description")
+                .startAt(LocalDateTime.of(2022, 12, 25, 0, 0))
+                .endAt(LocalDateTime.of(2022, 12, 30, 0, 0))
+                .place("jeju")
+                .satisfaction("good")
+                .contributors(List.of(notExistUserId, invitee1.getId(), invitee2.getId(), invitee3.getId(), invitee4.getId(), invitee5.getId()))
+                .build();
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> feedService.createFeed(owner.getId(), request))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
     }
 
     private FeedEntity createFeed(UserEntity userEntity, LocalDateTime startAt, LocalDateTime endAt) {

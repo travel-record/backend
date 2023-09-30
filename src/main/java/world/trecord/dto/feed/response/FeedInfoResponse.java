@@ -22,7 +22,6 @@ public class FeedInfoResponse {
     private String name;
     private String imageUrl;
     private String description;
-    private String companion;
     private String place;
     private String longitude;
     private String latitude;
@@ -53,7 +52,6 @@ public class FeedInfoResponse {
         this.place = feedEntity.getPlace();
         this.longitude = feedEntity.getLongitude();
         this.latitude = feedEntity.getLatitude();
-        this.companion = feedEntity.getCompanion();
         this.startAt = feedEntity.convertStartAtToLocalDate();
         this.endAt = feedEntity.convertEndAtToLocalDate();
     }

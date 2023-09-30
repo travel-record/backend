@@ -212,4 +212,43 @@ class UserServiceTest extends AbstractIntegrationTest {
         //then
         Assertions.assertThat(response).isNull();
     }
+
+    @Test
+    @DisplayName("사용자 아이디 리스트로 사용자를 조회하여 리스트로 반환한다")
+    void findUsersOrException_returnList() throws Exception {
+        //given
+        UserEntity user1 = UserEntityFixture.of();
+        UserEntity user2 = UserEntityFixture.of();
+        UserEntity user3 = UserEntityFixture.of();
+        UserEntity user4 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(user1, user2, user3, user4));
+
+        //when
+        List<UserEntity> userEntityList = userService.findUsersOrException(List.of(user1.getId(), user4.getId()));
+
+        //then
+        Assertions.assertThat(userEntityList)
+                .hasSize(2)
+                .extracting("id")
+                .containsExactly(user1.getId(), user4.getId());
+    }
+
+    @Test
+    @DisplayName("사용자 아이디 리스트로 사용자를 조회 시 존재하지 않는 사용자가 있으면 예외를 던진다")
+    void findUsersOrException_whenUserNotFound_throwException() throws Exception {
+        //given
+        UserEntity user1 = UserEntityFixture.of();
+        UserEntity user2 = UserEntityFixture.of();
+        UserEntity user3 = UserEntityFixture.of();
+        UserEntity user4 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(user1, user2, user3, user4));
+
+        long notExistingUserId = -1L;
+
+        //when //then
+        Assertions.assertThatThrownBy(() -> userService.findUsersOrException(List.of(notExistingUserId, user1.getId(), user2.getId(), user3.getId(), user4.getId())))
+                .isInstanceOf(CustomException.class)
+                .extracting("error")
+                .isEqualTo(CustomExceptionError.USER_NOT_FOUND);
+    }
 }
