@@ -22,6 +22,7 @@ import world.trecord.infra.support.WithTestUser;
 import world.trecord.infra.test.AbstractMockMvcTest;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -257,24 +258,16 @@ class FeedControllerTest extends AbstractMockMvcTest {
     @WithTestUser
     void createFeedTest() throws Exception {
         //given
-        String feedName = "feed name";
-        String imageUrl = "image";
-        String companion = "companion1 companion2";
-        LocalDateTime startAt = LocalDateTime.of(2022, 12, 25, 0, 0);
-        LocalDateTime endAt = LocalDateTime.of(2022, 12, 30, 0, 0);
-        String place = "jeju";
-        String satisfaction = "good";
-        String description = "description";
 
         FeedCreateRequest request = FeedCreateRequest.builder()
-                .name(feedName)
-                .companion(companion)
-                .imageUrl(imageUrl)
-                .description(description)
-                .startAt(startAt)
-                .endAt(endAt)
-                .place(place)
-                .satisfaction(satisfaction)
+                .name("feed name")
+                .imageUrl("image")
+                .description("description")
+                .startAt(LocalDateTime.of(2022, 12, 25, 0, 0))
+                .endAt(LocalDateTime.of(2022, 12, 30, 0, 0))
+                .place("jeju")
+                .satisfaction("good")
+                .contributors(new ArrayList<>())
                 .build();
 
         //when //then
@@ -284,6 +277,69 @@ class FeedControllerTest extends AbstractMockMvcTest {
                                 .content(body(request))
                 )
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds - 성공 (컨트리뷰터와 함께 등록)")
+    @WithTestUser
+    void createFeed_withContributors_returnSuccessCode() throws Exception {
+        //given
+        UserEntity invitee1 = UserEntityFixture.of();
+        UserEntity invitee2 = UserEntityFixture.of();
+        UserEntity invitee3 = UserEntityFixture.of();
+        UserEntity invitee4 = UserEntityFixture.of();
+        UserEntity invitee5 = UserEntityFixture.of();
+        List<UserEntity> invitees = List.of(invitee1, invitee2, invitee3, invitee4, invitee5);
+        userRepository.saveAll(invitees);
+
+        FeedCreateRequest request = FeedCreateRequest.builder()
+                .name("feed name")
+                .imageUrl("image")
+                .description("description")
+                .startAt(LocalDateTime.of(2022, 12, 25, 0, 0))
+                .endAt(LocalDateTime.of(2022, 12, 30, 0, 0))
+                .place("jeju")
+                .satisfaction("good")
+                .contributors(List.of(invitee1.getId(), invitee2.getId(), invitee3.getId(), invitee4.getId(), invitee5.getId()))
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds")
+                                .contentType(APPLICATION_JSON)
+                                .content(body(request))
+                )
+                .andExpect(status().isOk());
+        Assertions.assertThat(feedRepository.findAll()).hasSize(1);
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(invitees.size());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/feeds - 실패 (존재하지 않는 컨트리뷰터 등록할 경우)")
+    @WithTestUser
+    void createFeed_withNotExistingContributors_returnSuccessCode() throws Exception {
+        //given
+        long notExistingInviteeId = 0L;
+
+        FeedCreateRequest request = FeedCreateRequest.builder()
+                .name("feed name")
+                .imageUrl("image")
+                .description("description")
+                .startAt(LocalDateTime.of(2022, 12, 25, 0, 0))
+                .endAt(LocalDateTime.of(2022, 12, 30, 0, 0))
+                .place("jeju")
+                .satisfaction("good")
+                .contributors(List.of(notExistingInviteeId))
+                .build();
+
+        //when //then
+        mockMvc.perform(
+                        post("/api/v1/feeds")
+                                .contentType(APPLICATION_JSON)
+                                .content(body(request))
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(USER_NOT_FOUND.code()));
     }
 
     @Test

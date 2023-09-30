@@ -50,9 +50,6 @@ public class FeedEntity extends BaseEntity {
     @Column(name = "end_at", nullable = false)
     private LocalDateTime endAt;
 
-    @Column(name = "companion")
-    private String companion;
-
     @Column(name = "place")
     private String place;
 
@@ -79,7 +76,6 @@ public class FeedEntity extends BaseEntity {
                        String imageUrl,
                        LocalDateTime startAt,
                        LocalDateTime endAt,
-                       String companion,
                        String place,
                        String longitude,
                        String latitude,
@@ -89,7 +85,6 @@ public class FeedEntity extends BaseEntity {
         this.description = description;
         this.startAt = startAt;
         this.endAt = endAt;
-        this.companion = companion;
         this.place = place;
         this.longitude = longitude;
         this.latitude = latitude;
@@ -103,7 +98,6 @@ public class FeedEntity extends BaseEntity {
         this.description = updateEntity.getDescription();
         this.startAt = updateEntity.getStartAt();
         this.endAt = updateEntity.getEndAt();
-        this.companion = updateEntity.getCompanion();
         this.longitude = updateEntity.getLongitude();
         this.latitude = updateEntity.getLatitude();
         this.place = updateEntity.getPlace();

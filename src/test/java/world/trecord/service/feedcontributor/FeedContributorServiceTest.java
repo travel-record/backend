@@ -435,4 +435,26 @@ class FeedContributorServiceTest extends AbstractIntegrationTest {
         //then
         Assertions.assertThat(response.getContent()).isEmpty();
     }
+
+    @Test
+    @DisplayName("유저 아이디 리스트로 피드 컨트리뷰터를 저장한 후 알림 이벤트를 발행한다")
+    void inviteUsersToFeed_pass() throws Exception {
+        //given
+        UserEntity owner = userRepository.save(UserEntityFixture.of());
+        UserEntity invitee1 = UserEntityFixture.of();
+        UserEntity invitee2 = UserEntityFixture.of();
+        UserEntity invitee3 = UserEntityFixture.of();
+        UserEntity invitee4 = UserEntityFixture.of();
+        UserEntity invitee5 = UserEntityFixture.of();
+        List<UserEntity> invitees = List.of(invitee1, invitee2, invitee3, invitee4, invitee5);
+        userRepository.saveAll(invitees);
+        FeedEntity feedEntity = feedRepository.save(FeedEntityFixture.of(owner));
+
+        //when
+        feedContributorService.inviteUsersToFeed(feedEntity, invitees);
+
+        //then
+        Assertions.assertThat(feedContributorRepository.findAll()).hasSize(5);
+        Mockito.verify(mockEventListener, Mockito.times(invitees.size())).handleNotificationEventListener(Mockito.any());
+    }
 }

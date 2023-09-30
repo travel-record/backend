@@ -5,8 +5,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
+import world.trecord.infra.fixture.UserEntityFixture;
 import world.trecord.infra.test.AbstractIntegrationTest;
 
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -98,6 +100,26 @@ class UserRepositoryTest extends AbstractIntegrationTest {
         //when // then
         Assertions.assertThatThrownBy(() -> userRepository.save(userEntity2))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    @DisplayName("사용자 아이디 리스트로 사용자 리스트를 조회한다")
+    void findByIds_returnUserList() throws Exception {
+        //given
+        UserEntity user1 = UserEntityFixture.of();
+        UserEntity user2 = UserEntityFixture.of();
+        UserEntity user3 = UserEntityFixture.of();
+        UserEntity user4 = UserEntityFixture.of();
+        userRepository.saveAll(List.of(user1, user2, user3, user4));
+
+        //when
+        List<UserEntity> results = userRepository.findByIds(List.of(user1.getId(), user4.getId()));
+
+        //then
+        Assertions.assertThat(results)
+                .hasSize(2)
+                .extracting("id")
+                .containsExactly(user1.getId(), user4.getId());
     }
 
 }

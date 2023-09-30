@@ -32,8 +32,6 @@ public class FeedUpdateRequest {
     @NotNull
     private LocalDateTime endAt;
 
-    private String companion;
-
     private String description;
 
     private String imageUrl;
@@ -46,7 +44,6 @@ public class FeedUpdateRequest {
                               String latitude,
                               LocalDateTime startAt,
                               LocalDateTime endAt,
-                              String companion,
                               String description,
                               String imageUrl) {
         this.name = name;
@@ -56,7 +53,6 @@ public class FeedUpdateRequest {
         this.latitude = latitude;
         this.startAt = startAt;
         this.endAt = endAt;
-        this.companion = companion;
         this.description = description;
         this.imageUrl = imageUrl;
     }
@@ -70,7 +66,6 @@ public class FeedUpdateRequest {
                 .latitude(this.latitude)
                 .startAt(this.startAt)
                 .endAt(this.endAt)
-                .companion(this.companion)
                 .description(this.description)
                 .imageUrl(this.imageUrl)
                 .build();
