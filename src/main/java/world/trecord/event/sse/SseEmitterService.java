@@ -7,6 +7,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import world.trecord.exception.CustomException;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static world.trecord.exception.CustomExceptionError.MAX_CONNECTIONS_EXCEEDED_ERROR;
@@ -47,6 +48,11 @@ public class SseEmitterService {
     }
 
     public SseEmitter connect(Long userId, SseEmitter emitter) {
+        Optional<SseEmitter> sseEmitterOpt = sseEmitterRepository.findByUserId(userId);
+        if (sseEmitterOpt.isPresent()) {
+            return sseEmitterOpt.get();
+        }
+        
         synchronized (this) {
             if (currentConnections.get() >= MAX_CONNECTIONS) {
                 log.warn("Max connections limit reached. Unable to connect user [{}].", userId);
