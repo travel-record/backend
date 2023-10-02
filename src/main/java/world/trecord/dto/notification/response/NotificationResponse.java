@@ -44,8 +44,9 @@ public class NotificationResponse {
         this.status = notificationEntity.getStatus();
         this.content = notificationEntity.getNotificationContent();
         this.date = notificationEntity.getCreatedDateTime();
-        this.feed = notificationEntity.getArgs().getFeed();
-        this.record = notificationEntity.getArgs().getRecord();
-        this.comment = notificationEntity.getArgs().getComment();
+        this.userFrom = notificationEntity.getUserFromArgs();
+        this.feed = notificationEntity.getFeedArgs();
+        this.record = notificationEntity.getRecordArgs();
+        this.comment = notificationEntity.getCommentArgs();
     }
 }
