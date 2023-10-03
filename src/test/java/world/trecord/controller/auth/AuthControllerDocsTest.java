@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.restdocs.payload.JsonFieldType;
 import world.trecord.controller.auth.request.GoogleLoginRequest;
+import world.trecord.controller.auth.request.RefreshTokenRequest;
 import world.trecord.dto.auth.response.LoginResponse;
+import world.trecord.dto.auth.response.RefreshResponse;
 import world.trecord.infra.test.AbstractRestDocsTest;
 import world.trecord.service.auth.AuthService;
 
@@ -75,6 +77,44 @@ class AuthControllerDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.user.nickname").type(JsonFieldType.STRING).description("사용자 닉네임").optional(),
                                 fieldWithPath("data.token.token").type(JsonFieldType.STRING).description("인증 토큰"),
                                 fieldWithPath("data.token.refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰")
+                        ))
+                );
+    }
+
+    @Test
+    @DisplayName("리프레시 토큰 API")
+    void refreshToken_restDocs() throws Exception {
+        //given
+        RefreshTokenRequest request = RefreshTokenRequest.builder()
+                .refreshToken("refresh token")
+                .build();
+
+        RefreshResponse refreshResponse = RefreshResponse.builder()
+                .token("reissued token")
+                .refreshToken("reissued refresh token")
+                .build();
+
+        given(authService.reissueToken(anyString()))
+                .willReturn(refreshResponse);
+
+        //when //then
+        mockMvc.perform(post("/api/v1/auth/token")
+                        .contentType(APPLICATION_JSON)
+                        .content(body(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("refresh-token",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").type(JsonFieldType.NUMBER).description("코드"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("메시지"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+                                fieldWithPath("data.token").type(JsonFieldType.STRING).description("인증 토큰"),
+                                fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰")
                         ))
                 );
     }

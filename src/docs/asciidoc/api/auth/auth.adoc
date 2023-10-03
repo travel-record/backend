@@ -9,4 +9,4 @@ include::google-login.adoc[]
 [[refresh-token]]
 ==== 리프레시 토큰
 
-include::google-login.adoc[]
+include::refresh-token.adoc[]
