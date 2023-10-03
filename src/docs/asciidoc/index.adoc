@@ -1,0 +1,22 @@
+ifndef::snippets[]
+:snippets: ../../build/generated-snippets
+endif::[]
+= 취해 REST API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectnums:
+
+[[Outline]]
+== 개요
+
+include::outline.adoc[]
+
+[[Endpoint]]
+== API
+
+include::api/auth/auth.adoc[]
+

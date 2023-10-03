@@ -1,0 +1,12 @@
+[[auth]]
+=== 인증
+
+[[google-login]]
+==== 구글 로그인
+
+include::google-login.adoc[]
+
+[[refresh-token]]
+==== 리프레시 토큰
+
+include::google-login.adoc[]
