@@ -51,7 +51,7 @@ public class UserRecordLikeService {
 
     private UserRecordLikedResponse like(UserEntity userEntity, RecordEntity recordEntity) {
         saveRecordLike(userEntity, recordEntity);
-        Long userToId = recordEntity.getFeedEntity().getUserEntity().getId();
+        Long userToId = recordEntity.getUserId();
         eventPublisher.publishEvent(new NotificationEvent(userToId, userEntity.getId(), RECORD_LIKE, buildNotificationArgs(userEntity, recordEntity)));
         return UserRecordLikedResponse.of(true);
     }

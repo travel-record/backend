@@ -22,7 +22,6 @@ import world.trecord.event.notification.NotificationEvent;
 import world.trecord.exception.CustomException;
 import world.trecord.service.users.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,9 +48,8 @@ public class FeedContributorService {
         UserEntity invitee = userService.findUserOrException(request.getUserToId());
         ensureNotSelfInviting(requestUserId, invitee.getId());
         ensureInviteeNotAlreadyInvited(feedEntity, invitee.getId());
-
         saveFeedContributor(feedEntity, invitee);
-        eventPublisher.publishEvent(new NotificationEvent(invitee.getId(), requestUserId, FEED_INVITATION, buildNotificationArgs(invitee, feedEntity)));
+        eventPublisher.publishEvent(new NotificationEvent(invitee.getId(), requestUserId, FEED_INVITATION, buildNotificationArgs(feedEntity)));
     }
 
     @Transactional
@@ -59,17 +57,9 @@ public class FeedContributorService {
         if (CollectionUtils.isEmpty(userEntityList)) {
             return;
         }
-        List<FeedContributorEntity> feedContributorEntityList = new ArrayList<>();
+        saveFeedContributors(feedEntity, userEntityList);
         for (UserEntity invitee : userEntityList) {
-            FeedContributorEntity feedContributorEntity = FeedContributorEntity.builder()
-                    .feedEntity(feedEntity)
-                    .userEntity(invitee)
-                    .build();
-            feedContributorEntityList.add(feedContributorEntity);
-        }
-        feedContributorRepository.saveAll(feedContributorEntityList);
-        for (UserEntity invitee : userEntityList) {
-            eventPublisher.publishEvent(new NotificationEvent(invitee.getId(), feedEntity.getUserId(), FEED_INVITATION, buildNotificationArgs(invitee, feedEntity)));
+            eventPublisher.publishEvent(new NotificationEvent(invitee.getId(), feedEntity.getUserId(), FEED_INVITATION, buildNotificationArgs(feedEntity)));
         }
     }
 
@@ -91,6 +81,16 @@ public class FeedContributorService {
         ensureUserIsFeedContributor(feedEntity, userId);
 
         deleteFeedContributor(feedEntity, userId, LEFT);
+    }
+
+    private void saveFeedContributors(FeedEntity feedEntity, List<UserEntity> userEntityList) {
+        List<FeedContributorEntity> feedContributorEntityList = userEntityList.stream()
+                .map(invitee -> FeedContributorEntity.builder()
+                        .feedEntity(feedEntity)
+                        .userEntity(invitee)
+                        .build())
+                .toList();
+        feedContributorRepository.saveAll(feedContributorEntityList);
     }
 
     public Page<UserFeedContributorListResponse> getUserParticipatingFeeds(Long userId, Pageable pageable) {
@@ -157,10 +157,10 @@ public class FeedContributorService {
         return feedRepository.findWithFeedContributorsByIdForUpdate(feedId).orElseThrow(() -> new CustomException(FEED_NOT_FOUND));
     }
 
-    private NotificationArgs buildNotificationArgs(UserEntity userFromEntity, FeedEntity feedEntity) {
+    private NotificationArgs buildNotificationArgs(FeedEntity feedEntity) {
         return NotificationArgs.builder()
                 .feedEntity(feedEntity)
-                .userFromEntity(userFromEntity)
+                .userFromEntity(feedEntity.getUserEntity())
                 .build();
     }
 }
