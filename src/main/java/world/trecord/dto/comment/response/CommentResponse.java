@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class CommentResponse {
 
     private Long commenterId;
+    private String commenterNickname;
     private String commenterImageUrl;
     private Long recordId;
     private Long parentId;
@@ -34,6 +35,7 @@ public class CommentResponse {
     @Builder
     private CommentResponse(UserEntity userEntity, CommentEntity commentEntity, Long viewerId) {
         this.commenterId = userEntity.getId();
+        this.commenterNickname = userEntity.getNickname();
         this.commenterImageUrl = userEntity.getImageUrl();
         this.recordId = commentEntity.getRecordId();
         this.parentId = commentEntity.getParentCommentId();

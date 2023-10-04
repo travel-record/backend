@@ -70,7 +70,6 @@ public class FeedContributorService {
         UserEntity contributor = userService.findUserOrException(contributorId);
         ensureNotSelfExpelling(requestUserId, contributor.getId());
         ensureUserIsFeedContributor(feedEntity, contributor.getId());
-
         deleteFeedContributor(feedEntity, contributor.getId(), EXPELLED);
     }
 
@@ -79,7 +78,6 @@ public class FeedContributorService {
         FeedEntity feedEntity = findFeedWithContributorsWithLockOrException(feedId);
         ensureRequestUserIsNotFeedOwner(feedEntity, userId);
         ensureUserIsFeedContributor(feedEntity, userId);
-
         deleteFeedContributor(feedEntity, userId, LEFT);
     }
 
