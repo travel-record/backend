@@ -20,13 +20,13 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
             "WHERE ce.userEntity.id = :userId")
     Page<CommentRecordProjection> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT ce " +
+    @Query("SELECT DISTINCT ce " +
             "FROM CommentEntity ce " +
-            "LEFT JOIN ce.childCommentEntities cce " +
             "JOIN FETCH ce.userEntity ue " +
-            "WHERE ce.parentCommentEntity IS NULL " +
+            "LEFT JOIN ce.childCommentEntities cce " +
+            "WHERE ce.recordEntity.id = :recordId AND ce.parentCommentEntity IS NULL " +
             "ORDER BY ce.createdDateTime ASC")
-    Page<CommentEntity> findWithCommenterAndRepliesByRecordId(Long recordId, Pageable pageable);
+    Page<CommentEntity> findWithCommenterAndRepliesByRecordId(@Param("recordId") Long recordId, Pageable pageable);
 
     @EntityGraph(attributePaths = "userEntity")
     Page<CommentEntity> findWithUserEntityByParentCommentEntityId(Long parentCommentEntityId, Pageable pageable);
