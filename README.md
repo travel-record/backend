@@ -95,11 +95,11 @@ The following APIs are being invoked for Google Oauth2 authentication
 
 ### ERD
 
-![](images/erd%20diagram.png)
+![](images/erd%20diagram.jpg)
 
 ### AWS Architecture
 
-![](images/aws%20architecture.jpg)
+![](images/aws%20architecture.png)
 
 ### Git flow
 
