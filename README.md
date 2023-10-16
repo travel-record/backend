@@ -17,6 +17,8 @@
 - Infra
     - Docker, Github actions, AWS EC2 with DB (Use EC2 with EB instead of ECS for cost and management issues)
 
+### Modules
+
 ```groovy
 dependencies {
 
@@ -40,7 +42,7 @@ dependencies {
     implementation 'io.hypersistence:hypersistence-utils-hibernate-62:3.5.1' // For @Type(JsonType.class)
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
-    //queryDSL
+    //querydsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
@@ -112,8 +114,3 @@ The following APIs are being invoked for Google Oauth2 authentication
 |   |-- refactor
 |   |   |-- #887
 ```
-
-### Issue
-
-1. ECS 배포 실패
-2. Spring Security 없이 Cors Filter 적용 시, Filter 작동 X
