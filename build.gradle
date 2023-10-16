@@ -51,7 +51,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-62:3.5.1' // For @Type(JsonType.class)
-    runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
     //queryDSL
