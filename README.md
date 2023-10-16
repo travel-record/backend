@@ -68,11 +68,15 @@ dependencies {
 
 ### Build
 
+0. Requirement
+    - Docker Engine
+    - Java 17 or higher
+
 1. Before build and run application, you should set up database with the information below
 
-    - Jdbc url: jdbc:mariadb://localhost:3306/trecord
-    - Username: root
-    - Password: 1234
+    - Jdbc url: `jdbc:mariadb://localhost:3306/trecord`
+    - Username: `root`
+    - Password: `1234`
 
 2. After you set database
     - create schema named `trecord`
@@ -88,8 +92,8 @@ dependencies {
 
 The following APIs are being invoked for Google Oauth2 authentication
 
-- https://oauth2.googleapis.com/token
-- https://www.googleapis.com/oauth2/v3/userinfo
+- `POST https://oauth2.googleapis.com/token`
+- `GET https://www.googleapis.com/oauth2/v3/userinfo`
 
 > Ref: https://developers.google.com/identity/protocols/oauth2/web-server?hl=ko#exchange-authorization-code
 
