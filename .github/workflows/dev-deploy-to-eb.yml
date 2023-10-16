@@ -2,13 +2,17 @@ name: Deploy to Amazon EB
 
 on:
   push:
-    branches: [ "master" ,"release" ]
+    branches: [ "master" ]
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'database/**'
 
 env:
-  AWS_REGION: ap-northeast-2                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: trecord           # set this to your Amazon ECR repository name
-  EB_APP_NAME: trecord                 # set this to your Amazon ECS service name
-  EB_ENV_NAME: trecord-env                 # set this to your Amazon ECS cluster name
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: trecord
+  EB_APP_NAME: trecord
+  EB_ENV_NAME: trecord-env
 
 permissions:
   contents: read
