@@ -103,7 +103,7 @@ The following APIs are being invoked for Google Oauth2 authentication
 
 ### AWS Architecture
 
-![](images/aws%20architecture.png)
+![](https://velog.velcdn.com/images/dragonappear/post/5414caba-fd0d-4efc-ba68-c4822af021c7/image.png)
 
 ### Git flow
 
