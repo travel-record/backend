@@ -1,6 +1,11 @@
 package world.trecord.config.security;
 
+import static org.springframework.http.HttpMethod.GET;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,12 +22,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import world.trecord.config.properties.JwtProperties;
 import world.trecord.service.users.UserService;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-
-import static org.springframework.http.HttpMethod.GET;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -48,7 +47,8 @@ public class CustomSecurityConfig {
                                 .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)))
+                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(
+                        new CustomAuthenticationEntryPoint(objectMapper)))
                 .build();
     }
 
@@ -56,10 +56,10 @@ public class CustomSecurityConfig {
         Map<String, List<HttpMethod>> whitelistMap = Map.of(
                 "/api/.+/users/\\d+", List.of(GET),
                 "/api/.+/feeds/\\d+", List.of(GET),
-                "/api/.+/feeds/\\d+/records", List.of(GET),
+                "/api/.+/feeds/\\d+/records(\\?.*)?", List.of(GET),
                 "/api/.+/records/\\d+", List.of(GET),
-                "/api/.+/records/\\d+/comments", List.of(GET),
-                "/api/.+/comments/\\d+/replies", List.of(GET)
+                "/api/.+/records/\\d+/comments(\\?.*)?", List.of(GET),
+                "/api/.+/comments/\\d+/replies(\\?.*)?", List.of(GET)
         );
 
         List<String> tokenInParamUrls = List.of("/api/*/notifications/subscribe");
